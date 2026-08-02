@@ -101,7 +101,7 @@
                             @if($svc->get('company_address'))<br><small class="text-muted">{{ $svc->get('company_address') }}</small>@endif
                             @if($svc->get('company_city') || $svc->get('company_country'))<br><small class="text-muted">{{ $svc->get('company_city') }}{{ ($svc->get('company_city') && $svc->get('company_country')) ? ', ' : '' }}{{ $svc->get('company_country') }}</small>@endif
                             @if($svc->get('company_email'))<br><small class="text-muted"><i class="fas fa-envelope fa-xs mr-1"></i>{{ $svc->get('company_email') }}</small>@endif
-                            @if($svc->get('company_tax_id'))<br><small class="text-muted"><i class="fas fa-id-card fa-xs mr-1"></i>Tax ID: {{ $svc->get('company_tax_id') }}</small>@endif
+                            @if($svc->get('company_trn'))<br><small class="text-muted"><i class="fas fa-id-card fa-xs mr-1"></i>TRN: {{ $svc->get('company_trn') }}</small>@endif
                         </div>
                     </div>
                 </div>

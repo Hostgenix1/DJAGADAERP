@@ -24,8 +24,16 @@ class InvoiceController extends Controller
         $totalAmount = (float) Invoice::where('status', '!=', 'cancelled')->sum('total');
         $totalPaid = (float) Invoice::where('status', '!=', 'cancelled')->sum('paid_amount');
         $totalOutstanding = $totalAmount - $totalPaid;
+        $defaultCurrency = \App\Models\Currency::where('is_default', true)->first();
 
-        return view('invoices.index', compact('totalInvoices', 'totalAmount', 'totalPaid', 'totalOutstanding'));
+        $invoiceByCurrency = Invoice::where('status', '!=', 'cancelled')
+            ->join('currencies', 'invoices.currency_id', '=', 'currencies.id')
+            ->selectRaw('currencies.code, currencies.symbol, COUNT(*) as count, SUM(invoices.total) as total, SUM(invoices.paid_amount) as paid')
+            ->groupBy('currencies.code', 'currencies.symbol')
+            ->get()
+            ->toArray();
+
+        return view('invoices.index', compact('totalInvoices', 'totalAmount', 'totalPaid', 'totalOutstanding', 'defaultCurrency', 'invoiceByCurrency'));
     }
 
     public function datatable(Request $request)
@@ -176,6 +184,11 @@ class InvoiceController extends Controller
             'footer'    => $svc->get('company_footer_text'),
             'show_logo' => $svc->get('show_logo_on_docs'),
             'logo_url'  => $logoBase64,
+
+            'trade_license' => $svc->get('company_trade_license'),
+            'trn'           => $svc->get('company_trn'),
+            'free_zone'     => $svc->get('company_free_zone'),
+            'entity_type'   => $svc->get('company_entity_type'),
         ];
 
         if ($invoice->bankAccount) {

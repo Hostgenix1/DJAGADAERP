@@ -18,7 +18,7 @@ class Product extends Model
     protected $table = 'products';
 
     protected $fillable = [
-        'sku', 'name', 'brand_id', 'category_id', 'supplier_id', 'buy_price', 'sell_price', 'currency_id', 'tax_id', 'unit', 'pack_qty', 'pack_type', 'weight_kg', 'dimensions', 'specifications', 'certificates', 'is_active'
+        'sku', 'name', 'description', 'brand_id', 'category_id', 'supplier_id', 'buy_price', 'sell_price', 'currency_id', 'tax_id', 'unit', 'pack_qty', 'pack_type', 'weight_kg', 'dimensions', 'hs_code', 'country_of_origin', 'specifications', 'certificates', 'is_active'
     ];
 
     protected $casts = [

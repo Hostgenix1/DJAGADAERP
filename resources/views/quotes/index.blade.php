@@ -25,7 +25,7 @@
             <span class="info-box-icon bg-success"><i class="fas fa-dollar-sign"></i></span>
             <div class="info-box-content">
                 <span class="info-box-text">Total Value</span>
-                <span class="info-box-number">${{ number_format($totalAmount, 2) }}</span>
+                <span class="info-box-number">{{ $defaultCurrency?->symbol ?? '$' }}{{ number_format($totalAmount, 2) }}</span>
             </div>
         </div>
     </div>
@@ -34,7 +34,7 @@
             <span class="info-box-icon bg-warning"><i class="fas fa-check-circle"></i></span>
             <div class="info-box-content">
                 <span class="info-box-text">Accepted</span>
-                <span class="info-box-number">${{ number_format($accepted, 2) }}</span>
+                <span class="info-box-number">{{ $defaultCurrency?->symbol ?? '$' }}{{ number_format($accepted, 2) }}</span>
             </div>
         </div>
     </div>
@@ -43,11 +43,43 @@
             <span class="info-box-icon bg-danger"><i class="fas fa-clock"></i></span>
             <div class="info-box-content">
                 <span class="info-box-text">Pending</span>
-                <span class="info-box-number">${{ number_format($pending, 2) }}</span>
+                <span class="info-box-number">{{ $defaultCurrency?->symbol ?? '$' }}{{ number_format($pending, 2) }}</span>
             </div>
         </div>
     </div>
 </div>
+
+@if(count($quoteByCurrency) > 1)
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card card-outline card-secondary">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-coins mr-1"></i> Breakdown by Currency</h3>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-sm table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>Currency</th>
+                            <th class="text-center">Quotes</th>
+                            <th class="text-right">Total Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach($quoteByCurrency as $qbc)
+                        <tr>
+                            <td><strong>{{ $qbc['code'] }}</strong> <span class="text-muted">({{ $qbc['symbol'] }})</span></td>
+                            <td class="text-center">{{ $qbc['count'] }}</td>
+                            <td class="text-right">{{ $qbc['symbol'] }}{{ number_format($qbc['total'], 2) }}</td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
 
 <div class="card card-primary card-outline">
     <div class="card-header">

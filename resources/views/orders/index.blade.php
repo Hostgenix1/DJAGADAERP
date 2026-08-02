@@ -52,7 +52,48 @@
             </div>
         </div>
     </div>
+    <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-primary"><i class="fas fa-coins"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Total Value</span>
+                <span class="info-box-number">{{ $defaultCurrency?->symbol ?? '$' }}{{ number_format($totalAmount, 2) }}</span>
+            </div>
+        </div>
+    </div>
 </div>
+
+@if(count($orderByCurrency) > 1)
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card card-outline card-secondary">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-coins mr-1"></i> Orders by Currency</h3>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-sm table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>Currency</th>
+                            <th class="text-center">Orders</th>
+                            <th class="text-right">Total Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach($orderByCurrency as $obc)
+                        <tr>
+                            <td><strong>{{ $obc['code'] }}</strong> <span class="text-muted">({{ $obc['symbol'] }})</span></td>
+                            <td class="text-center">{{ $obc['count'] }}</td>
+                            <td class="text-right">{{ $obc['symbol'] }}{{ number_format($obc['total'], 2) }}</td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
 
 <div class="card card-primary card-outline">
     <div class="card-header">

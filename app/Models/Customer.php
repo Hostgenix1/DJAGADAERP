@@ -13,7 +13,7 @@ class Customer extends Model
     protected $table = 'customers';
 
     protected $fillable = [
-        'company_name', 'contact_person', 'email', 'phone', 'address', 'city', 'country', 'currency_id', 'is_active'
+        'company_name', 'contact_person', 'email', 'phone', 'address', 'city', 'emirate', 'country', 'tax_registration_number', 'po_box', 'postal_code', 'currency_id', 'is_active'
     ];
 
     protected $casts = [

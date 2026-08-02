@@ -22,8 +22,17 @@ class OrderController extends Controller
         $confirmed = Order::where('status', 'confirmed')->count();
         $processing = Order::where('status', 'processing')->count();
         $completed = Order::where('status', 'completed')->count();
+        $totalAmount = (float) Order::where('status', '!=', 'cancelled')->sum('total');
+        $defaultCurrency = \App\Models\Currency::where('is_default', true)->first();
 
-        return view('orders.index', compact('totalOrders', 'draft', 'confirmed', 'processing', 'completed'));
+        $orderByCurrency = Order::where('status', '!=', 'cancelled')
+            ->join('currencies', 'orders.currency_id', '=', 'currencies.id')
+            ->selectRaw('currencies.code, currencies.symbol, COUNT(*) as count, SUM(orders.total) as total')
+            ->groupBy('currencies.code', 'currencies.symbol')
+            ->get()
+            ->toArray();
+
+        return view('orders.index', compact('totalOrders', 'draft', 'confirmed', 'processing', 'completed', 'totalAmount', 'defaultCurrency', 'orderByCurrency'));
     }
 
     public function datatable(Request $request)

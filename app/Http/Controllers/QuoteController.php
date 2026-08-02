@@ -22,8 +22,16 @@ class QuoteController extends Controller
         $totalAmount = (float) Quote::where('status', '!=', 'cancelled')->sum('total');
         $accepted = (float) Quote::where('status', 'accepted')->sum('total');
         $pending = (float) Quote::where('status', 'pending')->sum('total');
+        $defaultCurrency = \App\Models\Currency::where('is_default', true)->first();
 
-        return view('quotes.index', compact('totalQuotes', 'totalAmount', 'accepted', 'pending'));
+        $quoteByCurrency = Quote::where('status', '!=', 'cancelled')
+            ->join('currencies', 'quotes.currency_id', '=', 'currencies.id')
+            ->selectRaw('currencies.code, currencies.symbol, COUNT(*) as count, SUM(quotes.total) as total')
+            ->groupBy('currencies.code', 'currencies.symbol')
+            ->get()
+            ->toArray();
+
+        return view('quotes.index', compact('totalQuotes', 'totalAmount', 'accepted', 'pending', 'defaultCurrency', 'quoteByCurrency'));
     }
 
     public function datatable(Request $request)
@@ -174,6 +182,11 @@ class QuoteController extends Controller
             'footer'       => $svc->get('company_footer_text'),
             'show_logo'    => $svc->get('show_logo_on_docs'),
             'logo_url'     => $logoBase64,
+
+            'trade_license' => $svc->get('company_trade_license'),
+            'trn'           => $svc->get('company_trn'),
+            'free_zone'     => $svc->get('company_free_zone'),
+            'entity_type'   => $svc->get('company_entity_type'),
             'bank_name'    => $svc->get('company_bank_name'),
             'bank_account' => $svc->get('company_bank_account'),
             'bank_number'  => '',
@@ -181,7 +194,13 @@ class QuoteController extends Controller
             'bank_swift'   => $svc->get('company_bank_swift'),
         ];
 
-        $html = view('quotes.pdf', compact('quote', 'company'))->render();
+        $bankAccount = (object) [
+            'bank_name'     => $svc->get('company_bank_name'),
+            'account_number' => $svc->get('company_bank_account'),
+            'iban'          => $svc->get('company_bank_iban'),
+            'swift_code'    => $svc->get('company_bank_swift'),
+        ];
+        $html = view('quotes.pdf', compact('quote', 'company', 'bankAccount'))->render();
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHtml($html)
             ->setPaper('a4')
             ->set_option('isHtml5ParserEnabled', true)

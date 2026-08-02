@@ -149,26 +149,21 @@
 
                             <div class="form-row">
                                 <div class="form-group col-md-6">
-                                    <label for="company_registration">
-                                        <i class="fas fa-id-card text-primary mr-1"></i> Registration No.
+                                    <label for="company_trade_license">
+                                        <i class="fas fa-id-card text-primary mr-1"></i> Trade License Number
                                     </label>
-                                    <input type="text" id="company_registration" name="company_registration"
-                                           class="form-control @error('company_registration') is-invalid @enderror"
-                                           value="{{ old('company_registration', $svc->get('company_registration')) }}"
-                                           placeholder="e.g. 2024-XXXXX">
-                                    <small class="text-muted">Business registration or license number.</small>
-                                    @error('company_registration')<span class="invalid-feedback">{{ $message }}</span>@enderror
+                                    <input type="text" id="company_trade_license" name="company_trade_license"
+                                           class="form-control"
+                                           value="{{ old('company_trade_license', $svc->get('company_trade_license')) }}"
+                                           placeholder="e.g. FDRK0091">
                                 </div>
                                 <div class="form-group col-md-6">
-                                    <label for="company_tax_id">
-                                        <i class="fas fa-percent text-primary mr-1"></i> Tax ID / VAT No.
+                                    <label for="company_trn">
+                                        <i class="fas fa-percent text-primary mr-1"></i> Tax Registration Number (TRN)
                                     </label>
-                                    <input type="text" id="company_tax_id" name="company_tax_id"
-                                           class="form-control @error('company_tax_id') is-invalid @enderror"
-                                           value="{{ old('company_tax_id', $svc->get('company_tax_id')) }}"
-                                           placeholder="e.g. VAT-123456">
-                                    <small class="text-muted">Used on invoices and tax documents.</small>
-                                    @error('company_tax_id')<span class="invalid-feedback">{{ $message }}</span>@enderror
+                                    <input type="text" id="company_trn" name="company_trn"
+                                           class="form-control" maxlength="15" placeholder="15 digits"
+                                           value="{{ old('company_trn', $svc->get('company_trn')) }}">
                                 </div>
                             </div>
 
@@ -198,6 +193,41 @@
                                         <option value="{{ $ind }}" {{ $svc->get('company_industry') === $ind ? 'selected' : '' }}>{{ $ind }}</option>
                                     @endforeach
                                 </select>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group col-md-4">
+                                    <label for="company_free_zone">
+                                        <i class="fas fa-map text-primary mr-1"></i> Free Zone
+                                    </label>
+                                    <input type="text" id="company_free_zone" name="company_free_zone"
+                                           class="form-control"
+                                           value="{{ old('company_free_zone', $svc->get('company_free_zone')) }}"
+                                           placeholder="e.g. RAKEZ">
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label for="company_entity_type">
+                                        <i class="fas fa-landmark text-primary mr-1"></i> Entity Type
+                                    </label>
+                                    <input type="text" id="company_entity_type" name="company_entity_type"
+                                           class="form-control"
+                                           value="{{ old('company_entity_type', $svc->get('company_entity_type')) }}"
+                                           placeholder="e.g. FZ-LLC">
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label for="default_currency_id">
+                                        <i class="fas fa-coins text-primary mr-1"></i> Default Currency
+                                    </label>
+                                    <select id="default_currency_id" name="default_currency_id" class="form-control">
+                                        <option value="">-- Select --</option>
+                                        @foreach(\App\Models\Currency::where('is_active', true)->get() as $cur)
+                                            <option value="{{ $cur->id }}" {{ $svc->get('default_currency_id') == $cur->id ? 'selected' : '' }}>
+                                                {{ $cur->code }} - {{ $cur->name }} ({{ $cur->symbol }})
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <small class="text-muted">Used across invoices, quotes, and reports.</small>
+                                </div>
                             </div>
                         </div>
                     </div>

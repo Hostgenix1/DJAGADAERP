@@ -42,6 +42,38 @@
     </div>
 </div>
 
+@if(count($shipmentByCurrency) > 0)
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card card-outline card-secondary">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-coins mr-1"></i> Shipments by Currency</h3>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-sm table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>Currency</th>
+                            <th class="text-center">Shipments</th>
+                            <th class="text-right">Total Cost</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach($shipmentByCurrency as $sbc)
+                        <tr>
+                            <td><strong>{{ $sbc['code'] }}</strong> <span class="text-muted">({{ $sbc['symbol'] }})</span></td>
+                            <td class="text-center">{{ $sbc['count'] }}</td>
+                            <td class="text-right">{{ $sbc['symbol'] }}{{ number_format($sbc['total'], 2) }}</td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
 <div class="card card-primary card-outline">
     <div class="card-header">
         <h3 class="card-title"><i class="fas fa-shipping-fast mr-1"></i> All Shipments</h3>

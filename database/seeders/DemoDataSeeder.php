@@ -24,47 +24,45 @@ class DemoDataSeeder extends Seeder
 {
     public function run(): void
     {
-        $defaultCurrency = Currency::firstOrCreate(['code' => 'USD'], ['name' => 'US Dollar', 'symbol' => '$', 'rate' => 1]);
-        $eurCurrency = Currency::firstOrCreate(['code' => 'EUR'], ['name' => 'Euro', 'symbol' => '€', 'rate' => 1.09]);
-        $xcdCurrency = Currency::firstOrCreate(['code' => 'XCD'], ['name' => 'East Caribbean Dollar', 'symbol' => 'EC$', 'rate' => 2.70]);
+        $aedCurrency = Currency::where('code', 'AED')->first();
 
-        $brandA = Brand::firstOrCreate(['name' => 'Brand Alpha']);
-        $brandB = Brand::firstOrCreate(['name' => 'Brand Beta']);
-        $brandC = Brand::firstOrCreate(['name' => 'Brand Gamma']);
+        $brandA = Brand::firstOrCreate(['name' => 'Samsung']);
+        $brandB = Brand::firstOrCreate(['name' => 'HP']);
+        $brandC = Brand::firstOrCreate(['name' => 'Canon']);
 
         $catElectronics = ProductCategory::firstOrCreate(['name' => 'Electronics']);
         $catOffice = ProductCategory::firstOrCreate(['name' => 'Office Supplies']);
-        $catFurniture = ProductCategory::firstOrCreate(['name' => 'Furniture']);
+        $catPrinting = ProductCategory::firstOrCreate(['name' => 'Printing Solutions']);
 
-        $supplierA = Supplier::firstOrCreate(['company_name' => 'TechParts Ltd'], ['email' => 'sales@techparts.com', 'phone' => '555-0100', 'is_active' => true]);
-        $supplierB = Supplier::firstOrCreate(['company_name' => 'GlobalGoods Inc'], ['email' => 'info@globalgoods.com', 'phone' => '555-0200', 'is_active' => true]);
+        $supplierA = Supplier::firstOrCreate(['company_name' => 'Gulf Trading FZE'], ['email' => 'sales@gulftrading.ae', 'phone' => '+971 4 555 0100', 'is_active' => true]);
+        $supplierB = Supplier::firstOrCreate(['company_name' => 'Al Futtaim Trading'], ['email' => 'info@alfuttaim.ae', 'phone' => '+971 4 555 0200', 'is_active' => true]);
 
         $products = [];
         $productDefs = [
-            ['name' => 'Wireless Mouse', 'sku' => 'WM-001', 'brand_id' => $brandA->id, 'category_id' => $catElectronics->id, 'supplier_id' => $supplierA->id, 'buy_price' => 8.50, 'sell_price' => 19.99, 'pack_qty' => 100, 'pack_type' => 'box'],
-            ['name' => 'Mechanical Keyboard', 'sku' => 'MK-002', 'brand_id' => $brandA->id, 'category_id' => $catElectronics->id, 'supplier_id' => $supplierA->id, 'buy_price' => 25.00, 'sell_price' => 69.99, 'pack_qty' => 50, 'pack_type' => 'box'],
-            ['name' => 'USB-C Hub 7-in-1', 'sku' => 'UH-003', 'brand_id' => $brandB->id, 'category_id' => $catElectronics->id, 'supplier_id' => $supplierA->id, 'buy_price' => 12.00, 'sell_price' => 34.99, 'pack_qty' => 80, 'pack_type' => 'box'],
-            ['name' => 'A4 Copy Paper (500 sheets)', 'sku' => 'CP-004', 'brand_id' => $brandC->id, 'category_id' => $catOffice->id, 'supplier_id' => $supplierB->id, 'buy_price' => 3.20, 'sell_price' => 6.99, 'pack_qty' => 10, 'pack_type' => 'carton'],
-            ['name' => 'Ergonomic Office Chair', 'sku' => 'EC-005', 'brand_id' => $brandC->id, 'category_id' => $catFurniture->id, 'supplier_id' => $supplierB->id, 'buy_price' => 120.00, 'sell_price' => 299.99, 'pack_qty' => 1, 'pack_type' => 'unit'],
+            ['name' => 'Samsung 24" Monitor', 'sku' => 'SAM-M24', 'brand_id' => $brandA->id, 'category_id' => $catElectronics->id, 'supplier_id' => $supplierA->id, 'buy_price' => 450.00, 'sell_price' => 749.00, 'pack_qty' => 1, 'pack_type' => 'unit'],
+            ['name' => 'HP LaserJet Pro Printer', 'sku' => 'HP-LJ400', 'brand_id' => $brandB->id, 'category_id' => $catPrinting->id, 'supplier_id' => $supplierA->id, 'buy_price' => 899.00, 'sell_price' => 1499.00, 'pack_qty' => 1, 'pack_type' => 'unit'],
+            ['name' => 'Canon Ink Cartridge Pack', 'sku' => 'CAN-IC10', 'brand_id' => $brandC->id, 'category_id' => $catPrinting->id, 'supplier_id' => $supplierB->id, 'buy_price' => 85.00, 'sell_price' => 149.00, 'pack_qty' => 10, 'pack_type' => 'box'],
+            ['name' => 'A4 Copy Paper (Ream)', 'sku' => 'OFF-A4R', 'brand_id' => $brandC->id, 'category_id' => $catOffice->id, 'supplier_id' => $supplierB->id, 'buy_price' => 12.00, 'sell_price' => 22.00, 'pack_qty' => 5, 'pack_type' => 'carton'],
+            ['name' => 'Ergonomic Office Chair', 'sku' => 'OFF-CHAIR', 'brand_id' => $brandB->id, 'category_id' => $catOffice->id, 'supplier_id' => $supplierB->id, 'buy_price' => 450.00, 'sell_price' => 899.00, 'pack_qty' => 1, 'pack_type' => 'unit'],
         ];
         foreach ($productDefs as $p) {
             $products[] = Product::firstOrCreate(['sku' => $p['sku']], $p);
         }
 
         $customerData = [
-            ['company_name' => 'Island Resort Hotels', 'email' => 'procurement@islandresort.com', 'phone' => '555-1001', 'city' => 'St. John\'s', 'country' => 'Antigua'],
-            ['company_name' => 'Caribbean Logistics Co', 'email' => 'ops@cariblogistics.com', 'phone' => '555-1002', 'city' => 'Port of Spain', 'country' => 'Trinidad'],
-            ['company_name' => 'Sunset Medical Clinic', 'email' => 'admin@sunsetmed.com', 'phone' => '555-1003', 'city' => 'Bridgetown', 'country' => 'Barbados'],
-            ['company_name' => 'Eastern Star Trading', 'email' => 'trading@easternstar.com', 'phone' => '555-1004', 'city' => 'Roseau', 'country' => 'Dominica'],
-            ['company_name' => 'BlueWave Technologies', 'email' => 'hello@bluewave.tech', 'phone' => '555-1005', 'city' => 'Kingstown', 'country' => 'St. Vincent'],
-            ['company_name' => 'Grand Palm Suites', 'email' => 'purchase@grandpalm.com', 'phone' => '555-1006', 'city' => 'Castries', 'country' => 'St. Lucia'],
-            ['company_name' => 'NovaTech Solutions', 'email' => 'info@novatech.com', 'phone' => '555-1007', 'city' => 'St. George\'s', 'country' => 'Grenada'],
-            ['company_name' => 'Royal Export Group', 'email' => 'exports@royalexp.com', 'phone' => '555-1008', 'city' => 'San Juan', 'country' => 'Puerto Rico'],
+            ['company_name' => 'Emirates Trading LLC', 'email' => 'procurement@emiratestrading.ae', 'phone' => '+971 4 333 1001', 'city' => 'Dubai', 'country' => 'UAE'],
+            ['company_name' => 'Abu Dhabi Construction Co', 'email' => 'purchase@adcc.ae', 'phone' => '+971 2 444 1002', 'city' => 'Abu Dhabi', 'country' => 'UAE'],
+            ['company_name' => 'Sharjah Medical Supplies', 'email' => 'info@sharjahmed.ae', 'phone' => '+971 6 555 1003', 'city' => 'Sharjah', 'country' => 'UAE'],
+            ['company_name' => 'Ajman Electronics FZE', 'email' => 'sales@ajmanelec.ae', 'phone' => '+971 6 745 1004', 'city' => 'Ajman', 'country' => 'UAE'],
+            ['company_name' => 'RAK Industries LLC', 'email' => 'ops@rakindustries.ae', 'phone' => '+971 7 244 1005', 'city' => 'Ras Al Khaimah', 'country' => 'UAE'],
+            ['company_name' => 'Fujairah Exports Co', 'email' => 'exports@fujairahexp.ae', 'phone' => '+971 9 222 1006', 'city' => 'Fujairah', 'country' => 'UAE'],
+            ['company_name' => 'Al Ain Services Group', 'email' => 'hello@alainservices.ae', 'phone' => '+971 3 765 1007', 'city' => 'Al Ain', 'country' => 'UAE'],
+            ['company_name' => 'Gulf Star Import Export', 'email' => 'trade@gulfstar.ae', 'phone' => '+971 4 888 1008', 'city' => 'Dubai', 'country' => 'UAE'],
         ];
 
         $customers = [];
         foreach ($customerData as $c) {
-            $customers[] = Customer::firstOrCreate(['company_name' => $c['company_name']], $c + ['currency_id' => $defaultCurrency->id, 'is_active' => true]);
+            $customers[] = Customer::firstOrCreate(['company_name' => $c['company_name']], $c + ['currency_id' => $aedCurrency->id, 'is_active' => true]);
         }
 
         foreach ($customers as $i => $cust) {
@@ -72,7 +70,7 @@ class DemoDataSeeder extends Seeder
             for ($j = 0; $j < $numContacts; $j++) {
                 Contact::firstOrCreate(
                     ['customer_id' => $cust->id, 'full_name' => 'Contact '.$j],
-                    ['email' => 'contact'.$j.'@'.str_replace(' ', '', strtolower($cust->company_name)).'.com', 'phone' => '555-'.rand(2000, 9999), 'position' => ['Manager', 'Procurement', 'Director'][rand(0, 2)]]
+                    ['email' => 'contact'.$j.'@'.str_replace(' ', '', strtolower($cust->company_name)).'.ae', 'phone' => '+971 '.rand(2, 9).' '.rand(100, 999).' '.rand(1000, 9999), 'position' => ['Manager', 'Procurement', 'Director'][rand(0, 2)]]
                 );
             }
         }
@@ -80,12 +78,12 @@ class DemoDataSeeder extends Seeder
         $leadSources = ['website', 'referral', 'cold_call', 'trade_show', 'social_media', 'marketing'];
         $leadStatuses = ['new', 'contacted', 'qualified', 'proposal', 'won', 'lost'];
         $leadCompanies = [
-            ['company_name' => 'Sunshine Distributors', 'contact_name' => 'Mark Johnson', 'email' => 'mark@sunshine.com'],
-            ['company_name' => 'Peak Performance Gym', 'contact_name' => 'Lisa Chen', 'email' => 'lisa@peakgym.com'],
-            ['company_name' => 'Harbour View Restaurant', 'contact_name' => 'Carlos Diaz', 'email' => 'carlos@harbour.com'],
-            ['company_name' => 'Green Valley Schools', 'contact_name' => 'Nina Patel', 'email' => 'nina@greenvalley.edu'],
-            ['company_name' => 'Metro Express Delivery', 'contact_name' => 'Andre Williams', 'email' => 'andre@metroexp.com'],
-            ['company_name' => 'Crystal Clear Pools', 'contact_name' => 'Sophie Martin', 'email' => 'sophie@crystalpools.com'],
+            ['company_name' => 'Dubai Mall Retail', 'contact_name' => 'Ahmed Al Maktoum', 'email' => 'ahmed@dubaimallretail.ae'],
+            ['company_name' => 'Jebel Ali Free Zone Authority', 'contact_name' => 'Sarah Johnson', 'email' => 'sarah@jafza.ae'],
+            ['company_name' => 'Khalifa Industrial Zone', 'contact_name' => 'Mohammed Al Hashimi', 'email' => 'mohammed@kizad.ae'],
+            ['company_name' => 'Masdar Clean Energy', 'contact_name' => 'Fatima Al Suwaidi', 'email' => 'fatima@masdar.ae'],
+            ['company_name' => 'Etihad Airways Cargo', 'contact_name' => 'James Wilson', 'email' => 'james@etihadcargo.ae'],
+            ['company_name' => 'DP World Logistics', 'contact_name' => 'Omar Al Balushi', 'email' => 'omar@dpworld.ae'],
         ];
 
         foreach ($leadCompanies as $ld) {
@@ -95,7 +93,7 @@ class DemoDataSeeder extends Seeder
                     'source' => $leadSources[array_rand($leadSources)],
                     'status' => $leadStatuses[array_rand($leadStatuses)],
                     'expected_amount' => rand(500, 25000),
-                    'currency_id' => $defaultCurrency->id,
+                    'currency_id' => $aedCurrency->id,
                     'expected_date' => now()->addDays(rand(7, 90)),
                 ]
             );
@@ -128,13 +126,14 @@ class DemoDataSeeder extends Seeder
                     'qty' => $qty,
                     'unit' => 'pc',
                     'unit_price' => $prod->sell_price,
-                    'tax_rate' => 0,
+                    'tax_rate' => 5,
                     'discount_pct' => 0,
                     'line_total' => $line,
                 ]);
                 $sub += $line;
             }
-            $q->update(['subtotal' => $sub, 'total' => $sub]);
+            $tax = round($sub * 0.05, 2);
+            $q->update(['subtotal' => $sub, 'tax_amount' => $tax, 'total' => $sub + $tax]);
         }
 
         $invStatuses = ['paid', 'paid', 'paid', 'paid', 'paid', 'partial', 'partial', 'sent'];
@@ -148,7 +147,7 @@ class DemoDataSeeder extends Seeder
                 'number' => Invoice::nextNumber($type),
                 'type' => $type,
                 'customer_id' => $cust->id,
-                'currency_id' => $cust->currency_id,
+                'currency_id' => $aedCurrency->id,
                 'invoice_date' => now()->subMonths($monthsAgo)->subDays(rand(0, 20)),
                 'due_date' => now()->subMonths($monthsAgo)->addDays(rand(5, 30)),
                 'status' => $status,
@@ -167,19 +166,21 @@ class DemoDataSeeder extends Seeder
                     'qty' => $qty,
                     'unit' => 'pc',
                     'unit_price' => $prod->sell_price,
-                    'tax_rate' => 0,
+                    'tax_rate' => 5,
                     'discount_pct' => 0,
                     'line_total' => $line,
                 ]);
                 $sub += $line;
             }
+            $tax = round($sub * 0.05, 2);
+            $total = $sub + $tax;
             if ($status === 'paid') {
-                $inv->update(['subtotal' => $sub, 'total' => $sub, 'paid_amount' => $sub, 'status' => 'paid']);
+                $inv->update(['subtotal' => $sub, 'tax_amount' => $tax, 'total' => $total, 'paid_amount' => $total, 'status' => 'paid']);
             } elseif ($status === 'partial') {
-                $paidAmt = round($sub * rand(30, 70) / 100, 2);
-                $inv->update(['subtotal' => $sub, 'total' => $sub, 'paid_amount' => $paidAmt, 'status' => 'partial']);
+                $paidAmt = round($total * rand(30, 70) / 100, 2);
+                $inv->update(['subtotal' => $sub, 'tax_amount' => $tax, 'total' => $total, 'paid_amount' => $paidAmt, 'status' => 'partial']);
             } else {
-                $inv->update(['subtotal' => $sub, 'total' => $sub, 'paid_amount' => 0, 'status' => $status]);
+                $inv->update(['subtotal' => $sub, 'tax_amount' => $tax, 'total' => $total, 'paid_amount' => 0, 'status' => $status]);
             }
         }
 
@@ -192,7 +193,7 @@ class DemoDataSeeder extends Seeder
                 'number' => Payment::nextNumber(),
                 'type' => 'customer',
                 'customer_id' => $cust->id,
-                'currency_id' => $cust->currency_id,
+                'currency_id' => $aedCurrency->id,
                 'method' => $pType,
                 'amount' => $inv->paid_amount,
                 'rate' => 1,

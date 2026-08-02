@@ -21,8 +21,17 @@ class ShipmentController extends Controller
         $preparing = Shipment::where('status', 'preparing')->count();
         $inTransit = Shipment::where('status', 'in_transit')->count();
         $delivered = Shipment::where('status', 'delivered')->count();
+        $defaultCurrency = \App\Models\Currency::where('is_default', true)->first();
 
-        return view('shipments.index', compact('total', 'preparing', 'inTransit', 'delivered'));
+        $shipmentByCurrency = Shipment::where('status', '!=', 'cancelled')
+            ->whereNotNull('total_cost')
+            ->join('currencies', 'shipments.currency_id', '=', 'currencies.id')
+            ->selectRaw('currencies.code, currencies.symbol, COUNT(*) as count, SUM(shipments.total_cost) as total')
+            ->groupBy('currencies.code', 'currencies.symbol')
+            ->get()
+            ->toArray();
+
+        return view('shipments.index', compact('total', 'preparing', 'inTransit', 'delivered', 'defaultCurrency', 'shipmentByCurrency'));
     }
 
     public function datatable(Request $request)

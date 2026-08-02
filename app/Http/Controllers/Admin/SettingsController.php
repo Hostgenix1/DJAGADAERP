@@ -41,8 +41,6 @@ class SettingsController extends Controller
             'company_postal' => ['nullable', 'string', 'max:20'],
             'company_country' => ['nullable', 'string', 'max:150'],
             'company_website' => ['nullable', 'url', 'max:255'],
-            'company_registration' => ['nullable', 'string', 'max:100'],
-            'company_tax_id' => ['nullable', 'string', 'max:100'],
             'company_industry' => ['nullable', 'string', 'max:100'],
             'company_smtp_host' => ['nullable', 'string', 'max:255'],
             'company_smtp_port' => ['nullable', 'string', 'max:10'],
@@ -56,15 +54,24 @@ class SettingsController extends Controller
             'company_footer_text' => ['nullable', 'string', 'max:500'],
             'company_notes' => ['nullable', 'string', 'max:1000'],
             'company_terms' => ['nullable', 'string', 'max:1000'],
+
+            'company_trade_license' => ['nullable', 'string', 'max:100'],
+            'company_trn' => ['nullable', 'string', 'max:15'],
+            'company_free_zone' => ['nullable', 'string', 'max:100'],
+            'company_entity_type' => ['nullable', 'string', 'max:50'],
+            'default_currency_id' => ['nullable', 'exists:currencies,id'],
             'remove_logo' => ['nullable', 'in:0,1'],
         ]);
 
         $data = $request->only([
             'company_name', 'company_email', 'company_phone',
             'company_address', 'company_city', 'company_state', 'company_postal', 'company_country',
-            'company_website', 'company_registration', 'company_tax_id', 'company_industry',
+            'company_website', 'company_industry',
             'company_smtp_host', 'company_smtp_port', 'company_smtp_username', 'company_smtp_password',
             'company_smtp_from_name', 'company_smtp_from_email',
+
+            'company_trade_license', 'company_trn', 'company_free_zone', 'company_entity_type',
+            'default_currency_id',
         ]);
 
         $data['company_smtp_encryption'] = $request->boolean('company_smtp_encryption') ? 'tls' : 'none';
@@ -93,6 +100,11 @@ class SettingsController extends Controller
         }
 
         $this->settings->bulkSet($data);
+
+        if ($request->filled('default_currency_id')) {
+            \App\Models\Currency::query()->update(['is_default' => false]);
+            \App\Models\Currency::where('id', $request->input('default_currency_id'))->update(['is_default' => true]);
+        }
 
         activity()->causedBy(auth()->user())->event('updated')->log('updated company settings');
 

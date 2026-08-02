@@ -25,7 +25,7 @@
             <span class="info-box-icon bg-success"><i class="fas fa-dollar-sign"></i></span>
             <div class="info-box-content">
                 <span class="info-box-text">Total Amount</span>
-                <span class="info-box-number">${{ number_format($totalAmount, 2) }}</span>
+                <span class="info-box-number">{{ $defaultCurrency?->symbol ?? '$' }}{{ number_format($totalAmount, 2) }}</span>
             </div>
         </div>
     </div>
@@ -34,7 +34,7 @@
             <span class="info-box-icon bg-warning"><i class="fas fa-check-circle"></i></span>
             <div class="info-box-content">
                 <span class="info-box-text">Paid</span>
-                <span class="info-box-number">${{ number_format($totalPaid, 2) }}</span>
+                <span class="info-box-number">{{ $defaultCurrency?->symbol ?? '$' }}{{ number_format($totalPaid, 2) }}</span>
             </div>
         </div>
     </div>
@@ -43,11 +43,47 @@
             <span class="info-box-icon bg-danger"><i class="fas fa-exclamation-triangle"></i></span>
             <div class="info-box-content">
                 <span class="info-box-text">Outstanding</span>
-                <span class="info-box-number">${{ number_format($totalOutstanding, 2) }}</span>
+                <span class="info-box-number">{{ $defaultCurrency?->symbol ?? '$' }}{{ number_format($totalOutstanding, 2) }}</span>
             </div>
         </div>
     </div>
 </div>
+
+@if(count($invoiceByCurrency) > 1)
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card card-outline card-secondary">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-coins mr-1"></i> Breakdown by Currency</h3>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-sm table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>Currency</th>
+                            <th class="text-center">Invoices</th>
+                            <th class="text-right">Total Amount</th>
+                            <th class="text-right">Paid</th>
+                            <th class="text-right">Outstanding</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach($invoiceByCurrency as $ibc)
+                        <tr>
+                            <td><strong>{{ $ibc['code'] }}</strong> <span class="text-muted">({{ $ibc['symbol'] }})</span></td>
+                            <td class="text-center">{{ $ibc['count'] }}</td>
+                            <td class="text-right">{{ $ibc['symbol'] }}{{ number_format($ibc['total'], 2) }}</td>
+                            <td class="text-right text-success">{{ $ibc['symbol'] }}{{ number_format($ibc['paid'], 2) }}</td>
+                            <td class="text-right text-danger">{{ $ibc['symbol'] }}{{ number_format($ibc['total'] - $ibc['paid'], 2) }}</td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
 
 <div class="card card-primary card-outline">
     <div class="card-header">

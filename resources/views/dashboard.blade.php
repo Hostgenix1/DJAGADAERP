@@ -8,7 +8,7 @@
     <div class="col-lg-3 col-6">
         <div class="small-box bg-info">
             <div class="inner">
-                <h3>${{ number_format($stats['total_revenue'], 2) }}</h3>
+                <h3>{{ $defaultCurrency?->symbol ?? '$' }}{{ number_format($stats['total_revenue'], 2) }}</h3>
                 <p>Total Revenue</p>
             </div>
             <div class="icon">
@@ -20,7 +20,7 @@
     <div class="col-lg-3 col-6">
         <div class="small-box bg-warning">
             <div class="inner">
-                <h3>${{ number_format($stats['outstanding'], 2) }}</h3>
+                <h3>{{ $defaultCurrency?->symbol ?? '$' }}{{ number_format($stats['outstanding'], 2) }}</h3>
                 <p>Outstanding Invoices</p>
             </div>
             <div class="icon">
@@ -32,7 +32,7 @@
     <div class="col-lg-3 col-6">
         <div class="small-box bg-success">
             <div class="inner">
-                <h3>${{ number_format($stats['monthly_sales'], 2) }}</h3>
+                <h3>{{ $defaultCurrency?->symbol ?? '$' }}{{ number_format($stats['monthly_sales'], 2) }}</h3>
                 <p>Monthly Sales</p>
             </div>
             <div class="icon">
@@ -44,7 +44,7 @@
     <div class="col-lg-3 col-6">
         <div class="small-box bg-danger">
             <div class="inner">
-                <h3>${{ number_format($stats['total_expenses'], 2) }}</h3>
+                <h3>{{ $defaultCurrency?->symbol ?? '$' }}{{ number_format($stats['total_expenses'], 2) }}</h3>
                 <p>Total Expenses</p>
             </div>
             <div class="icon">
@@ -89,7 +89,7 @@
             <span class="info-box-icon bg-info"><i class="fas fa-money-bill"></i></span>
             <div class="info-box-content">
                 <span class="info-box-text">Monthly Revenue</span>
-                <span class="info-box-number">${{ number_format($stats['monthly_revenue'], 2) }}</span>
+                <span class="info-box-number">{{ $defaultCurrency?->symbol ?? '$' }}{{ number_format($stats['monthly_revenue'], 2) }}</span>
             </div>
         </div>
     </div>
@@ -169,13 +169,71 @@
             <span class="info-box-icon bg-secondary"><i class="fas fa-calendar-alt"></i></span>
             <div class="info-box-content">
                 <span class="info-box-text">Monthly Expenses</span>
-                <span class="info-box-number">${{ number_format($stats['monthly_expenses'], 2) }}</span>
+                <span class="info-box-number">{{ $defaultCurrency?->symbol ?? '$' }}{{ number_format($stats['monthly_expenses'], 2) }}</span>
             </div>
         </div>
     </div>
 </div>
 
-{{-- Row 5: Revenue Chart + Cash Flow Chart --}}
+{{-- Row 5: Currency-wise Breakdown --}}
+<div class="row">
+    <div class="col-md-6">
+        <div class="card card-success card-outline">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-coins mr-1"></i> Revenue by Currency</h3>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Currency</th>
+                            <th class="text-right">Received</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @forelse($revenueByCurrency as $rbc)
+                        <tr>
+                            <td><strong>{{ $rbc['code'] }}</strong> <span class="text-muted">({{ $rbc['symbol'] }})</span></td>
+                            <td class="text-right">{{ $rbc['symbol'] }}{{ number_format($rbc['total'], 2) }}</td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="2" class="text-muted text-center">No payment data yet</td></tr>
+                    @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card card-danger card-outline">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-exclamation-circle mr-1"></i> Outstanding by Currency</h3>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Currency</th>
+                            <th class="text-right">Outstanding</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @forelse($outstandingByCurrency as $obc)
+                        <tr>
+                            <td><strong>{{ $obc['code'] }}</strong> <span class="text-muted">({{ $obc['symbol'] }})</span></td>
+                            <td class="text-right">{{ $obc['symbol'] }}{{ number_format($obc['total'], 2) }}</td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="2" class="text-muted text-center">No outstanding invoices</td></tr>
+                    @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Row 6: Revenue Chart + Cash Flow Chart --}}
 <div class="row">
     <div class="col-md-6">
         <div class="card card-primary card-outline">
@@ -230,7 +288,7 @@
                         <tr>
                             <td>{{ $tp['name'] ?? '-' }}</td>
                             <td class="text-right">{{ number_format($tp['total_qty']) }}</td>
-                            <td class="text-right">${{ number_format($tp['total_revenue'], 2) }}</td>
+                            <td class="text-right">{{ $defaultCurrency?->symbol ?? '$' }}{{ number_format($tp['total_revenue'], 2) }}</td>
                         </tr>
                     @empty
                         <tr><td colspan="3" class="text-muted text-center">No sales data yet</td></tr>
@@ -263,7 +321,7 @@
                             <td>
                                 <a href="{{ route('customers.show', $c['id']) }}">{{ $c['company_name'] ?? '-' }}</a>
                             </td>
-                            <td class="text-right">${{ number_format($c['invoices_sum_total'] ?? 0, 2) }}</td>
+                            <td class="text-right">{{ $defaultCurrency?->symbol ?? '$' }}{{ number_format($c['invoices_sum_total'] ?? 0, 2) }}</td>
                         </tr>
                     @empty
                         <tr><td colspan="2" class="text-muted text-center">No data yet</td></tr>

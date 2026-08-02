@@ -12,12 +12,13 @@ class Currency extends Model
     protected $table = 'currencies';
 
     protected $fillable = [
-        'code', 'name', 'symbol', 'rate', 'is_active'
+        'code', 'name', 'symbol', 'rate', 'is_active', 'is_default'
     ];
 
     protected $casts = [
         'rate' => 'decimal:2',
         'is_active' => 'boolean',
+        'is_default' => 'boolean',
     ];
 
 

@@ -4,6 +4,90 @@
 
 @section('content')
 <div class="container-fluid">
+
+<div class="row">
+    <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-info"><i class="fas fa-money-check-alt"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Total Payments</span>
+                <span class="info-box-number">{{ $totalPayments }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-success"><i class="fas fa-arrow-down"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Received</span>
+                <span class="info-box-number">{{ $defaultCurrency?->symbol ?? '$' }}{{ number_format($totalReceived, 2) }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-warning"><i class="fas fa-arrow-up"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Paid Out</span>
+                <span class="info-box-number">{{ $defaultCurrency?->symbol ?? '$' }}{{ number_format($totalPaid, 2) }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-{{ $netCash >= 0 ? 'success' : 'danger' }}"><i class="fas fa-balance-scale"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Net Cash</span>
+                <span class="info-box-number">{{ $defaultCurrency?->symbol ?? '$' }}{{ number_format($netCash, 2) }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if(count($paymentByCurrency) > 0)
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card card-outline card-secondary">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-coins mr-1"></i> Payments by Currency</h3>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-sm table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>Currency</th>
+                            <th class="text-right">Received</th>
+                            <th class="text-right">Paid Out</th>
+                            <th class="text-right">Net</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @php
+                        $grouped = [];
+                        foreach ($paymentByCurrency as $pb) {
+                            $grouped[$pb['code']]['code'] = $pb['code'];
+                            $grouped[$pb['code']]['symbol'] = $pb['symbol'];
+                            $grouped[$pb['code']][$pb['type']] = $pb['total'];
+                        }
+                    @endphp
+                    @foreach($grouped as $g)
+                        <tr>
+                            <td><strong>{{ $g['code'] }}</strong> <span class="text-muted">({{ $g['symbol'] }})</span></td>
+                            <td class="text-right text-success">{{ $g['symbol'] }}{{ number_format($g['customer'] ?? 0, 2) }}</td>
+                            <td class="text-right text-warning">{{ $g['symbol'] }}{{ number_format($g['supplier'] ?? 0, 2) }}</td>
+                            <td class="text-right text-{{ (($g['customer'] ?? 0) - ($g['supplier'] ?? 0)) >= 0 ? 'success' : 'danger' }}">
+                                {{ $g['symbol'] }}{{ number_format(($g['customer'] ?? 0) - ($g['supplier'] ?? 0), 2) }}
+                            </td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
     <div class="row mb-2">
         <div class="col-sm-6">
             <h1>Payments</h1>

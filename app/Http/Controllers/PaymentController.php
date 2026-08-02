@@ -17,7 +17,20 @@ class PaymentController extends Controller
     public function index()
     {
         $this->authorize('view-payments');
-        return view('payments.index');
+
+        $totalPayments = Payment::count();
+        $totalReceived = (float) Payment::where('type', 'customer')->sum('amount');
+        $totalPaid = (float) Payment::where('type', 'supplier')->sum('amount');
+        $netCash = $totalReceived - $totalPaid;
+        $defaultCurrency = \App\Models\Currency::where('is_default', true)->first();
+
+        $paymentByCurrency = Payment::join('currencies', 'payments.currency_id', '=', 'currencies.id')
+            ->selectRaw('currencies.code, currencies.symbol, payments.type, SUM(payments.amount) as total')
+            ->groupBy('currencies.code', 'currencies.symbol', 'payments.type')
+            ->get()
+            ->toArray();
+
+        return view('payments.index', compact('totalPayments', 'totalReceived', 'totalPaid', 'netCash', 'defaultCurrency', 'paymentByCurrency'));
     }
 
     public function datatable()
