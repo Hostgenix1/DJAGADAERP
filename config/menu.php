@@ -46,6 +46,15 @@ return array (
   ),
   4 => 
   array (
+    'label' => 'Orders',
+    'icon' => 'fa-folder-open',
+    'items' => 
+    array (
+      0 => array ('label' => 'Order', 'route' => 'orders.index', 'icon' => 'fa-shopping-cart', 'permission' => 'view-orders'),
+    ),
+  ),
+  5 => 
+  array (
     'label' => 'Payments',
     'icon' => 'fa-folder-open',
     'items' => 
@@ -53,7 +62,7 @@ return array (
       0 => array ('label' => 'Payment', 'route' => 'payments.index', 'icon' => 'fa-money-check-alt', 'permission' => 'view-payments'),
     ),
   ),
-  5 => 
+  6 => 
   array (
     'label' => 'Documents',
     'icon' => 'fa-folder-open',
@@ -62,7 +71,7 @@ return array (
       0 => array ('label' => 'All Documents', 'route' => 'documents.index', 'icon' => 'fa-file-alt', 'permission' => 'view-documents'),
     ),
   ),
-  6 => 
+  7 => 
   array (
     'label' => 'Settings',
     'icon' => 'fa-folder-open',
@@ -74,7 +83,7 @@ return array (
       3 => array ('label' => 'Audit Log', 'route' => 'admin.settings.audit', 'icon' => 'fa-history', 'permission' => 'view-settings'),
     ),
   ),
-  7 => 
+  8 => 
   array (
     'label' => 'User Management',
     'icon' => 'fa-folder-open',

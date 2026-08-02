@@ -38,6 +38,13 @@ return array (
     2 => 'update-invoices',
     3 => 'delete-invoices',
   ),
+  'Orders' => 
+  array (
+    0 => 'view-orders',
+    1 => 'create-orders',
+    2 => 'update-orders',
+    3 => 'delete-orders',
+  ),
   'Payments' => 
   array (
     0 => 'view-payments',

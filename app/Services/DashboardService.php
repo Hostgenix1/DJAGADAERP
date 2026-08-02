@@ -64,6 +64,9 @@ class DashboardService
             ->latest()
             ->limit(10)
             ->get()
+            ->map(fn ($a) => array_merge($a->toArray(), [
+                'created_at' => $a->created_at?->timezone(config('app.timezone'))->format('d M Y H:i'),
+            ]))
             ->toArray();
     }
 
