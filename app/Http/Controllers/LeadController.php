@@ -79,6 +79,13 @@ class LeadController extends Controller
             ->make(true);
     }
 
+    public function show(Lead $lead)
+    {
+        $this->authorize('view-leads');
+        $lead->load(['currency', 'owner', 'customer']);
+        return view('leads.show', compact('lead'));
+    }
+
     public function create()
     {
         $this->authorize('create-leads');

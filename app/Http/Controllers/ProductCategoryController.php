@@ -17,7 +17,7 @@ class ProductCategoryController extends Controller
 
     public function index()
     {
-        $this->authorize('view-categories');
+        $this->authorize('view-product_categories');
 
         return view('product_categories.index', ['columns' => array (
   0 => 
@@ -30,7 +30,7 @@ class ProductCategoryController extends Controller
 
     public function datatable(Request $request)
     {
-        $this->authorize('view-categories');
+        $this->authorize('view-product_categories');
 
         return DataTables::eloquent($this->service->query())
             ->addIndexColumn()
@@ -45,14 +45,14 @@ class ProductCategoryController extends Controller
 
     public function create()
     {
-        $this->authorize('create-categories');
+        $this->authorize('create-product_categories');
 
         return view('product_categories.create', );
     }
 
     public function store(StoreProductCategoryRequest $request)
     {
-        $this->authorize('create-categories');
+        $this->authorize('create-product_categories');
 
         $this->service->create($request->validated());
 
@@ -61,14 +61,14 @@ class ProductCategoryController extends Controller
 
     public function edit(ProductCategory $product_category)
     {
-        $this->authorize('update-categories');
+        $this->authorize('update-product_categories');
 
         return view('product_categories.edit', ['product_category' => $product_category, 'relations' => $relations]);
     }
 
     public function update(UpdateProductCategoryRequest $request, ProductCategory $product_category)
     {
-        $this->authorize('update-categories');
+        $this->authorize('update-product_categories');
 
         $this->service->update($product_category->id, $request->validated());
 
@@ -77,7 +77,7 @@ class ProductCategoryController extends Controller
 
     public function destroy(ProductCategory $product_category)
     {
-        $this->authorize('delete-categories');
+        $this->authorize('delete-product_categories');
 
         $this->service->delete($product_category->id);
 

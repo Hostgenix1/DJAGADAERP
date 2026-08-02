@@ -12,6 +12,8 @@ class DashboardController extends Controller
 
     public function index()
     {
+        $this->authorize('view-dashboard');
+
         $stats = $this->service->getStats();
         $revenue = $this->service->getMonthlyRevenue();
         $cashFlow = $this->service->getCashFlow();

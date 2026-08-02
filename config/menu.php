@@ -55,6 +55,15 @@ return array (
   ),
   5 => 
   array (
+    'label' => 'Shipments',
+    'icon' => 'fa-folder-open',
+    'items' => 
+    array (
+      0 => array ('label' => 'Shipment', 'route' => 'shipments.index', 'permission' => 'view-shipments'),
+    ),
+  ),
+  6 => 
+  array (
     'label' => 'Payments',
     'icon' => 'fa-folder-open',
     'items' => 
@@ -62,7 +71,7 @@ return array (
       0 => array ('label' => 'Payment', 'route' => 'payments.index', 'icon' => 'fa-money-check-alt', 'permission' => 'view-payments'),
     ),
   ),
-  6 => 
+  7 => 
   array (
     'label' => 'Documents',
     'icon' => 'fa-folder-open',
@@ -71,19 +80,20 @@ return array (
       0 => array ('label' => 'All Documents', 'route' => 'documents.index', 'icon' => 'fa-file-alt', 'permission' => 'view-documents'),
     ),
   ),
-  7 => 
+  8 => 
   array (
     'label' => 'Settings',
     'icon' => 'fa-folder-open',
     'items' => 
     array (
-      0 => array ('label' => 'Currency', 'route' => 'currencies.index', 'icon' => 'fa-money-bill', 'permission' => 'view-currencies'),
-      1 => array ('label' => 'Company', 'route' => 'admin.settings.company', 'icon' => 'fa-building', 'permission' => 'view-settings'),
-      2 => array ('label' => 'Taxes', 'route' => 'admin.settings.taxes', 'icon' => 'fa-percent', 'permission' => 'view-settings'),
-      3 => array ('label' => 'Audit Log', 'route' => 'admin.settings.audit', 'icon' => 'fa-history', 'permission' => 'view-settings'),
+      0 => array ('label' => 'Bank Accounts', 'route' => 'bank-accounts.index', 'icon' => 'fa-university', 'permission' => 'view-bank-accounts'),
+      1 => array ('label' => 'Currency', 'route' => 'currencies.index', 'icon' => 'fa-money-bill', 'permission' => 'view-currencies'),
+      2 => array ('label' => 'Company', 'route' => 'admin.settings.company', 'icon' => 'fa-building', 'permission' => 'view-settings'),
+      3 => array ('label' => 'Taxes', 'route' => 'admin.settings.taxes', 'icon' => 'fa-percent', 'permission' => 'view-settings'),
+      4 => array ('label' => 'Audit Log', 'route' => 'admin.settings.audit', 'icon' => 'fa-history', 'permission' => 'view-settings'),
     ),
   ),
-  8 => 
+  9 => 
   array (
     'label' => 'User Management',
     'icon' => 'fa-folder-open',

@@ -30,7 +30,7 @@ class RolesAndPermissionsSeeder extends Seeder
         $staffViews = array_values(array_filter($all, fn ($p) => str_starts_with($p, 'view-')));
         $staff->syncPermissions($staffViews);
 
-        $salesPerms = ['view-customers','create-customers','update-customers','view-contacts','create-contacts','update-contacts',
+        $salesPerms = ['view-dashboard','view-customers','create-customers','update-customers','view-contacts','create-contacts','update-contacts',
             'view-leads','create-leads','update-leads','view-follow-ups','create-follow-ups','update-follow-ups',
             'view-communications','create-communications','update-communications',
             'view-brands','view-categories','view-suppliers','view-products',

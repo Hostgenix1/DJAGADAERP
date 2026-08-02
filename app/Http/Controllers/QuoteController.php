@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Quote;
 use App\Services\QuoteService;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Yajra\DataTables\Facades\DataTables;
 
 class QuoteController extends Controller
@@ -138,6 +139,54 @@ class QuoteController extends Controller
         $invoice = $this->service->convertToInvoice($quote, $type);
 
         return redirect()->route('invoices.show', $invoice)->with('success', 'Quote converted to '.ucfirst(str_replace('_', ' ', $type)).'.');
+    }
+
+    public function pdf(\App\Models\Quote $quote)
+    {
+        $this->authorize('view-quotes');
+        $quote->load(['customer', 'currency', 'items.product']);
+
+        $svc = app(\App\Services\SettingsService::class);
+        $logoPath = $svc->get('company_logo');
+        $logoBase64 = null;
+        if ($logoPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($logoPath)) {
+            $fullPath = \Illuminate\Support\Facades\Storage::disk('public')->path($logoPath);
+            $ext = strtolower(pathinfo($logoPath, PATHINFO_EXTENSION));
+            $mime = match($ext) {
+                'jpg', 'jpeg' => 'image/jpeg',
+                'png' => 'image/png',
+                'gif' => 'image/gif',
+                'svg' => 'image/svg+xml',
+                default => 'image/png',
+            };
+            $logoBase64 = 'data:'.$mime.';base64,'.base64_encode(file_get_contents($fullPath));
+        }
+
+        $company = [
+            'name'         => $svc->get('company_name'),
+            'address'      => $svc->get('company_address'),
+            'city'         => $svc->get('company_city'),
+            'country'      => $svc->get('company_country'),
+            'email'        => $svc->get('company_email'),
+            'phone'        => $svc->get('company_phone'),
+            'tax_id'       => $svc->get('company_tax_id'),
+            'registration' => $svc->get('company_registration'),
+            'footer'       => $svc->get('company_footer_text'),
+            'show_logo'    => $svc->get('show_logo_on_docs'),
+            'logo_url'     => $logoBase64,
+            'bank_name'    => $svc->get('company_bank_name'),
+            'bank_account' => $svc->get('company_bank_account'),
+            'bank_number'  => '',
+            'bank_iban'    => $svc->get('company_bank_iban'),
+            'bank_swift'   => $svc->get('company_bank_swift'),
+        ];
+
+        $html = view('quotes.pdf', compact('quote', 'company'))->render();
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHtml($html)
+            ->setPaper('a4')
+            ->set_option('isHtml5ParserEnabled', true)
+            ->set_option('isRemoteEnabled', true);
+        return $pdf->download($quote->number.'.pdf');
     }
 
     public function destroy(Quote $quote)

@@ -94,15 +94,32 @@ $(function(){
     $('#payment-type').on('change',function(){
         if($(this).val()==='customer'){$('#customer-field').show();$('#supplier-field').hide();}else{$('#customer-field').hide();$('#supplier-field').show();}
     });
-    let aIdx=0;
+    let aIdx = 0;
+    let invoiceCache = null;
+
     $('#add-alloc').click(function(){
-        const r=`<div class="form-row mb-2 alloc-row">
-            <div class="form-group col-md-6"><select name="allocations[${aIdx}][invoice_id]" class="form-control"><option value="">-- Invoice --</option></select></div>
-            <div class="form-group col-md-4"><input type="number" step="0.01" name="allocations[${aIdx}][amount]" class="form-control" placeholder="Amount" min="0.01"></div>
-            <div class="form-group col-md-2"><button type="button" class="btn btn-sm btn-danger rm-alloc"><i class="fas fa-times"></i></button></div>
-        </div>`;
-        $('#allocations').append(r);
-        aIdx++;
+        const addRow = function(invoices) {
+            let opts = '<option value="">-- Select Invoice --</option>';
+            invoices.forEach(function(inv) {
+                opts += '<option value="' + inv.id + '" data-balance="' + inv.balance + '">' + inv.label + '</option>';
+            });
+            const r = '<div class="form-row mb-2 alloc-row">' +
+                '<div class="form-group col-md-6"><select name="allocations[' + aIdx + '][invoice_id]" class="form-control alloc-invoice">' + opts + '</select></div>' +
+                '<div class="form-group col-md-4"><input type="number" step="0.01" name="allocations[' + aIdx + '][amount]" class="form-control alloc-amount" placeholder="Amount" min="0.01"></div>' +
+                '<div class="form-group col-md-2"><button type="button" class="btn btn-sm btn-danger rm-alloc"><i class="fas fa-times"></i></button></div>' +
+                '</div>';
+            $('#allocations').append(r);
+            aIdx++;
+        };
+
+        if (invoiceCache) {
+            addRow(invoiceCache);
+        } else {
+            $.get('{{ route("payments.outstanding-json") }}', function(data) {
+                invoiceCache = data;
+                addRow(data);
+            });
+        }
     });
     $(document).on('click','.rm-alloc',function(){$(this).closest('.alloc-row').remove();});
 });

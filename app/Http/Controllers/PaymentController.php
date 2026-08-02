@@ -106,6 +106,21 @@ class PaymentController extends Controller
         return view('payments.outstanding', compact('invoices'));
     }
 
+    public function outstandingJson()
+    {
+        $this->authorize('create-payments');
+        $invoices = \App\Models\Invoice::with('customer', 'currency')
+            ->where('status', '!=', 'cancelled')
+            ->whereRaw('total - paid_amount > 0')
+            ->get()
+            ->map(fn ($i) => [
+                'id'      => $i->id,
+                'label'   => $i->number . ' — ' . ($i->customer?->company_name ?? 'N/A') . ' (Bal: ' . ($i->currency?->symbol ?? '$') . number_format($i->total - $i->paid_amount, 2) . ')',
+                'balance' => (float) ($i->total - $i->paid_amount),
+            ]);
+        return response()->json($invoices);
+    }
+
     public function destroy(Payment $payment)
     {
         $this->authorize('delete-payments');

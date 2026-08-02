@@ -88,6 +88,13 @@ class ProductController extends Controller
             ->make(true);
     }
 
+    public function show(Product $product)
+    {
+        $this->authorize('view-products');
+        $product->load(['brand', 'category', 'supplier', 'currency', 'tax', 'images', 'documents']);
+        return view('products.show', compact('product'));
+    }
+
     public function create()
     {
         $this->authorize('create-products');

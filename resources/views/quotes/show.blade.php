@@ -90,6 +90,7 @@
                         <button class="btn btn-success btn-block"><i class="fas fa-file-invoice"></i> Convert to Invoice</button>
                     </form>
                 @endif
+                <a href="{{ route('quotes.pdf', $quote) }}" class="btn btn-secondary btn-block"><i class="fas fa-file-pdf"></i> Download PDF</a>
                 <a href="{{ route('quotes.index') }}" class="btn btn-default btn-block"><i class="fas fa-arrow-left"></i> Back</a>
             </div>
         </div>
