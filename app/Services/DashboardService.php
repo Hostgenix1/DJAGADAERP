@@ -64,9 +64,13 @@ class DashboardService
             ->latest()
             ->limit(10)
             ->get()
-            ->map(fn ($a) => array_merge($a->toArray(), [
-                'created_at' => $a->created_at?->timezone(config('app.timezone'))->format('d M Y H:i'),
-            ]))
+            ->map(function ($a) {
+                $data = $a->toArray();
+                $data['created_at'] = \Carbon\Carbon::parse($a->created_at, 'UTC')
+                    ->setTimezone('Asia/Dubai')
+                    ->format('d M Y h:i A');
+                return $data;
+            })
             ->toArray();
     }
 
