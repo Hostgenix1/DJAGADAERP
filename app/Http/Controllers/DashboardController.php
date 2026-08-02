@@ -14,10 +14,17 @@ class DashboardController extends Controller
     {
         $stats = $this->service->getStats();
         $revenue = $this->service->getMonthlyRevenue();
+        $cashFlow = $this->service->getCashFlow();
         $pipeline = $this->service->getPipelineByStage();
         $activities = $this->service->getRecentActivity();
         $topCustomers = $this->service->getTopCustomers();
+        $topProducts = $this->service->getTopSellingProducts();
+        $revenueByCurrency = $this->service->getRevenueByCurrency();
+        $outstandingByCurrency = $this->service->getOutstandingByCurrency();
 
-        return view('dashboard', compact('stats', 'revenue', 'pipeline', 'activities', 'topCustomers'));
+        return view('dashboard', compact(
+            'stats', 'revenue', 'cashFlow', 'pipeline', 'activities',
+            'topCustomers', 'topProducts', 'revenueByCurrency', 'outstandingByCurrency'
+        ));
     }
 }

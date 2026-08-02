@@ -45,6 +45,16 @@
                         <label>Currency</label>
                         <select name="currency_id" class="form-control"><option value="">-- Default --</option>@foreach($currencies as $id=>$c)<option value="{{ $id }}">{{ $c }}</option>@endforeach</select>
                     </div>
+                    <div class="form-group col-md-4 px-0">
+                        <label>Bank Account</label>
+                        <select name="bank_account_id" class="form-control" id="bank-account-select">
+                            <option value="">-- Select Bank Account --</option>
+                            @foreach($bankAccounts as $ba)
+                                <option value="{{ $ba->id }}" data-currency="{{ $ba->currency_id }}">{{ $ba->bank_name }} - {{ $ba->account_name }} ({{ $ba->currency?->code }})</option>
+                            @endforeach
+                        </select>
+                        <small class="text-muted">Auto-fills bank details on invoice PDF</small>
+                    </div>
 
                     <h5>Line Items</h5>
                     <table class="table table-sm" id="items-table">
@@ -91,6 +101,23 @@ $(function(){
     $(document).on('change keyup','.qty,.price,.tax,.disc,#discount-input',recalc);
     $(document).on('change','.prod-select',function(){$(this).find(':selected');const $r=$(this).closest('tr'),o=$(this).find(':selected');$r.find('.price').val(o.data('price')||0);$r.find('.unit').val(o.data('unit')||'pc');if(o.text()!=='Manual')$r.find('input[name$="[description]"]').val(o.text());recalc();});
     addRow();
+
+    $('select[name="currency_id"]').on('change', function() {
+        const currencyId = $(this).val();
+        const $bank = $('#bank-account-select');
+        $bank.find('option').each(function() {
+            const opt = $(this);
+            if (!opt.val()) return;
+            if (currencyId && opt.data('currency') != currencyId) {
+                opt.hide();
+            } else {
+                opt.show();
+            }
+        });
+        const visible = $bank.find('option:visible').not('[value=""]');
+        if (visible.length === 1) { $bank.val(visible.val()); }
+        else { $bank.val(''); }
+    });
 });
 </script>
 @endpush

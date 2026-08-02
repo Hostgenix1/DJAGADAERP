@@ -45,6 +45,20 @@ return array (
     2 => 'update-orders',
     3 => 'delete-orders',
   ),
+  'Bank Accounts' => 
+  array (
+    0 => 'view-bank-accounts',
+    1 => 'create-bank-accounts',
+    2 => 'update-bank-accounts',
+    3 => 'delete-bank-accounts',
+  ),
+  'Shipments' => 
+  array (
+    0 => 'view-shipments',
+    1 => 'create-shipments',
+    2 => 'update-shipments',
+    3 => 'delete-shipments',
+  ),
   'Payments' => 
   array (
     0 => 'view-payments',

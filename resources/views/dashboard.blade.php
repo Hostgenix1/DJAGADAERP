@@ -1,15 +1,9 @@
 @extends('layouts.app')
 @section('title', 'Dashboard')
 
-{{--
-  Dashboard - Main Overview
-  Module: Dashboard
-  Features: KPI small-boxes (revenue, customers, outstanding, overdue), info boxes (products, leads, quotes, expenses), revenue line chart, lead pipeline doughnut chart, top customers table, recent activity feed
-  Version: 2.0.0
---}}
-
 @section('content')
 
+{{-- Row 1: Main Financial KPIs --}}
 <div class="row">
     <div class="col-lg-3 col-6">
         <div class="small-box bg-info">
@@ -20,54 +14,144 @@
             <div class="icon">
                 <i class="fas fa-dollar-sign"></i>
             </div>
-            <a href="{{ route('invoices.index') }}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
-        </div>
-    </div>
-    <div class="col-lg-3 col-6">
-        <div class="small-box bg-success">
-            <div class="inner">
-                <h3>{{ $stats['customers'] }}</h3>
-                <p>Customers</p>
-            </div>
-            <div class="icon">
-                <i class="fas fa-users"></i>
-            </div>
-            <a href="{{ route('customers.index') }}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+            <a href="{{ route('payments.index') }}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
         </div>
     </div>
     <div class="col-lg-3 col-6">
         <div class="small-box bg-warning">
             <div class="inner">
                 <h3>${{ number_format($stats['outstanding'], 2) }}</h3>
-                <p>Outstanding</p>
+                <p>Outstanding Invoices</p>
             </div>
             <div class="icon">
-                <i class="fas fa-receipt"></i>
+                <i class="fas fa-file-invoice-dollar"></i>
             </div>
-            <a href="{{ route('payments.outstanding') }}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+            <a href="{{ route('invoices.index') }}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-success">
+            <div class="inner">
+                <h3>${{ number_format($stats['monthly_sales'], 2) }}</h3>
+                <p>Monthly Sales</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+            <a href="{{ route('invoices.index') }}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
         </div>
     </div>
     <div class="col-lg-3 col-6">
         <div class="small-box bg-danger">
             <div class="inner">
-                <h3>{{ $stats['overdue'] }}</h3>
-                <p>Overdue Invoices</p>
+                <h3>${{ number_format($stats['total_expenses'], 2) }}</h3>
+                <p>Total Expenses</p>
             </div>
             <div class="icon">
-                <i class="fas fa-exclamation-triangle"></i>
+                <i class="fas fa-money-bill-wave"></i>
             </div>
-            <a href="{{ route('invoices.index') }}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+            <a href="{{ route('payments.index') }}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
         </div>
     </div>
 </div>
 
+{{-- Row 2: Invoice Status + Financial Overview --}}
 <div class="row">
+    <div class="col-lg-3 col-sm-6">
+        <div class="info-box">
+            <span class="info-box-icon bg-danger"><i class="fas fa-exclamation-triangle"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Overdue</span>
+                <span class="info-box-number">{{ $stats['overdue'] }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+        <div class="info-box">
+            <span class="info-box-icon bg-warning"><i class="fas fa-hourglass-half"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Partially Paid</span>
+                <span class="info-box-number">{{ $stats['partially_paid'] }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+        <div class="info-box">
+            <span class="info-box-icon bg-success"><i class="fas fa-check-circle"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Fully Paid</span>
+                <span class="info-box-number">{{ $stats['fully_paid'] }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+        <div class="info-box">
+            <span class="info-box-icon bg-info"><i class="fas fa-money-bill"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Monthly Revenue</span>
+                <span class="info-box-number">${{ number_format($stats['monthly_revenue'], 2) }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Row 3: Business Stats --}}
+<div class="row">
+    <div class="col-lg-3 col-sm-6">
+        <div class="info-box">
+            <span class="info-box-icon bg-primary"><i class="fas fa-users"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Customers</span>
+                <span class="info-box-number">{{ $stats['customers'] }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+        <div class="info-box">
+            <span class="info-box-icon bg-secondary"><i class="fas fa-truck"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Suppliers</span>
+                <span class="info-box-number">{{ $stats['suppliers'] }}</span>
+            </div>
+        </div>
+    </div>
     <div class="col-lg-3 col-sm-6">
         <div class="info-box">
             <span class="info-box-icon bg-info"><i class="fas fa-box"></i></span>
             <div class="info-box-content">
                 <span class="info-box-text">Products</span>
                 <span class="info-box-number">{{ $stats['products'] }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+        <div class="info-box">
+            <span class="info-box-icon bg-success"><i class="fas fa-file-alt"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Pending Quotes</span>
+                <span class="info-box-number">{{ $stats['pending_quotes'] }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Row 4: Orders, Shipments & Leads --}}
+<div class="row">
+    <div class="col-lg-3 col-sm-6">
+        <div class="info-box">
+            <span class="info-box-icon bg-warning"><i class="fas fa-clipboard-list"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Active Orders</span>
+                <span class="info-box-number">{{ $stats['active_orders'] }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+        <div class="info-box">
+            <span class="info-box-icon bg-danger"><i class="fas fa-shipping-fast"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Shipments In Transit</span>
+                <span class="info-box-number">{{ $stats['shipments_in_transit'] }}</span>
             </div>
         </div>
     </div>
@@ -82,37 +166,43 @@
     </div>
     <div class="col-lg-3 col-sm-6">
         <div class="info-box">
-            <span class="info-box-icon bg-warning"><i class="fas fa-file-alt"></i></span>
+            <span class="info-box-icon bg-secondary"><i class="fas fa-calendar-alt"></i></span>
             <div class="info-box-content">
-                <span class="info-box-text">Pending Quotes</span>
-                <span class="info-box-number">{{ $stats['pending_quotes'] }}</span>
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-3 col-sm-6">
-        <div class="info-box">
-            <span class="info-box-icon bg-success"><i class="fas fa-money-bill"></i></span>
-            <div class="info-box-content">
-                <span class="info-box-text">Expenses</span>
-                <span class="info-box-number">${{ number_format($stats['total_expenses'], 2) }}</span>
+                <span class="info-box-text">Monthly Expenses</span>
+                <span class="info-box-number">${{ number_format($stats['monthly_expenses'], 2) }}</span>
             </div>
         </div>
     </div>
 </div>
 
+{{-- Row 5: Revenue Chart + Cash Flow Chart --}}
 <div class="row">
-    <div class="col-md-8">
+    <div class="col-md-6">
         <div class="card card-primary card-outline">
             <div class="card-header">
-                <h3 class="card-title"><i class="fas fa-chart-line mr-1"></i> Revenue (Last 12 Months)</h3>
+                <h3 class="card-title"><i class="fas fa-chart-line mr-1"></i> Monthly Revenue (Last 12 Months)</h3>
             </div>
             <div class="card-body">
                 <canvas id="revenueChart" height="300"></canvas>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card card-primary card-outline">
+    <div class="col-md-6">
+        <div class="card card-success card-outline">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-chart-bar mr-1"></i> Cash Flow (Last 12 Months)</h3>
+            </div>
+            <div class="card-body">
+                <canvas id="cashFlowChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Row 6: Lead Pipeline + Top Products --}}
+<div class="row">
+    <div class="col-md-5">
+        <div class="card card-info card-outline">
             <div class="card-header">
                 <h3 class="card-title"><i class="fas fa-chart-pie mr-1"></i> Lead Pipeline</h3>
             </div>
@@ -121,8 +211,38 @@
             </div>
         </div>
     </div>
+    <div class="col-md-7">
+        <div class="card card-warning card-outline">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-star mr-1"></i> Top Selling Products</h3>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th class="text-right">Qty Sold</th>
+                            <th class="text-right">Revenue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @forelse($topProducts as $tp)
+                        <tr>
+                            <td>{{ $tp['name'] ?? '-' }}</td>
+                            <td class="text-right">{{ number_format($tp['total_qty']) }}</td>
+                            <td class="text-right">${{ number_format($tp['total_revenue'], 2) }}</td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="3" class="text-muted text-center">No sales data yet</td></tr>
+                    @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 
+{{-- Row 7: Top Customers + Recent Activity --}}
 <div class="row">
     <div class="col-md-6">
         <div class="card card-secondary card-outline">
@@ -196,6 +316,34 @@ new Chart(document.getElementById('revenueChart'), {
         }]
     },
     options: { responsive: true, plugins: { legend: { display: false } } }
+});
+
+new Chart(document.getElementById('cashFlowChart'), {
+    type: 'bar',
+    data: {
+        labels: {!! json_encode($cashFlow['labels']) !!},
+        datasets: [
+            {
+                label: 'Revenue',
+                data: {!! json_encode($cashFlow['revenue']) !!},
+                backgroundColor: 'rgba(40,167,69,0.7)',
+                borderColor: '#28a745',
+                borderWidth: 1
+            },
+            {
+                label: 'Expenses',
+                data: {!! json_encode($cashFlow['expenses']) !!},
+                backgroundColor: 'rgba(220,53,69,0.7)',
+                borderColor: '#dc3545',
+                borderWidth: 1
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom' } },
+        scales: { y: { beginAtZero: true } }
+    }
 });
 
 new Chart(document.getElementById('pipelineChart'), {

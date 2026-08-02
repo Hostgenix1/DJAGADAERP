@@ -12,7 +12,7 @@ class Invoice extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'number', 'type', 'customer_id', 'currency_id', 'quote_id',
+        'number', 'type', 'customer_id', 'currency_id', 'bank_account_id', 'quote_id',
         'invoice_date', 'due_date', 'status', 'subtotal', 'tax_amount',
         'discount', 'total', 'paid_amount', 'notes', 'terms',
         'sign_path', 'signed_by', 'signed_at',
@@ -34,6 +34,7 @@ class Invoice extends Model
     public function quote(): BelongsTo { return $this->belongsTo(Quote::class); }
     public function items(): HasMany { return $this->hasMany(InvoiceItem::class); }
     public function payments() { return $this->belongsToMany(Payment::class, 'invoice_payments')->withPivot('amount'); }
+    public function bankAccount(): BelongsTo { return $this->belongsTo(\App\Models\CompanyBankAccount::class, 'bank_account_id'); }
 
     public function documents() { return $this->morphMany(Document::class, 'documentable'); }
 

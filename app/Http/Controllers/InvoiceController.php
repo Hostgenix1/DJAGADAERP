@@ -60,8 +60,9 @@ class InvoiceController extends Controller
         $currencies = \App\Models\Currency::pluck('code', 'id');
         $products = \App\Models\Product::where('is_active', true)->get(['id', 'name', 'sell_price', 'unit']);
         $types = ['commercial', 'proforma', 'credit_note', 'packing_list', 'delivery_note'];
+        $bankAccounts = \App\Models\CompanyBankAccount::where('is_active', true)->with('currency')->get();
 
-        return view('invoices.create', compact('customers', 'currencies', 'products', 'types'));
+        return view('invoices.create', compact('customers', 'currencies', 'products', 'types', 'bankAccounts'));
     }
 
     public function store(Request $request)
@@ -72,6 +73,7 @@ class InvoiceController extends Controller
             'type' => 'required|in:commercial,proforma,credit_note,packing_list,delivery_note',
             'customer_id' => 'required|exists:customers,id',
             'currency_id' => 'nullable|exists:currencies,id',
+            'bank_account_id' => 'nullable|exists:company_bank_accounts,id',
             'invoice_date' => 'required|date',
             'due_date' => 'nullable|date|after_or_equal:invoice_date',
             'notes' => 'nullable|string|max:1000',
@@ -108,8 +110,9 @@ class InvoiceController extends Controller
         $currencies = \App\Models\Currency::pluck('code', 'id');
         $products = \App\Models\Product::where('is_active', true)->get(['id', 'name', 'sell_price', 'unit']);
         $types = ['commercial', 'proforma', 'credit_note', 'packing_list', 'delivery_note'];
+        $bankAccounts = \App\Models\CompanyBankAccount::where('is_active', true)->with('currency')->get();
 
-        return view('invoices.edit', compact('invoice', 'customers', 'currencies', 'products', 'types'));
+        return view('invoices.edit', compact('invoice', 'customers', 'currencies', 'products', 'types', 'bankAccounts'));
     }
 
     public function update(Request $request, Invoice $invoice)
@@ -120,6 +123,7 @@ class InvoiceController extends Controller
             'type' => 'required|in:commercial,proforma,credit_note,packing_list,delivery_note',
             'customer_id' => 'required|exists:customers,id',
             'currency_id' => 'nullable|exists:currencies,id',
+            'bank_account_id' => 'nullable|exists:company_bank_accounts,id',
             'invoice_date' => 'required|date',
             'due_date' => 'nullable|date|after_or_equal:invoice_date',
             'notes' => 'nullable|string|max:1000',
@@ -142,7 +146,7 @@ class InvoiceController extends Controller
     public function pdf(Invoice $invoice)
     {
         $this->authorize('view-invoices');
-        $invoice->load(['customer', 'currency', 'items.product']);
+        $invoice->load(['customer', 'currency', 'items.product', 'bankAccount']);
 
         $svc = app(\App\Services\SettingsService::class);
         $logoPath = $svc->get('company_logo');
@@ -168,14 +172,25 @@ class InvoiceController extends Controller
             'email'     => $svc->get('company_email'),
             'phone'     => $svc->get('company_phone'),
             'tax_id'    => $svc->get('company_tax_id'),
+            'registration' => $svc->get('company_registration'),
             'footer'    => $svc->get('company_footer_text'),
             'show_logo' => $svc->get('show_logo_on_docs'),
             'logo_url'  => $logoBase64,
-            'bank_name'   => $svc->get('company_bank_name'),
-            'bank_account'=> $svc->get('company_bank_account'),
-            'bank_iban'   => $svc->get('company_bank_iban'),
-            'bank_swift'  => $svc->get('company_bank_swift'),
         ];
+
+        if ($invoice->bankAccount) {
+            $company['bank_name']    = $invoice->bankAccount->bank_name;
+            $company['bank_account'] = $invoice->bankAccount->account_name;
+            $company['bank_number']  = $invoice->bankAccount->account_number;
+            $company['bank_iban']    = $invoice->bankAccount->iban;
+            $company['bank_swift']   = $invoice->bankAccount->swift_code;
+        } else {
+            $company['bank_name']    = $svc->get('company_bank_name');
+            $company['bank_account'] = $svc->get('company_bank_account');
+            $company['bank_number']  = '';
+            $company['bank_iban']    = $svc->get('company_bank_iban');
+            $company['bank_swift']   = $svc->get('company_bank_swift');
+        }
 
         $qrSvg = \SimpleSoftwareIO\QrCode\Facades\QrCode::size(120)->generate($invoice->number);
 

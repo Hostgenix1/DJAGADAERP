@@ -137,22 +137,23 @@ class DemoDataSeeder extends Seeder
             $q->update(['subtotal' => $sub, 'total' => $sub]);
         }
 
-        $invStatuses = ['draft', 'sent', 'partial', 'paid'];
+        $invStatuses = ['paid', 'paid', 'paid', 'paid', 'paid', 'partial', 'partial', 'sent'];
         $types = ['commercial', 'proforma'];
         for ($i = 0; $i < 8; $i++) {
             $cust = $customers[array_rand($customers)];
-            $inv = Invoice::firstOrCreate(
-                ['number' => Invoice::nextNumber()],
-                [
-                    'type' => $types[array_rand($types)],
-                    'customer_id' => $cust->id,
-                    'currency_id' => $cust->currency_id,
-                    'invoice_date' => now()->subDays(rand(0, 90)),
-                    'due_date' => now()->subDays(rand(0, 30)),
-                    'status' => $invStatuses[array_rand($invStatuses)],
-                    'subtotal' => 0, 'tax_amount' => 0, 'discount' => 0, 'total' => 0, 'paid_amount' => 0,
-                ]
-            );
+            $status = $invStatuses[$i];
+            $type = $types[array_rand($types)];
+            $monthsAgo = rand(0, 11);
+            $inv = Invoice::create([
+                'number' => Invoice::nextNumber($type),
+                'type' => $type,
+                'customer_id' => $cust->id,
+                'currency_id' => $cust->currency_id,
+                'invoice_date' => now()->subMonths($monthsAgo)->subDays(rand(0, 20)),
+                'due_date' => now()->subMonths($monthsAgo)->addDays(rand(5, 30)),
+                'status' => $status,
+                'subtotal' => 0, 'tax_amount' => 0, 'discount' => 0, 'total' => 0, 'paid_amount' => 0,
+            ]);
             $numItems = rand(1, 5);
             $sub = 0;
             for ($j = 0; $j < $numItems; $j++) {
@@ -172,15 +173,20 @@ class DemoDataSeeder extends Seeder
                 ]);
                 $sub += $line;
             }
-            $paid = in_array($inv->status, ['paid']) ? $sub : (in_array($inv->status, ['partial']) ? round($sub * rand(30, 70) / 100, 2) : 0);
-            $inv->update(['subtotal' => $sub, 'total' => $sub, 'paid_amount' => $paid, 'status' => $paid >= $sub ? 'paid' : $inv->status]);
+            if ($status === 'paid') {
+                $inv->update(['subtotal' => $sub, 'total' => $sub, 'paid_amount' => $sub, 'status' => 'paid']);
+            } elseif ($status === 'partial') {
+                $paidAmt = round($sub * rand(30, 70) / 100, 2);
+                $inv->update(['subtotal' => $sub, 'total' => $sub, 'paid_amount' => $paidAmt, 'status' => 'partial']);
+            } else {
+                $inv->update(['subtotal' => $sub, 'total' => $sub, 'paid_amount' => 0, 'status' => $status]);
+            }
         }
 
-        for ($i = 0; $i < 10; $i++) {
-            $cust = $customers[array_rand($customers)];
-            $paidInvs = $cust->invoices()->where('status', 'paid')->get();
-            if ($paidInvs->isEmpty()) continue;
-            $inv = $paidInvs->random();
+        $paidInvoices = Invoice::where('paid_amount', '>', 0)->get();
+        foreach ($paidInvoices as $inv) {
+            $cust = $inv->customer;
+            if (!$cust) continue;
             $pType = ['cash', 'bank', 'transfer', 'cheque', 'mobile'][array_rand(['cash', 'bank', 'transfer', 'cheque', 'mobile'])];
             Payment::create([
                 'number' => Payment::nextNumber(),
@@ -190,7 +196,7 @@ class DemoDataSeeder extends Seeder
                 'method' => $pType,
                 'amount' => $inv->paid_amount,
                 'rate' => 1,
-                'paid_on' => $inv->invoice_date,
+                'paid_on' => $inv->invoice_date->addDays(rand(1, 15)),
                 'reference' => strtoupper(uniqid('PAY')),
                 'notes' => 'Payment for '.$inv->number,
             ]);
@@ -216,7 +222,7 @@ class DemoDataSeeder extends Seeder
             FollowUp::create([
                 'followable_type' => Customer::class,
                 'followable_id' => $cust->id,
-                'type' => ['call', 'email', 'visit', 'meeting'][rand(0, 3)],
+                'type' => ['call', 'email', 'meeting', 'task'][rand(0, 3)],
                 'due_date' => now()->addDays(rand(-5, 15)),
                 'note' => 'Follow up on order status',
                 'assigned_to' => 1,
