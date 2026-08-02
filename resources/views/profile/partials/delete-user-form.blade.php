@@ -1,9 +1,13 @@
-<div class="card card-danger card-outline">
-    <div class="card-header"><h3 class="card-title"><i class="fas fa-trash mr-1"></i> Delete Account</h3></div>
+<div class="card" style="border:none; box-shadow: 0 0 15px rgba(0,0,0,.04); border-radius: 12px;">
+    <div class="card-header border-0 pt-4 pb-2" style="border-bottom: 1px solid #f0f0f0 !important;">
+        <h5 class="font-weight-bold text-dark mb-0" style="font-size:1.1rem;">
+            <i class="fas fa-trash mr-2 text-danger"></i>Delete Account
+        </h5>
+    </div>
     <div class="card-body">
         <p class="text-muted">Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.</p>
 
-        <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteAccountModal">Delete Account</button>
+        <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteAccountModal">Delete Account</button>
 
         <div class="modal fade" id="deleteAccountModal" tabindex="-1" role="dialog" aria-hidden="true">
             <div class="modal-dialog" role="document">

@@ -30,7 +30,7 @@
                     <td><small>v{{ $doc->version }}</small></td>
                     <td><small>{{ $doc->created_at?->format('Y-m-d') }}</small></td>
                     <td>
-                        <a href="{{ route('documents.download', $doc) }}" class="btn btn-xs btn-outline-success"><i class="fas fa-download"></i></a>
+                        <a href="{{ route('documents.download', $doc) }}" class="btn btn-sm btn-outline-success"><i class="fas fa-download"></i></a>
                     </td>
                 </tr>
             @empty

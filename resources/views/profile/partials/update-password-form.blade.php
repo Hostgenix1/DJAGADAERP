@@ -1,5 +1,9 @@
-<div class="card card-primary card-outline">
-    <div class="card-header"><h3 class="card-title"><i class="fas fa-key mr-1"></i> Update Password</h3></div>
+<div class="card" style="border:none; box-shadow: 0 0 15px rgba(0,0,0,.04); border-radius: 12px;">
+    <div class="card-header border-0 pt-4 pb-2" style="border-bottom: 1px solid #f0f0f0 !important;">
+        <h5 class="font-weight-bold text-dark mb-0" style="font-size:1.1rem;">
+            <i class="fas fa-key mr-2 text-primary"></i>Update Password
+        </h5>
+    </div>
     <div class="card-body">
         <p class="text-muted">Ensure your account is using a long, random password to stay secure.</p>
 
@@ -32,7 +36,9 @@
                 <input id="update_password_password_confirmation" name="password_confirmation" type="password" class="form-control" autocomplete="new-password">
             </div>
 
-            <button type="submit" class="btn btn-primary">Save</button>
+            <div class="mt-4 pt-3" style="border-top: 1px solid #f0f0f0;">
+                <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-save mr-1"></i> Save</button>
+            </div>
         </form>
     </div>
 </div>

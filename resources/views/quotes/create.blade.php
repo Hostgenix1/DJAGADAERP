@@ -14,8 +14,12 @@
     @csrf
     <div class="row">
         <div class="col-lg-8">
-            <div class="card card-primary card-outline">
-                <div class="card-header"><h3 class="card-title">New Quotation</h3></div>
+            <div class="card" style="border:none; box-shadow: 0 0 15px rgba(0,0,0,.04); border-radius: 12px;">
+                <div class="card-header border-0 pt-4 pb-2" style="border-bottom: 1px solid #f0f0f0 !important;">
+                    <h5 class="font-weight-bold text-dark mb-0" style="font-size:1.1rem;">
+                        <i class="fas fa-file-alt mr-2 text-primary"></i>New Quotation
+                    </h5>
+                </div>
                 <div class="card-body">
                     <div class="form-row">
                         <div class="form-group col-md-6">
@@ -96,10 +100,10 @@
             </div>
         </div>
         <div class="col-lg-4">
-            <div class="card">
+            <div class="card" style="border:none; box-shadow: 0 0 15px rgba(0,0,0,.04); border-radius: 12px;">
                 <div class="card-body">
-                    <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-save"></i> Save Quote</button>
-                    <a href="{{ route('quotes.index') }}" class="btn btn-default btn-block">Cancel</a>
+                    <button type="submit" class="btn btn-primary btn-block btn-sm"><i class="fas fa-save mr-1"></i> Save Quote</button>
+                    <a href="{{ route('quotes.index') }}" class="btn btn-outline-secondary btn-block btn-sm">Cancel</a>
                 </div>
             </div>
         </div>
