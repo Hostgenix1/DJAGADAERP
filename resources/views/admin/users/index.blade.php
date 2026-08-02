@@ -2,6 +2,13 @@
 
 @section('title', 'Users')
 
+{{--
+  User Management List - Settings Module
+  Module: Settings
+  Features: Server-side DataTable, user name/email/roles/created columns, permission-based create button, search, pagination, inline edit/delete actions
+  Version: 1.0.0
+--}}
+
 @section('content')
 <div class="card card-secondary">
     <div class="card-header">

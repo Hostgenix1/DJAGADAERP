@@ -1,5 +1,13 @@
 @extends('layouts.app')
 @section('title', 'Payment '.$payment->number)
+
+{{--
+  Payment Detail - Payments Module
+  Module: Payments
+  Features: Payment detail card, allocated invoices list, document attachments, party info, amount/method/date/reference display, status badges
+  Version: 1.0.0
+--}}
+
 @section('content')
 <div class="row">
     <div class="col-lg-6">

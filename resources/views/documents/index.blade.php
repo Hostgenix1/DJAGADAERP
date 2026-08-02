@@ -2,6 +2,13 @@
 
 @section('title', 'Document Management')
 
+{{--
+  Document Library - Documents Module
+  Module: Documents
+  Features: Global document search with AJAX, category filter, upload modal, document table with title/category/file/size/version/entity/date, download/delete actions, pagination, permission-based upload/delete
+  Version: 1.0.0
+--}}
+
 @section('content')
 <div class="row mb-3">
     <div class="col-md-8">

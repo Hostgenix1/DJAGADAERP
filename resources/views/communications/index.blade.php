@@ -2,6 +2,13 @@
 
 @section('title', 'Communication')
 
+{{--
+  Communication Log List - CRM Module
+  Module: CRM
+  Features: Server-side DataTable, communication history tracking, dynamic column rendering, permission-based create button, search, pagination
+  Version: 1.0.0
+--}}
+
 @section('content')
 <div class="card card-secondary">
     <div class="card-header">

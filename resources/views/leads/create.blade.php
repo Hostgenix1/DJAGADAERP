@@ -2,6 +2,13 @@
 
 @section('title', 'New Lead')
 
+{{--
+  Create Lead - CRM Module
+  Module: CRM
+  Features: Lead creation form, reusable form partial, pipeline stage assignment, validation, save/cancel actions
+  Version: 1.0.0
+--}}
+
 @section('content')
 <div class="row">
     <div class="col-lg-8">

@@ -1,3 +1,9 @@
+{{--
+  Main Application Layout
+  Module: Layouts
+  Features: AdminLTE dashboard layout, sidebar navigation, top navbar, breadcrumb, flash messages, footer, CSRF token setup, jQuery/Axios initialization
+  Version: 1.0.0
+--}}
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>

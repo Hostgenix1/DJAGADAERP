@@ -2,6 +2,13 @@
 
 @section('title', 'Follow-up')
 
+{{--
+  Follow-up Scheduler List - CRM Module
+  Module: CRM
+  Features: Server-side DataTable, follow-up task tracking, dynamic column rendering, permission-based create button, search, pagination
+  Version: 1.0.0
+--}}
+
 @section('content')
 <div class="card card-secondary">
     <div class="card-header">

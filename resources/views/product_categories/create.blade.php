@@ -2,6 +2,13 @@
 
 @section('title', 'New Category')
 
+{{--
+  Create Category - Products Module
+  Module: Products
+  Features: Category creation form, reusable form partial, name/description fields, validation, save/cancel actions
+  Version: 1.0.0
+--}}
+
 @section('content')
 <div class="row">
     <div class="col-lg-8">

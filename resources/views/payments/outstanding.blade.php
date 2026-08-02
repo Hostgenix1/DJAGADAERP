@@ -1,5 +1,13 @@
 @extends('layouts.app')
 @section('title', 'Outstanding Balances')
+
+{{--
+  Outstanding Balances - Payments Module
+  Module: Payments
+  Features: Outstanding invoice list, customer/total/paid/balance/due date/status columns, overdue highlighting, DataTable sorting, status badges
+  Version: 1.0.0
+--}}
+
 @section('content')
 <div class="card card-warning card-outline">
     <div class="card-header"><h3 class="card-title">Outstanding Invoice Balances</h3></div>

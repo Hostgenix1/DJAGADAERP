@@ -2,6 +2,13 @@
 
 @section('title', 'Lead')
 
+{{--
+  Lead Pipeline List - CRM Module
+  Module: CRM
+  Features: Server-side DataTable, dynamic column rendering, permission-based create button, lead pipeline tracking, search, pagination
+  Version: 1.0.0
+--}}
+
 @section('content')
 <div class="card card-secondary">
     <div class="card-header">

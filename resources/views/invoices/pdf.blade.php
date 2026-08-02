@@ -1,3 +1,9 @@
+{{--
+  Invoice PDF Template - Invoices Module
+  Module: Invoices
+  Features: Modern PDF invoice design, company logo/branding, billing addresses, line items table, subtotal/tax/discount/total, payment details (bank info), QR code, notes/terms, footer, status pill
+  Version: 1.0.0
+--}}
 <!DOCTYPE html>
 <html lang="en">
 <head>

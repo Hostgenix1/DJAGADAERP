@@ -2,6 +2,13 @@
 
 @section('title', $invoice->number)
 
+{{--
+  Invoice Detail - Invoices Module
+  Module: Invoices
+  Features: Invoice detail view, line items table, subtotal/tax/discount/total summary, payment history, document upload, PDF download, status badge, paid/balance tracking, notes/terms
+  Version: 1.0.0
+--}}
+
 @section('content')
 <div class="row">
     <div class="col-lg-8">

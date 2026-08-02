@@ -2,6 +2,13 @@
 
 @section('title', 'Supplier')
 
+{{--
+  Supplier Management List - Products Module
+  Module: Products
+  Features: Server-side DataTable, dynamic column rendering, permission-based create button, search, pagination, inline actions
+  Version: 1.0.0
+--}}
+
 @section('content')
 <div class="card card-secondary">
     <div class="card-header">

@@ -2,6 +2,13 @@
 
 @section('title', 'Invoices')
 
+{{--
+  Invoice List - Invoices Module
+  Module: Invoices
+  Features: Server-side DataTable, invoice number/type/customer/date/due/total/balance/status columns, permission-based create button, search, pagination, inline actions
+  Version: 1.0.0
+--}}
+
 @section('content')
 <div class="card card-secondary">
     <div class="card-header">

@@ -2,6 +2,13 @@
 
 @section('title', 'New Role')
 
+{{--
+  Create Role - Settings Module
+  Module: Settings
+  Features: Role creation form, grouped permission checkboxes, group select-all toggle, permission name input, validation, save/cancel actions
+  Version: 1.0.0
+--}}
+
 @section('content')
 <div class="row">
     <div class="col-lg-8">

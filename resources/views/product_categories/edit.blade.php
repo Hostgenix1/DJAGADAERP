@@ -2,6 +2,13 @@
 
 @section('title', 'Edit Category')
 
+{{--
+  Edit Category - Products Module
+  Module: Products
+  Features: Category edit form, pre-populated fields, PATCH method override, reusable form partial, validation errors
+  Version: 1.0.0
+--}}
+
 @section('content')
 <div class="row">
     <div class="col-lg-8">

@@ -1,3 +1,9 @@
+{{--
+  Guest Layout - Authentication Pages
+  Module: Auth
+  Features: Minimal login/register layout, centered login box, no sidebar, AdminLTE login-page styling, Bootstrap & FontAwesome assets
+  Version: 1.0.0
+--}}
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>

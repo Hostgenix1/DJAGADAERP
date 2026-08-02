@@ -2,6 +2,13 @@
 
 @section('title', 'My Profile')
 
+{{--
+  User Profile Settings - Profile Module
+  Module: Profile
+  Features: Update profile information form, update password form, delete account form, two-column layout
+  Version: 1.0.0
+--}}
+
 @section('content')
     <div class="row">
         <div class="col-lg-6">

@@ -2,6 +2,13 @@
 
 @section('title', 'Edit Quote '.$quote->number)
 
+{{--
+  Edit Quotation - Quotations Module
+  Module: Quotations
+  Features: Dynamic line items with existing data, product auto-fill, auto-calculate totals, currency selection, notes/terms, customer/date fields, PUT method override
+  Version: 1.0.0
+--}}
+
 @section('content')
 <form method="POST" action="{{ route('quotes.update', $quote) }}" id="quote-form">
     @csrf @method('PUT')

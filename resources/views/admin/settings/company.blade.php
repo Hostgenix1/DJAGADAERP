@@ -2,6 +2,13 @@
 
 @section('title', 'Company Settings')
 
+{{--
+  Company Settings - Settings Module
+  Module: Settings
+  Features: Tabbed interface (Company Info, Contact Details, SMTP/Email, Branding), logo upload/remove with preview, live field preview, Select2 country picker, SMTP configuration, document footer/notes/terms defaults, quick info sidebar, password visibility toggle, tab persistence
+  Version: 1.0.0
+--}}
+
 @section('content')
 
 @php $svc = app(\App\Services\SettingsService::class); @endphp

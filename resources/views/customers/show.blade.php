@@ -2,6 +2,13 @@
 
 @section('title', $customer->company_name)
 
+{{--
+  Customer Detail - CRM Module
+  Module: CRM
+  Features: Customer profile card, contact info, quick actions (WhatsApp/Email/Call), contacts list, activity timeline, communication log modal, document upload, status badge
+  Version: 1.0.0
+--}}
+
 @section('content')
 <div class="row">
     <div class="col-lg-4">

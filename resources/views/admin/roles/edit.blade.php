@@ -2,6 +2,13 @@
 
 @section('title', 'Edit Role')
 
+{{--
+  Edit Role - Settings Module
+  Module: Settings
+  Features: Role edit form, grouped permission checkboxes with pre-selection, check all/uncheck all buttons, group select-all sync, PUT method override, validation errors
+  Version: 1.0.0
+--}}
+
 @section('content')
 <div class="row">
     <div class="col-lg-8">

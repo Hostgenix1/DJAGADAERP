@@ -2,6 +2,13 @@
 
 @section('title', 'New Supplier')
 
+{{--
+  Create Supplier - Products Module
+  Module: Products
+  Features: Supplier creation form, reusable form partial, company/contact fields, validation, save/cancel actions
+  Version: 1.0.0
+--}}
+
 @section('content')
 <div class="row">
     <div class="col-lg-8">

@@ -2,6 +2,13 @@
 
 @section('title', 'Quotations')
 
+{{--
+  Quotation List - Quotations Module
+  Module: Quotations
+  Features: Server-side DataTable, quote number/customer/date/total/status columns, permission-based create button, search, pagination, inline actions
+  Version: 1.0.0
+--}}
+
 @section('content')
 <div class="card card-secondary">
     <div class="card-header">

@@ -1,5 +1,13 @@
 @extends('layouts.app')
 @section('title', 'Dashboard')
+
+{{--
+  Dashboard - Main Overview
+  Module: Dashboard
+  Features: KPI cards (revenue, customers, outstanding, overdue), info boxes (products, leads, quotes, expenses), revenue line chart, lead pipeline doughnut chart, top customers table, recent activity feed
+  Version: 1.0.0
+--}}
+
 @section('content')
 
 <div class="row">

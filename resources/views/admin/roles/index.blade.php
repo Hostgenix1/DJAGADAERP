@@ -2,6 +2,13 @@
 
 @section('title', 'Roles')
 
+{{--
+  Role Management List - Settings Module
+  Module: Settings
+  Features: Role list with user count, permission badges, permission-based create/edit/delete actions, grouped permission display, delete confirmation
+  Version: 1.0.0
+--}}
+
 @section('content')
 <div class="card card-secondary">
     <div class="card-header">

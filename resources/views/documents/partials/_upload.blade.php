@@ -1,3 +1,10 @@
+{{--
+  Document Upload Partial - Documents Module (Embeddable)
+  Module: Documents
+  Features: Inline document listing, upload modal, category selection, file upload (max 20MB), title/notes, polymorphic entity binding, download action, version tracking
+  Version: 1.0.0
+--}}
+
 @php
     $categories = ['contract', 'certificate', 'invoice', 'packing_list', 'shipping', 'import', 'export', 'other'];
 @endphp

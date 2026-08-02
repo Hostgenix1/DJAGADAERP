@@ -2,6 +2,13 @@
 
 @section('title', 'Taxes')
 
+{{--
+  Tax Management - Settings Module
+  Module: Settings
+  Features: Server-side DataTable, add/edit tax via modals, tax name/rate/kind (sales/purchase), active/inactive status, inline edit with data attributes
+  Version: 1.0.0
+--}}
+
 @section('content')
 <div class="card card-secondary">
     <div class="card-header">

@@ -1,5 +1,12 @@
 @extends('layouts.guest')
 
+{{--
+  Registration Page - Auth Module
+  Module: Auth
+  Features: New account registration form, name/email/password/confirmation fields, validation errors, login link
+  Version: 1.0.0
+--}}
+
 @section('content')
 <div class="card">
     <div class="card-body register-card-body">

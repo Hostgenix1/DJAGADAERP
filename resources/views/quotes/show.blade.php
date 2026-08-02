@@ -2,6 +2,13 @@
 
 @section('title', 'Quotation '.$quote->number)
 
+{{--
+  Quotation Detail - Quotations Module
+  Module: Quotations
+  Features: Quote detail view, line items table, subtotal/tax/discount/total summary, status badge, revision tracking, convert to proforma/invoice, edit action, notes/terms display
+  Version: 1.0.0
+--}}
+
 @section('content')
 <div class="row">
     <div class="col-lg-8">

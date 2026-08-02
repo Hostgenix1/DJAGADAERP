@@ -2,6 +2,13 @@
 
 @section('title', 'New Customer')
 
+{{--
+  Create Customer - CRM Module
+  Module: CRM
+  Features: Customer creation form, reusable form partial, validation error display, save/cancel actions
+  Version: 1.0.0
+--}}
+
 @section('content')
 <div class="row">
     <div class="col-lg-8">

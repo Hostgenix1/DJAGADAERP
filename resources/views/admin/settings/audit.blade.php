@@ -2,6 +2,13 @@
 
 @section('title', 'Audit Log')
 
+{{--
+  Audit Log - Settings Module
+  Module: Settings
+  Features: Server-side DataTable, user/event/module/description/date columns, activity tracking, chronological ordering, search
+  Version: 1.0.0
+--}}
+
 @section('content')
 <div class="card card-secondary">
     <div class="card-header">

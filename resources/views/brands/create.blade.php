@@ -2,6 +2,13 @@
 
 @section('title', 'New Brand')
 
+{{--
+  Create Brand - Products Module
+  Module: Products
+  Features: Brand creation form, reusable form partial, name/description fields, validation, save/cancel actions
+  Version: 1.0.0
+--}}
+
 @section('content')
 <div class="row">
     <div class="col-lg-8">

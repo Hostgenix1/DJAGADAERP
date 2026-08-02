@@ -2,6 +2,13 @@
 
 @section('title', 'New Quotation')
 
+{{--
+  Create Quotation - Quotations Module
+  Module: Quotations
+  Features: Dynamic line items, product auto-fill, auto-calculate subtotal/tax/discount/grand total, currency selection, notes/terms fields, customer selection, date/valid-until, add/remove item rows
+  Version: 1.0.0
+--}}
+
 @section('content')
 <form method="POST" action="{{ route('quotes.store') }}" id="quote-form">
     @csrf

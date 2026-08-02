@@ -2,6 +2,13 @@
 
 @section('title', 'New Follow-up')
 
+{{--
+  Create Follow-up - CRM Module
+  Module: CRM
+  Features: Follow-up creation form, reusable form partial, date/time scheduling, linked to customer/lead, validation, save/cancel
+  Version: 1.0.0
+--}}
+
 @section('content')
 <div class="row">
     <div class="col-lg-8">

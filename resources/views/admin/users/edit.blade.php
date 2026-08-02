@@ -2,6 +2,13 @@
 
 @section('title', 'Edit User')
 
+{{--
+  Edit User - Settings Module
+  Module: Settings
+  Features: User edit form, name/email fields, optional password change, role checkbox assignment, PUT method override, validation errors
+  Version: 1.0.0
+--}}
+
 @section('content')
 <div class="row">
     <div class="col-lg-7">

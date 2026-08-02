@@ -1,5 +1,13 @@
 @extends('layouts.app')
 @section('title', 'Edit '.$invoice->number)
+
+{{--
+  Edit Invoice - Invoices Module
+  Module: Invoices
+  Features: Dynamic line items with existing data, product auto-fill, auto-calculate totals, invoice type/customer/date/currency, PUT method override, notes/terms
+  Version: 1.0.0
+--}}
+
 @section('content')
 <form method="POST" action="{{ route('invoices.update', $invoice) }}">
     @csrf @method('PUT')

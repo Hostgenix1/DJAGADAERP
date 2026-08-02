@@ -1,5 +1,13 @@
 @extends('layouts.app')
 @section('title', 'Record Payment')
+
+{{--
+  Record Payment - Payments Module
+  Module: Payments
+  Features: Customer/supplier payment toggle, invoice allocation, dynamic allocation rows, payment method selection, currency, reference/notes fields, amount, date, customer/supplier dropdown
+  Version: 1.0.0
+--}}
+
 @section('content')
 <form method="POST" action="{{ route('payments.store') }}">
     @csrf

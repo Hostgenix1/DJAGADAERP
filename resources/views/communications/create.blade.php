@@ -2,6 +2,13 @@
 
 @section('title', 'New Communication')
 
+{{--
+  Log Communication - CRM Module
+  Module: CRM
+  Features: Communication log creation form, reusable form partial, type selection (call/email/whatsapp/meeting/note), direction, linked to entity, validation, save/cancel
+  Version: 1.0.0
+--}}
+
 @section('content')
 <div class="row">
     <div class="col-lg-8">

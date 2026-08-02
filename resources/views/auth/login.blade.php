@@ -1,5 +1,12 @@
 @extends('layouts.guest')
 
+{{--
+  Login Page - Auth Module
+  Module: Auth
+  Features: Email/password login form, remember me checkbox, forgot password link, registration link, status message display, validation errors
+  Version: 1.0.0
+--}}
+
 @section('content')
 <div class="card">
     <div class="card-body login-card-body">

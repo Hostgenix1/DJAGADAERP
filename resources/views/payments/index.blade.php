@@ -2,6 +2,13 @@
 
 @section('title', 'Payments')
 
+{{--
+  Payment List - Payments Module
+  Module: Payments
+  Features: Server-side DataTable, payment number/type/party/amount/method/date columns, permission-based record payment button, outstanding balances link, search, pagination
+  Version: 1.0.0
+--}}
+
 @section('content')
 <div class="row mb-3">
     <div class="col-md-6">

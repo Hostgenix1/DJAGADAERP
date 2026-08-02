@@ -2,6 +2,13 @@
 
 @section('title', 'New User')
 
+{{--
+  Create User - Settings Module
+  Module: Settings
+  Features: User creation form, name/email/password fields, password confirmation, role checkbox assignment, validation, save/cancel actions
+  Version: 1.0.0
+--}}
+
 @section('content')
 <div class="row">
     <div class="col-lg-7">

@@ -1,5 +1,13 @@
 @extends('layouts.app')
 @section('title', 'New Invoice')
+
+{{--
+  Create Invoice - Invoices Module
+  Module: Invoices
+  Features: Dynamic line items, product auto-fill, auto-calculate subtotal/tax/discount/grand total, invoice type selection, currency, date/due date, notes/terms, customer selection
+  Version: 1.0.0
+--}}
+
 @section('content')
 <form method="POST" action="{{ route('invoices.store') }}">
     @csrf
