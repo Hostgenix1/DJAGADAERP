@@ -6,150 +6,118 @@
   Quotation List - Quotations Module
   Module: Quotations
   Features: KPI cards (total, amount, accepted, pending), status filter tabs, server-side DataTable with quote number/customer/date/total/status/actions, permission-based create button, search, pagination
-  Version: 1.1.0
+  Version: 1.2.0
 --}}
 
 @section('content')
-<div class="quote-index">
-
-    {{-- KPI CARDS --}}
-    <div class="row mb-4">
-        <div class="col-lg-3 col-md-6">
-            <div class="card card-block card-stretch card-height">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h4 class="font-weight-bold text-dark mb-1">{{ $totalQuotes }}</h4>
-                            <p class="text-muted mb-0">Total Quotes</p>
-                        </div>
-                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:56px;height:56px;background:rgba(0,123,255,.1);">
-                            <i class="fas fa-file-alt text-primary" style="font-size:1.4rem;"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="card card-block card-stretch card-height">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h4 class="font-weight-bold text-dark mb-1">${{ number_format($totalAmount, 2) }}</h4>
-                            <p class="text-muted mb-0">Total Value</p>
-                        </div>
-                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:56px;height:56px;background:rgba(23,162,184,.1);">
-                            <i class="fas fa-dollar-sign text-info" style="font-size:1.4rem;"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="card card-block card-stretch card-height">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h4 class="font-weight-bold text-success mb-1">${{ number_format($accepted, 2) }}</h4>
-                            <p class="text-muted mb-0">Accepted</p>
-                        </div>
-                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:56px;height:56px;background:rgba(40,167,69,.1);">
-                            <i class="fas fa-check-circle text-success" style="font-size:1.4rem;"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="card card-block card-stretch card-height">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h4 class="font-weight-bold text-warning mb-1">${{ number_format($pending, 2) }}</h4>
-                            <p class="text-muted mb-0">Pending</p>
-                        </div>
-                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:56px;height:56px;background:rgba(255,193,7,.1);">
-                            <i class="fas fa-clock text-warning" style="font-size:1.4rem;"></i>
-                        </div>
-                    </div>
-                </div>
+<div class="row">
+    <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-info"><i class="fas fa-file-alt"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Total Quotes</span>
+                <span class="info-box-number">{{ $totalQuotes }}</span>
             </div>
         </div>
     </div>
-
-    {{-- QUOTES TABLE --}}
-    <div class="card">
-        <div class="card-header border-0 d-flex justify-content-between align-items-center pt-4 pb-2" style="border-bottom: 1px solid #f0f0f0 !important;">
-            <h5 class="font-weight-bold text-dark mb-0" style="font-size:1.1rem;">
-                <i class="fas fa-file-alt mr-2 text-primary"></i>All Quotations
-            </h5>
-            <div class="d-flex align-items-center gap-2">
-                @can('create-quotes')
-                    <a href="{{ route('quotes.create') }}" class="btn btn-primary btn-sm">
-                        <i class="fas fa-plus mr-1"></i> New Quote
-                    </a>
-                @endcan
+    <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-success"><i class="fas fa-dollar-sign"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Total Value</span>
+                <span class="info-box-number">${{ number_format($totalAmount, 2) }}</span>
             </div>
         </div>
-
-        {{-- STATUS FILTER TABS --}}
-        <div class="px-4 pt-3">
-            <ul class="nav nav-pills gap-2">
-                <li class="nav-item">
-                    <a class="nav-link active filter-tab" href="#" data-status="all">
-                        All <span class="badge badge-light ml-1" id="count-all">-</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link filter-tab" href="#" data-status="draft" style="border: 1px solid #dee2e6;">
-                        <i class="fas fa-pencil-alt mr-1 text-secondary"></i> Draft
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link filter-tab" href="#" data-status="pending" style="border: 1px solid #dee2e6;">
-                        <i class="fas fa-clock mr-1 text-warning"></i> Pending
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link filter-tab" href="#" data-status="sent" style="border: 1px solid #dee2e6;">
-                        <i class="fas fa-paper-plane mr-1 text-info"></i> Sent
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link filter-tab" href="#" data-status="accepted" style="border: 1px solid #dee2e6;">
-                        <i class="fas fa-check mr-1 text-success"></i> Accepted
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link filter-tab" href="#" data-status="rejected" style="border: 1px solid #dee2e6;">
-                        <i class="fas fa-times mr-1 text-danger"></i> Rejected
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link filter-tab" href="#" data-status="expired" style="border: 1px solid #dee2e6;">
-                        <i class="fas fa-hourglass-end mr-1 text-dark"></i> Expired
-                    </a>
-                </li>
-            </ul>
-        </div>
-
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table id="dt-quotes" class="table table-hover" style="width:100%">
-                    <thead>
-                        <tr style="background:#f8f9fa; border-top: 1px solid #e9ecef; border-bottom: 2px solid #dee2e6;">
-                            <th style="width:60px; font-size:0.82rem; font-weight:600; color:#6c757d; text-transform:uppercase; letter-spacing:0.5px;">#</th>
-                            <th style="font-size:0.82rem; font-weight:600; color:#6c757d; text-transform:uppercase; letter-spacing:0.5px;">Number</th>
-                            <th style="font-size:0.82rem; font-weight:600; color:#6c757d; text-transform:uppercase; letter-spacing:0.5px;">Customer</th>
-                            <th style="font-size:0.82rem; font-weight:600; color:#6c757d; text-transform:uppercase; letter-spacing:0.5px;">Date</th>
-                            <th style="font-size:0.82rem; font-weight:600; color:#6c757d; text-transform:uppercase; letter-spacing:0.5px;">Valid Until</th>
-                            <th style="font-size:0.82rem; font-weight:600; color:#6c757d; text-transform:uppercase; letter-spacing:0.5px; text-align:right;">Total</th>
-                            <th style="font-size:0.82rem; font-weight:600; color:#6c757d; text-transform:uppercase; letter-spacing:0.5px;">Status</th>
-                            <th style="width:140px; font-size:0.82rem; font-weight:600; color:#6c757d; text-transform:uppercase; letter-spacing:0.5px;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+    </div>
+    <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-warning"><i class="fas fa-check-circle"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Accepted</span>
+                <span class="info-box-number">${{ number_format($accepted, 2) }}</span>
             </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-danger"><i class="fas fa-clock"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Pending</span>
+                <span class="info-box-number">${{ number_format($pending, 2) }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card card-primary card-outline">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-file-alt mr-1"></i> All Quotations</h3>
+        <div class="card-tools">
+            @can('create-quotes')
+                <a href="{{ route('quotes.create') }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> New Quote
+                </a>
+            @endcan
+        </div>
+    </div>
+
+    <div class="card-body">
+        <ul class="nav nav-pills">
+            <li class="nav-item">
+                <a class="nav-link active filter-tab" href="#" data-status="all">
+                    All <span class="badge badge-light ml-1" id="count-all">-</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link filter-tab" href="#" data-status="draft">
+                    <i class="fas fa-pencil-alt mr-1"></i> Draft
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link filter-tab" href="#" data-status="pending">
+                    <i class="fas fa-clock mr-1"></i> Pending
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link filter-tab" href="#" data-status="sent">
+                    <i class="fas fa-paper-plane mr-1"></i> Sent
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link filter-tab" href="#" data-status="accepted">
+                    <i class="fas fa-check mr-1"></i> Accepted
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link filter-tab" href="#" data-status="rejected">
+                    <i class="fas fa-times mr-1"></i> Rejected
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link filter-tab" href="#" data-status="expired">
+                    <i class="fas fa-hourglass-end mr-1"></i> Expired
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table id="dt-quotes" class="table table-bordered table-hover" style="width:100%">
+                <thead>
+                    <tr>
+                        <th style="width:60px">#</th>
+                        <th>Number</th>
+                        <th>Customer</th>
+                        <th>Date</th>
+                        <th>Valid Until</th>
+                        <th class="text-right">Total</th>
+                        <th>Status</th>
+                        <th style="width:140px">Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
         </div>
     </div>
 </div>
@@ -157,15 +125,6 @@
 
 @push('styles')
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap4.min.css">
-<style>
-    .quote-index .card { border: none; box-shadow: 0 0 15px rgba(0,0,0,.04); border-radius: 12px; }
-    .filter-tab.active { background: #007bff !important; color: #fff !important; border-color: #007bff !important; }
-    .filter-tab:hover:not(.active) { background: #e9ecef; }
-    #dt-quotes thead th { white-space: nowrap; }
-    #dt-quotes tbody tr { transition: background .15s; }
-    #dt-quotes tbody tr:hover { background: #f0f4ff !important; }
-    #dt-quotes td { vertical-align: middle; }
-</style>
 @endpush
 
 @push('scripts')
@@ -204,8 +163,8 @@ $(function () {
     var activeFilter = '';
     $('.filter-tab').on('click', function (e) {
         e.preventDefault();
-        $('.filter-tab').removeClass('active').css('border', '1px solid #dee2e6');
-        $(this).addClass('active').css('border', 'none');
+        $('.filter-tab').removeClass('active');
+        $(this).addClass('active');
         activeFilter = $(this).data('status') === 'all' ? '' : $(this).data('status');
         table.ajax.reload();
     });

@@ -3,33 +3,28 @@
 @section('title', 'Currencies')
 
 @section('content')
-<div class="module-index">
-
-    {{-- MAIN TABLE CARD --}}
-    <div class="card">
-        <div class="card-header border-0 d-flex justify-content-between align-items-center pt-4 pb-2" style="border-bottom: 1px solid #f0f0f0 !important;">
-            <h5 class="font-weight-bold text-dark mb-0" style="font-size:1.1rem;">
-                <i class="fas fa-coins mr-2 text-primary"></i>All Currencies
-            </h5>
-            <div class="d-flex align-items-center gap-2">
-                @can('create-currencies')
-                    <a href="{{ route('currencies.create') }}" class="btn btn-primary btn-sm">
-                        <i class="fas fa-plus mr-1"></i> New Currency
-                    </a>
-                @endcan
+<div class="row">
+    <div class="col-12">
+        <div class="card card-primary card-outline">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-coins mr-1"></i> Currencies</h3>
+                <div class="card-tools">
+                    @can('create-currencies')
+                        <a href="{{ route('currencies.create') }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus"></i> New Currency
+                        </a>
+                    @endcan
+                </div>
             </div>
-        </div>
-
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table id="dt-currencies" class="table table-hover" style="width:100%">
+            <div class="card-body">
+                <table id="dt-currencies" class="table table-bordered table-hover">
                     <thead>
-                        <tr style="background:#f8f9fa; border-top: 1px solid #e9ecef; border-bottom: 2px solid #dee2e6;">
-                            <th style="width:60px; font-size:0.82rem; font-weight:600; color:#6c757d; text-transform:uppercase; letter-spacing:0.5px;">#</th>
+                        <tr>
+                            <th style="width:40px">#</th>
                             @foreach($columns as $col)
-                                <th style="font-size:0.82rem; font-weight:600; color:#6c757d; text-transform:uppercase; letter-spacing:0.5px;">{{ $col['label'] }}</th>
+                                <th>{{ $col['label'] }}</th>
                             @endforeach
-                            <th style="width:140px; font-size:0.82rem; font-weight:600; color:#6c757d; text-transform:uppercase; letter-spacing:0.5px;">Actions</th>
+                            <th style="width:120px">Actions</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -42,13 +37,6 @@
 
 @push('styles')
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap4.min.css">
-<style>
-    .module-index .card { border: none; box-shadow: 0 0 15px rgba(0,0,0,.04); border-radius: 12px; }
-    #dt-currencies thead th { white-space: nowrap; }
-    #dt-currencies tbody tr { transition: background .15s; }
-    #dt-currencies tbody tr:hover { background: #f0f4ff !important; }
-    #dt-currencies td { vertical-align: middle; }
-</style>
 @endpush
 
 @push('scripts')
@@ -70,8 +58,7 @@ $(function () {
         serverSide: true,
         ajax: '{{ route("currencies.datatable") }}',
         columns: dtCols,
-        order: [[1, 'asc']],
-        language: { search: '', searchPlaceholder: 'Search...' }
+        order: [[1, 'asc']]
     });
 });
 </script>

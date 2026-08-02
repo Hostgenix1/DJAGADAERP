@@ -3,37 +3,38 @@
 @section('title', 'Taxes')
 
 @section('content')
-<div class="module-index">
-
-    {{-- MAIN TABLE CARD --}}
-    <div class="card">
-        <div class="card-header border-0 d-flex justify-content-between align-items-center pt-4 pb-2" style="border-bottom: 1px solid #f0f0f0 !important;">
-            <h5 class="font-weight-bold text-dark mb-0" style="font-size:1.1rem;">
-                <i class="fas fa-percent mr-2 text-primary"></i>All Taxes
-            </h5>
-            <div class="d-flex align-items-center gap-2">
-                <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#taxModal">
+<div class="container-fluid">
+    <div class="row mb-2">
+        <div class="col-sm-6">
+            <h1>Taxes</h1>
+        </div>
+        <div class="col-sm-6">
+            <div class="float-right">
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#taxModal">
                     <i class="fas fa-plus mr-1"></i> Add Tax
                 </button>
             </div>
         </div>
+    </div>
 
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table id="dt-taxes" class="table table-hover" style="width:100%">
-                    <thead>
-                        <tr style="background:#f8f9fa; border-top: 1px solid #e9ecef; border-bottom: 2px solid #dee2e6;">
-                            <th style="width:60px; font-size:0.82rem; font-weight:600; color:#6c757d; text-transform:uppercase; letter-spacing:0.5px;">#</th>
-                            <th style="font-size:0.82rem; font-weight:600; color:#6c757d; text-transform:uppercase; letter-spacing:0.5px;">Name</th>
-                            <th style="font-size:0.82rem; font-weight:600; color:#6c757d; text-transform:uppercase; letter-spacing:0.5px;">Rate</th>
-                            <th style="font-size:0.82rem; font-weight:600; color:#6c757d; text-transform:uppercase; letter-spacing:0.5px;">Kind</th>
-                            <th style="font-size:0.82rem; font-weight:600; color:#6c757d; text-transform:uppercase; letter-spacing:0.5px;">Status</th>
-                            <th style="width:140px; font-size:0.82rem; font-weight:600; color:#6c757d; text-transform:uppercase; letter-spacing:0.5px;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
+    <div class="card card-primary card-outline">
+        <div class="card-header">
+            <h3 class="card-title">All Taxes</h3>
+        </div>
+        <div class="card-body">
+            <table id="dt-taxes" class="table table-bordered table-striped" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Rate</th>
+                        <th>Kind</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
         </div>
     </div>
 
@@ -43,7 +44,10 @@
             <div class="modal-content">
                 <form method="POST" action="{{ route('admin.settings.taxes.store') }}">
                     @csrf
-                    <div class="modal-header"><h5 class="modal-title">New Tax</h5><button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div>
+                    <div class="modal-header">
+                        <h5 class="modal-title">New Tax</h5>
+                        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                    </div>
                     <div class="modal-body">
                         <div class="form-group">
                             <label>Name</label>
@@ -77,7 +81,10 @@
                 <form method="POST" action="" id="taxEditForm">
                     @csrf
                     @method('PUT')
-                    <div class="modal-header"><h5 class="modal-title">Edit Tax</h5><button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div>
+                    <div class="modal-header">
+                        <h5 class="modal-title">Edit Tax</h5>
+                        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                    </div>
                     <div class="modal-body">
                         <div class="form-group">
                             <label>Name</label>
@@ -108,13 +115,6 @@
 
 @push('styles')
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap4.min.css">
-<style>
-    .module-index .card { border: none; box-shadow: 0 0 15px rgba(0,0,0,.04); border-radius: 12px; }
-    #dt-taxes thead th { white-space: nowrap; }
-    #dt-taxes tbody tr { transition: background .15s; }
-    #dt-taxes tbody tr:hover { background: #f0f4ff !important; }
-    #dt-taxes td { vertical-align: middle; }
-</style>
 @endpush
 
 @push('scripts')

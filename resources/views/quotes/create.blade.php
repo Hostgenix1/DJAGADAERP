@@ -6,7 +6,7 @@
   Create Quotation - Quotations Module
   Module: Quotations
   Features: Dynamic line items, product auto-fill, auto-calculate subtotal/tax/discount/grand total, currency selection, notes/terms fields, customer selection, date/valid-until, add/remove item rows
-  Version: 1.0.0
+  Version: 1.1.0
 --}}
 
 @section('content')
@@ -14,11 +14,9 @@
     @csrf
     <div class="row">
         <div class="col-lg-8">
-            <div class="card" style="border:none; box-shadow: 0 0 15px rgba(0,0,0,.04); border-radius: 12px;">
-                <div class="card-header border-0 pt-4 pb-2" style="border-bottom: 1px solid #f0f0f0 !important;">
-                    <h5 class="font-weight-bold text-dark mb-0" style="font-size:1.1rem;">
-                        <i class="fas fa-file-alt mr-2 text-primary"></i>New Quotation
-                    </h5>
+            <div class="card card-primary card-outline">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="fas fa-file-alt mr-1"></i> New Quotation</h3>
                 </div>
                 <div class="card-body">
                     <div class="form-row">
@@ -100,10 +98,10 @@
             </div>
         </div>
         <div class="col-lg-4">
-            <div class="card" style="border:none; box-shadow: 0 0 15px rgba(0,0,0,.04); border-radius: 12px;">
+            <div class="card card-primary card-outline">
                 <div class="card-body">
                     <button type="submit" class="btn btn-primary btn-block btn-sm"><i class="fas fa-save mr-1"></i> Save Quote</button>
-                    <a href="{{ route('quotes.index') }}" class="btn btn-outline-secondary btn-block btn-sm">Cancel</a>
+                    <a href="{{ route('quotes.index') }}" class="btn btn-default btn-block btn-sm">Cancel</a>
                 </div>
             </div>
         </div>
