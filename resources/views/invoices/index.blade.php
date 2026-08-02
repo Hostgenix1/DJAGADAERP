@@ -7,7 +7,7 @@
   Module: Invoices
   Features: KPI cards (total, paid, outstanding), type filter tabs, server-side DataTable with invoice number/type/customer/date/due/total/balance/status/actions, permission-based create button, search, pagination
   Version: 1.1.0
-}}
+--}}
 
 @section('content')
 <div class="invoice-index">
@@ -197,14 +197,12 @@ $(function () {
         order: [[1, 'desc']],
         language: { search: '', searchPlaceholder: 'Search invoices...' },
         drawCallback: function (settings) {
-            // Update tab badge counts from API response
             if (settings.json && settings.json.recordsTotal !== undefined) {
                 $('#count-all').text(settings.json.recordsTotal);
             }
         }
     });
 
-    // Filter by type
     var activeFilter = '';
     $('.filter-tab').on('click', function (e) {
         e.preventDefault();
