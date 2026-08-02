@@ -19,7 +19,13 @@ class InvoiceController extends Controller
     public function index()
     {
         $this->authorize('view-invoices');
-        return view('invoices.index');
+
+        $totalInvoices = Invoice::count();
+        $totalAmount = (float) Invoice::where('status', '!=', 'cancelled')->sum('total');
+        $totalPaid = (float) Invoice::where('status', '!=', 'cancelled')->sum('paid_amount');
+        $totalOutstanding = $totalAmount - $totalPaid;
+
+        return view('invoices.index', compact('totalInvoices', 'totalAmount', 'totalPaid', 'totalOutstanding'));
     }
 
     public function datatable()
