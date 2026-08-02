@@ -17,14 +17,25 @@ class QuoteController extends Controller
     {
         $this->authorize('view-quotes');
 
-        return view('quotes.index');
+        $totalQuotes = Quote::count();
+        $totalAmount = (float) Quote::where('status', '!=', 'cancelled')->sum('total');
+        $accepted = (float) Quote::where('status', 'accepted')->sum('total');
+        $pending = (float) Quote::where('status', 'pending')->sum('total');
+
+        return view('quotes.index', compact('totalQuotes', 'totalAmount', 'accepted', 'pending'));
     }
 
-    public function datatable()
+    public function datatable(Request $request)
     {
         $this->authorize('view-quotes');
 
-        return DataTables::eloquent($this->service->query())
+        $query = $this->service->query();
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        return DataTables::eloquent($query)
             ->addIndexColumn()
             ->editColumn('status', fn (Quote $q) => '<span class="badge '.$q->status_badge.'">'.ucfirst($q->status).'</span>')
             ->editColumn('total', fn (Quote $q) => number_format($q->total, 2))

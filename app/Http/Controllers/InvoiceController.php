@@ -28,11 +28,17 @@ class InvoiceController extends Controller
         return view('invoices.index', compact('totalInvoices', 'totalAmount', 'totalPaid', 'totalOutstanding'));
     }
 
-    public function datatable()
+    public function datatable(Request $request)
     {
         $this->authorize('view-invoices');
 
-        return DataTables::eloquent($this->service->query())
+        $query = $this->service->query();
+
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        return DataTables::eloquent($query)
             ->addIndexColumn()
             ->editColumn('type', fn (Invoice $i) => ucfirst(str_replace('_', ' ', $i->type)))
             ->editColumn('status', fn (Invoice $i) => '<span class="badge '.$i->status_badge.'">'.ucfirst($i->status).'</span>')
