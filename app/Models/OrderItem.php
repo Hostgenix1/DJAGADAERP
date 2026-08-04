@@ -19,6 +19,18 @@ class OrderItem extends Model
         'line_total' => 'decimal:2',
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+        static::saving(function (OrderItem $item) {
+            $base = $item->unit_price * $item->qty;
+            $discount = $base * ($item->discount_pct ?? 0) / 100;
+            $taxable = $base - $discount;
+            $tax = $taxable * ($item->tax_rate ?? 0) / 100;
+            $item->line_total = $taxable + $tax;
+        });
+    }
+
     public function order(): BelongsTo { return $this->belongsTo(Order::class); }
     public function product(): BelongsTo { return $this->belongsTo(Product::class); }
 }

@@ -41,7 +41,7 @@ class QuoteService
     {
         $new = $original->replicate();
         $new->number = Quote::nextNumber();
-        $new->revision = 1;
+        $new->revision = ($original->revision ?? 0) + 1;
         $new->status = 'draft';
         $new->save();
 
@@ -58,6 +58,10 @@ class QuoteService
 
     public function convertToInvoice(Quote $quote, string $type = 'proforma'): Invoice
     {
+        if ($quote->status === 'converted') {
+            throw new \Exception('This quote has already been converted.');
+        }
+
         $invoice = Invoice::create([
             'number' => Invoice::nextNumber($type),
             'type' => $type,

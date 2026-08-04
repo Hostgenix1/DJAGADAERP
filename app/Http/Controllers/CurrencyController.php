@@ -83,6 +83,8 @@ class CurrencyController extends Controller
     {
         $this->authorize('update-currencies');
 
+        $relations = [];
+
         return view('currencies.edit', ['currency' => $currency, 'relations' => $relations]);
     }
 

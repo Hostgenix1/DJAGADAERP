@@ -98,6 +98,8 @@ class SupplierController extends Controller
     {
         $this->authorize('update-suppliers');
 
+        $relations = [];
+
         return view('suppliers.edit', ['supplier' => $supplier, 'relations' => $relations]);
     }
 

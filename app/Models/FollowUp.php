@@ -21,6 +21,11 @@ class FollowUp extends Model
         'completed_at' => 'datetime',
     ];
 
+    public function followable()
+    {
+        return $this->morphTo();
+    }
+
     public function assignedTo()
     {
         return $this->belongsTo(User::class, 'assigned_to', 'id');

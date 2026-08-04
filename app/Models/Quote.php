@@ -35,6 +35,11 @@ class Quote extends Model
         return $this->morphMany(Document::class, 'documentable');
     }
 
+    public function invoices()
+    {
+        return $this->hasMany(\App\Models\Invoice::class);
+    }
+
     public static function nextNumber(): string
     {
         $last = self::orderBy('id', 'desc')->value('number');

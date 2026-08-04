@@ -92,7 +92,7 @@ class CustomerController extends Controller
     public function create()
     {
         $this->authorize('create-customers');
-    $relations['currency_id'] = \App\Models\Currency::pluck('code', 'id');
+        $relations['currency_id'] = \App\Models\Currency::where('is_active', true)->pluck('code', 'id')->toArray();
         return view('customers.create', ['relations' => $relations]);
     }
 
@@ -108,7 +108,7 @@ class CustomerController extends Controller
     public function edit(Customer $customer)
     {
         $this->authorize('update-customers');
-    $relations['currency_id'] = \App\Models\Currency::pluck('code', 'id');
+        $relations['currency_id'] = \App\Models\Currency::where('is_active', true)->pluck('code', 'id')->toArray();
         return view('customers.edit', ['customer' => $customer, 'relations' => $relations]);
     }
 

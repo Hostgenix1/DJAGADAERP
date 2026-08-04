@@ -60,8 +60,28 @@ class Customer extends Model
         return $this->hasMany(\App\Models\Payment::class);
     }
 
+    public function orders()
+    {
+        return $this->hasMany(\App\Models\Order::class);
+    }
+
+    public function shipments()
+    {
+        return $this->hasMany(\App\Models\Shipment::class);
+    }
+
     public function leads()
     {
         return $this->hasMany(\App\Models\Lead::class);
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+        static::deleting(function (Customer $customer) {
+            if ($customer->invoices()->exists() || $customer->quotes()->exists() || $customer->orders()->exists()) {
+                throw new \Exception('Cannot delete customer with existing invoices, quotes, or orders. Please archive instead.');
+            }
+        });
     }
 }

@@ -64,6 +64,20 @@ class DocumentController extends Controller
         ]);
 
         $type = $request->documentable_type;
+
+        $allowedTypes = [
+            'App\\Models\\Customer',
+            'App\\Models\\Invoice',
+            'App\\Models\\Quote',
+            'App\\Models\\Order',
+            'App\\Models\\Product',
+            'App\\Models\\Lead',
+            'App\\Models\\Payment',
+        ];
+        if (!in_array($type, $allowedTypes)) {
+            return back()->withErrors(['documentable_type' => 'Invalid type.']);
+        }
+
         $model = $type::find($request->documentable_id);
 
         if (! $model) {

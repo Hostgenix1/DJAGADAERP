@@ -63,6 +63,8 @@ class ProductCategoryController extends Controller
     {
         $this->authorize('update-product_categories');
 
+        $relations = [];
+
         return view('product_categories.edit', ['product_category' => $product_category, 'relations' => $relations]);
     }
 

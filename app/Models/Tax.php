@@ -23,6 +23,11 @@ class Tax extends Model
         'is_active' => 'boolean',
     ];
 
+    public function products()
+    {
+        return $this->hasMany(\App\Models\Product::class);
+    }
+
     public function scopeSales($query)
     {
         return $query->where('kind', 'sales');

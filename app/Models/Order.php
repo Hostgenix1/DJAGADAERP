@@ -28,6 +28,26 @@ class Order extends Model
     public function currency(): BelongsTo { return $this->belongsTo(Currency::class); }
     public function items(): HasMany { return $this->hasMany(OrderItem::class); }
 
+    public function documents()
+    {
+        return $this->morphMany(\App\Models\Document::class, 'documentable');
+    }
+
+    public function shipments()
+    {
+        return $this->hasMany(\App\Models\Shipment::class);
+    }
+
+    public function follow_ups()
+    {
+        return $this->morphMany(\App\Models\FollowUp::class, 'followable');
+    }
+
+    public function communications()
+    {
+        return $this->morphMany(\App\Models\Communication::class, 'communicable');
+    }
+
     public static function nextNumber(): string
     {
         $last = self::orderBy('id', 'desc')->value('number');

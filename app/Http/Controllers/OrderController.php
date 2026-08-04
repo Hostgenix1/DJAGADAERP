@@ -26,7 +26,7 @@ class OrderController extends Controller
         $defaultCurrency = \App\Models\Currency::where('is_default', true)->first();
 
         $orderByCurrency = Order::where('status', '!=', 'cancelled')
-            ->join('currencies', 'orders.currency_id', '=', 'currencies.id')
+            ->leftJoin('currencies', 'orders.currency_id', '=', 'currencies.id')
             ->selectRaw('currencies.code, currencies.symbol, COUNT(*) as count, SUM(orders.total) as total')
             ->groupBy('currencies.code', 'currencies.symbol')
             ->get()
@@ -42,7 +42,10 @@ class OrderController extends Controller
         $query = $this->service->query();
 
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $allowedStatuses = ['draft', 'confirmed', 'processing', 'shipped', 'completed', 'cancelled'];
+            if (in_array($request->status, $allowedStatuses)) {
+                $query->where('status', $request->status);
+            }
         }
 
         return DataTables::eloquent($query)
@@ -87,6 +90,7 @@ class OrderController extends Controller
             'items.*.unit_price' => 'required|numeric|min:0',
             'items.*.tax_rate' => 'nullable|numeric|min:0|max:100',
             'items.*.discount_pct' => 'nullable|numeric|min:0|max:100',
+            'discount' => ['nullable', 'numeric', 'min:0'],
         ]);
 
         $order = $this->service->createWithItems($data, $data['items']);
@@ -131,6 +135,7 @@ class OrderController extends Controller
             'items.*.unit_price' => 'required|numeric|min:0',
             'items.*.tax_rate' => 'nullable|numeric|min:0|max:100',
             'items.*.discount_pct' => 'nullable|numeric|min:0|max:100',
+            'discount' => ['nullable', 'numeric', 'min:0'],
         ]);
 
         $this->service->updateWithItems($order, $data, $data['items']);

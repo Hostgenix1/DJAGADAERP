@@ -68,6 +68,8 @@ class BrandController extends Controller
     {
         $this->authorize('update-brands');
 
+        $relations = [];
+
         return view('brands.edit', ['brand' => $brand, 'relations' => $relations]);
     }
 

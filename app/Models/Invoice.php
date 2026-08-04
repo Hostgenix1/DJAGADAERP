@@ -38,6 +38,21 @@ class Invoice extends Model
 
     public function documents() { return $this->morphMany(Document::class, 'documentable'); }
 
+    public function shipments()
+    {
+        return $this->hasMany(\App\Models\Shipment::class);
+    }
+
+    public function follow_ups()
+    {
+        return $this->morphMany(\App\Models\FollowUp::class, 'followable');
+    }
+
+    public function communications()
+    {
+        return $this->morphMany(\App\Models\Communication::class, 'communicable');
+    }
+
     public static function nextNumber(string $type = 'commercial'): string
     {
         $prefix = match($type) {

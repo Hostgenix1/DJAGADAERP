@@ -89,7 +89,7 @@
 @push('scripts')
 <script>
 $(function(){
-    const products = {!! $productsJson !!};
+    const products = @json($productsJson);
     let idx=0;
     function addRow(d){
         const r=`<tr><td><select name="items[${idx}][product_id]" class="form-control form-control-sm prod-select"><option value="">Manual</option>${products.map(p=>`<option value="${p.id}" data-price="${p.price}" data-unit="${p.unit}">${p.name}</option>`).join('')}</select><input type="text" name="items[${idx}][description]" class="form-control form-control-sm mt-1" value="${d?.description||''}" required></td><td><input type="number" step="0.01" name="items[${idx}][qty]" class="form-control form-control-sm qty" value="${d?.qty||1}" min="0.01" required></td><td><input type="text" name="items[${idx}][unit]" class="form-control form-control-sm unit" value="${d?.unit||'pc'}"></td><td><input type="number" step="0.01" name="items[${idx}][unit_price]" class="form-control form-control-sm price" value="${d?.price||0}" min="0" required></td><td><input type="number" step="0.01" name="items[${idx}][tax_rate]" class="form-control form-control-sm tax" value="${d?.tax||0}" min="0"></td><td><input type="number" step="0.01" name="items[${idx}][discount_pct]" class="form-control form-control-sm disc" value="${d?.disc||0}" min="0"></td><td class="lt">0.00</td><td><button type="button" class="btn btn-xs btn-danger rm"><i class="fas fa-times"></i></button></td></tr>`;

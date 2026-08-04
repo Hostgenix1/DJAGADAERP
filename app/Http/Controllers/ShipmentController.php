@@ -25,7 +25,7 @@ class ShipmentController extends Controller
 
         $shipmentByCurrency = Shipment::where('status', '!=', 'cancelled')
             ->whereNotNull('total_cost')
-            ->join('currencies', 'shipments.currency_id', '=', 'currencies.id')
+            ->leftJoin('currencies', 'shipments.currency_id', '=', 'currencies.id')
             ->selectRaw('currencies.code, currencies.symbol, COUNT(*) as count, SUM(shipments.total_cost) as total')
             ->groupBy('currencies.code', 'currencies.symbol')
             ->get()
@@ -41,7 +41,10 @@ class ShipmentController extends Controller
         $query = $this->service->query();
 
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $allowedStatuses = ['preparing', 'in_transit', 'delivered', 'cancelled'];
+            if (in_array($request->status, $allowedStatuses)) {
+                $query->where('status', $request->status);
+            }
         }
 
         return DataTables::eloquent($query)

@@ -30,4 +30,24 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function leads()
+    {
+        return $this->hasMany(\App\Models\Lead::class, 'owner_id');
+    }
+
+    public function documents()
+    {
+        return $this->hasMany(\App\Models\Document::class, 'created_by');
+    }
+
+    public function communications()
+    {
+        return $this->hasMany(\App\Models\Communication::class, 'user_id');
+    }
+
+    public function follow_ups()
+    {
+        return $this->hasMany(\App\Models\FollowUp::class, 'assigned_to');
+    }
 }

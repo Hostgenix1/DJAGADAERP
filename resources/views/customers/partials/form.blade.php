@@ -68,7 +68,7 @@
         <label for="currency_id" class="form-label">Currency</label>
         <select name="currency_id" id="currency_id" class="form-control">
             <option value="">-- Select --</option>
-            @foreach($currencies as $id => $code)
+            @foreach(($relations['currency_id'] ?? []) as $id => $code)
                 <option value="{{ $id }}" {{ old('currency_id', $form->currency_id ?? '') == $id ? 'selected' : '' }}>{{ $code }}</option>
             @endforeach
         </select>

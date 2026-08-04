@@ -27,7 +27,7 @@ class InvoiceController extends Controller
         $defaultCurrency = \App\Models\Currency::where('is_default', true)->first();
 
         $invoiceByCurrency = Invoice::where('status', '!=', 'cancelled')
-            ->join('currencies', 'invoices.currency_id', '=', 'currencies.id')
+            ->leftJoin('currencies', 'invoices.currency_id', '=', 'currencies.id')
             ->selectRaw('currencies.code, currencies.symbol, COUNT(*) as count, SUM(invoices.total) as total, SUM(invoices.paid_amount) as paid')
             ->groupBy('currencies.code', 'currencies.symbol')
             ->get()
@@ -44,6 +44,13 @@ class InvoiceController extends Controller
 
         if ($request->filled('type')) {
             $query->where('type', $request->type);
+        }
+
+        if ($request->filled('status')) {
+            $allowedStatuses = ['draft', 'sent', 'paid', 'partial', 'overdue', 'cancelled'];
+            if (in_array($request->status, $allowedStatuses)) {
+                $query->where('status', $request->status);
+            }
         }
 
         return DataTables::eloquent($query)
@@ -94,6 +101,7 @@ class InvoiceController extends Controller
             'items.*.unit_price' => 'required|numeric|min:0',
             'items.*.tax_rate' => 'nullable|numeric|min:0|max:100',
             'items.*.discount_pct' => 'nullable|numeric|min:0|max:100',
+            'discount' => ['nullable', 'numeric', 'min:0'],
         ]);
 
         $invoice = $this->service->createWithItems($data, $data['items']);
@@ -144,6 +152,7 @@ class InvoiceController extends Controller
             'items.*.unit_price' => 'required|numeric|min:0',
             'items.*.tax_rate' => 'nullable|numeric|min:0|max:100',
             'items.*.discount_pct' => 'nullable|numeric|min:0|max:100',
+            'discount' => ['nullable', 'numeric', 'min:0'],
         ]);
 
         $this->service->updateWithItems($invoice, $data, $data['items']);

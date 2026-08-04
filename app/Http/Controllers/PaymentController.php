@@ -24,7 +24,7 @@ class PaymentController extends Controller
         $netCash = $totalReceived - $totalPaid;
         $defaultCurrency = \App\Models\Currency::where('is_default', true)->first();
 
-        $paymentByCurrency = Payment::join('currencies', 'payments.currency_id', '=', 'currencies.id')
+        $paymentByCurrency = Payment::leftJoin('currencies', 'payments.currency_id', '=', 'currencies.id')
             ->selectRaw('currencies.code, currencies.symbol, payments.type, SUM(payments.amount) as total')
             ->groupBy('currencies.code', 'currencies.symbol', 'payments.type')
             ->get()
@@ -137,16 +137,8 @@ class PaymentController extends Controller
     public function destroy(Payment $payment)
     {
         $this->authorize('delete-payments');
-
-        foreach ($payment->invoices as $invoice) {
-            $invoice->paid_amount -= $invoice->pivot->amount;
-            $invoice->status = $invoice->paid_amount >= $invoice->total ? 'paid' : ($invoice->paid_amount > 0 ? 'partial' : 'draft');
-            $invoice->save();
-        }
-
-        $payment->invoices()->detach();
+        \App\Services\PaymentService::reverseAllocations($payment);
         $payment->delete();
-
         return redirect()->route('payments.index')->with('success', 'Payment deleted.');
     }
 }

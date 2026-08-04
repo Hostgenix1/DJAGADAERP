@@ -25,7 +25,7 @@ class QuoteController extends Controller
         $defaultCurrency = \App\Models\Currency::where('is_default', true)->first();
 
         $quoteByCurrency = Quote::where('status', '!=', 'cancelled')
-            ->join('currencies', 'quotes.currency_id', '=', 'currencies.id')
+            ->leftJoin('currencies', 'quotes.currency_id', '=', 'currencies.id')
             ->selectRaw('currencies.code, currencies.symbol, COUNT(*) as count, SUM(quotes.total) as total')
             ->groupBy('currencies.code', 'currencies.symbol')
             ->get()
@@ -41,7 +41,10 @@ class QuoteController extends Controller
         $query = $this->service->query();
 
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $allowedStatuses = ['draft', 'sent', 'accepted', 'rejected', 'expired', 'converted', 'cancelled'];
+            if (in_array($request->status, $allowedStatuses)) {
+                $query->where('status', $request->status);
+            }
         }
 
         return DataTables::eloquent($query)
@@ -87,6 +90,7 @@ class QuoteController extends Controller
             'items.*.unit_price' => 'required|numeric|min:0',
             'items.*.tax_rate' => 'nullable|numeric|min:0|max:100',
             'items.*.discount_pct' => 'nullable|numeric|min:0|max:100',
+            'discount' => ['nullable', 'numeric', 'min:0'],
         ]);
 
         $quote = $this->service->createWithItems($data, $data['items']);
@@ -133,6 +137,7 @@ class QuoteController extends Controller
             'items.*.unit_price' => 'required|numeric|min:0',
             'items.*.tax_rate' => 'nullable|numeric|min:0|max:100',
             'items.*.discount_pct' => 'nullable|numeric|min:0|max:100',
+            'discount' => ['nullable', 'numeric', 'min:0'],
         ]);
 
         $this->service->updateWithItems($quote, $data, $data['items']);

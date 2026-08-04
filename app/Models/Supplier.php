@@ -19,5 +19,13 @@ class Supplier extends Model
         'is_active' => 'boolean',
     ];
 
+    public function products()
+    {
+        return $this->hasMany(\App\Models\Product::class);
+    }
 
+    public function payments()
+    {
+        return $this->hasMany(\App\Models\Payment::class);
+    }
 }

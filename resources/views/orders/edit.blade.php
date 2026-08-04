@@ -102,8 +102,8 @@ $itemsJson = $order->items->map(fn($i) => ['product_id'=>$i->product_id,'descrip
 @push('scripts')
 <script>
 $(function () {
-    const products = {!! $productsJson !!};
-    const existing = {!! $itemsJson !!};
+    const products = @json($productsJson);
+    const existing = @json($itemsJson);
     let idx = 0;
 
     function addRow(data) {

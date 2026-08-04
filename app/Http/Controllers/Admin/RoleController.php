@@ -74,6 +74,10 @@ class RoleController extends Controller
             return back()->with('error', 'The Super Admin role cannot be deleted.');
         }
 
+        if ($role->users()->count() > 0) {
+            return back()->withErrors(['error' => 'Cannot delete role with assigned users. Remove users from this role first.']);
+        }
+
         $role->delete();
 
         return redirect()->route('admin.roles.index')->with('success', 'Role deleted.');

@@ -18,6 +18,11 @@ class Communication extends Model
         'occurred_at' => 'datetime',
     ];
 
+    public function communicable()
+    {
+        return $this->morphTo();
+    }
+
     public function contact()
     {
         return $this->belongsTo(Contact::class, 'contact_id', 'id');

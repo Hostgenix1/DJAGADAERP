@@ -37,4 +37,14 @@ class Lead extends Model
     {
         return $this->belongsTo(Customer::class, 'customer_id', 'id');
     }
+
+    public function follow_ups()
+    {
+        return $this->morphMany(\App\Models\FollowUp::class, 'followable');
+    }
+
+    public function communications()
+    {
+        return $this->morphMany(\App\Models\Communication::class, 'communicable');
+    }
 }

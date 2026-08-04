@@ -102,7 +102,7 @@ $productsJson = $products->map(fn($p) => ['id'=>$p->id,'name'=>$p->name,'price'=
 @push('scripts')
 <script>
 $(function () {
-    const products = {!! $productsJson !!};
+    const products = @json($productsJson);
     let idx = 0;
 
     function addRow(data) {

@@ -24,7 +24,7 @@ class Product extends Model
     protected $casts = [
         'buy_price' => 'decimal:2',
         'sell_price' => 'decimal:2',
-        'weight_kg' => 'decimal:2',
+        'weight_kg' => 'decimal:3',
         'is_active' => 'boolean',
     ];
 
