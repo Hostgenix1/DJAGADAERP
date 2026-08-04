@@ -22,7 +22,7 @@
         </div>
 <div class="col-md-6 col-field">
             <label for="rate" class="form-label">Rate (vs base)</label>
-            <input type="number" step="0.01" name="rate" id="rate" class="form-control" value="{{ old('rate', $form->rate ?? '') }}">
+            <input type="number" step="0.0001" name="rate" id="rate" class="form-control" value="{{ old('rate', $form->rate ?? '') }}">
             @error('rate')
                 <span class="text-danger small">{{ $message }}</span>
             @enderror

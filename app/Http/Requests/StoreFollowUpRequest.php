@@ -14,6 +14,7 @@ class StoreFollowUpRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'type' => 'required|string',
             'followable_type' => 'required',
             'followable_id' => 'required',
             'due_date' => 'required',

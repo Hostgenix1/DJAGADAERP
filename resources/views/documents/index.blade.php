@@ -120,6 +120,7 @@
                             <option value="App\Models\Quote">Quote</option>
                             <option value="App\Models\Invoice">Invoice</option>
                             <option value="App\Models\Payment">Payment</option>
+                            <option value="App\Models\Order">Order</option>
                         </select>
                     </div>
                     <div class="form-group">

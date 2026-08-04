@@ -121,7 +121,7 @@ class PaymentController extends Controller
 
     public function outstandingJson()
     {
-        $this->authorize('create-payments');
+        $this->authorize('view-payments');
         $invoices = \App\Models\Invoice::with('customer', 'currency')
             ->where('status', '!=', 'cancelled')
             ->whereRaw('total - paid_amount > 0')

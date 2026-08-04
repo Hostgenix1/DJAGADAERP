@@ -70,6 +70,30 @@
         </select>
     </div>
     <div class="col-md-12 col-field">
+        <label for="communicable_id" class="form-label">Related To *</label>
+        <select name="communicable_id" id="communicable_id" class="form-control" required>
+            <option value="">-- Select --</option>
+            <optgroup label="Customers">
+                @foreach(\App\Models\Customer::where('is_active', true)->orderBy('company_name')->get() as $c)
+                    <option value="{{ $c->id }}" data-type="App\Models\Customer" {{ old('communicable_id', optional($form)->communicable_id ?? '') == $c->id ? 'selected' : '' }}>{{ $c->company_name }}</option>
+                @endforeach
+            </optgroup>
+            <optgroup label="Leads">
+                @foreach(\App\Models\Lead::orderBy('company_name')->get() as $l)
+                    <option value="{{ $l->id }}" data-type="App\Models\Lead" {{ old('communicable_id', optional($form)->communicable_id ?? '') == $l->id ? 'selected' : '' }}>{{ $l->company_name }}</option>
+                @endforeach
+            </optgroup>
+            <optgroup label="Invoices">
+                @foreach(\App\Models\Invoice::where('status', '!=', 'cancelled')->orderBy('number')->get() as $inv)
+                    <option value="{{ $inv->id }}" data-type="App\Models\Invoice" {{ old('communicable_id', optional($form)->communicable_id ?? '') == $inv->id ? 'selected' : '' }}>{{ $inv->number }}</option>
+                @endforeach
+            </optgroup>
+        </select>
+        @error('communicable_id')
+            <span class="text-danger small">{{ $message }}</span>
+        @enderror
+    </div>
+    <div class="col-md-12 col-field">
         <label for="body" class="form-label">Body</label>
         <textarea name="body" id="body" class="form-control" rows="4">{{ old('body', optional($form)->body ?? '') }}</textarea>
         @error('body')
@@ -77,3 +101,11 @@
         @enderror
     </div>
 </div>
+<script>
+$(function() {
+    $('#communicable_id').on('change', function() {
+        var type = $(this).find(':selected').data('type');
+        if (type) $('#communicable_type').val(type).trigger('change');
+    });
+});
+</script>

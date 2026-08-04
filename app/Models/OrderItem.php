@@ -23,11 +23,8 @@ class OrderItem extends Model
     {
         parent::boot();
         static::saving(function (OrderItem $item) {
-            $base = $item->unit_price * $item->qty;
-            $discount = $base * ($item->discount_pct ?? 0) / 100;
-            $taxable = $base - $discount;
-            $tax = $taxable * ($item->tax_rate ?? 0) / 100;
-            $item->line_total = $taxable + $tax;
+            $base = ($item->unit_price ?? 0) * ($item->qty ?? 0);
+            $item->line_total = $base - ($base * ($item->discount_pct ?? 0) / 100);
         });
     }
 

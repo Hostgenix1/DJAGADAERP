@@ -79,8 +79,8 @@ class Customer extends Model
     {
         parent::boot();
         static::deleting(function (Customer $customer) {
-            if ($customer->invoices()->exists() || $customer->quotes()->exists() || $customer->orders()->exists()) {
-                throw new \Exception('Cannot delete customer with existing invoices, quotes, or orders. Please archive instead.');
+            if ($customer->invoices()->exists() || $customer->quotes()->exists() || $customer->orders()->exists() || $customer->shipments()->exists() || $customer->payments()->exists()) {
+                throw new \Exception('Cannot delete customer with existing financial records. Please archive instead.');
             }
         });
     }

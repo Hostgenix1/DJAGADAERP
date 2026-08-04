@@ -46,6 +46,25 @@
         </select>
     </div>
     <div class="col-md-12 col-field">
+        <label for="followable_id" class="form-label">Related To *</label>
+        <select name="followable_id" id="followable_id" class="form-control" required>
+            <option value="">-- Select --</option>
+            <optgroup label="Customers">
+                @foreach(\App\Models\Customer::where('is_active', true)->orderBy('company_name')->get() as $c)
+                    <option value="{{ $c->id }}" data-type="App\Models\Customer" {{ old('followable_id', optional($form)->followable_id ?? '') == $c->id ? 'selected' : '' }}>{{ $c->company_name }}</option>
+                @endforeach
+            </optgroup>
+            <optgroup label="Leads">
+                @foreach(\App\Models\Lead::orderBy('company_name')->get() as $l)
+                    <option value="{{ $l->id }}" data-type="App\Models\Lead" {{ old('followable_id', optional($form)->followable_id ?? '') == $l->id ? 'selected' : '' }}>{{ $l->company_name }}</option>
+                @endforeach
+            </optgroup>
+        </select>
+        @error('followable_id')
+            <span class="text-danger small">{{ $message }}</span>
+        @enderror
+    </div>
+    <div class="col-md-12 col-field">
         <label for="note" class="form-label">Note</label>
         <textarea name="note" id="note" class="form-control" rows="3">{{ old('note', optional($form)->note ?? '') }}</textarea>
         @error('note')
@@ -53,3 +72,11 @@
         @enderror
     </div>
 </div>
+<script>
+$(function() {
+    $('#followable_id').on('change', function() {
+        var type = $(this).find(':selected').data('type');
+        if (type) $('#followable_type').val(type).trigger('change');
+    });
+});
+</script>

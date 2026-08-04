@@ -42,7 +42,7 @@ class OrderController extends Controller
         $query = $this->service->query();
 
         if ($request->filled('status')) {
-            $allowedStatuses = ['draft', 'confirmed', 'processing', 'shipped', 'completed', 'cancelled'];
+            $allowedStatuses = ['draft', 'confirmed', 'processing', 'completed', 'cancelled'];
             if (in_array($request->status, $allowedStatuses)) {
                 $query->where('status', $request->status);
             }

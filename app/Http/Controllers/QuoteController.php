@@ -149,9 +149,17 @@ class QuoteController extends Controller
     {
         $this->authorize('update-quotes');
 
-        $invoice = $this->service->convertToInvoice($quote, $type);
+        $allowedTypes = ['commercial', 'proforma', 'credit_note', 'packing_list', 'delivery_note'];
+        if (!in_array($type, $allowedTypes)) {
+            return back()->with('error', 'Invalid invoice type.');
+        }
 
-        return redirect()->route('invoices.show', $invoice)->with('success', 'Quote converted to '.ucfirst(str_replace('_', ' ', $type)).'.');
+        try {
+            $invoice = $this->service->convertToInvoice($quote, $type);
+            return redirect()->route('invoices.show', $invoice)->with('success', 'Quote converted to '.ucfirst(str_replace('_', ' ', $type)).'.');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
     }
 
     public function pdf(\App\Models\Quote $quote)

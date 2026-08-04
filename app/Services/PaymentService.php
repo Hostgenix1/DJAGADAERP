@@ -21,6 +21,7 @@ class PaymentService
                 throw new \InvalidArgumentException('Total allocations exceed payment amount.');
             }
 
+            $data['number'] = \App\Models\Payment::nextNumber();
             $payment = Payment::create($data);
 
             foreach ($allocations as $alloc) {
@@ -46,7 +47,7 @@ class PaymentService
     {
         DB::transaction(function () use ($payment) {
             foreach ($payment->invoices as $invoice) {
-                $pivotAmount = $payment->invoices->where('id', $invoice->id)->first()->pivot->amount ?? 0;
+                $pivotAmount = $invoice->pivot->amount ?? 0;
                 $invoice->decrement('paid_amount', $pivotAmount);
                 $invoice->refresh();
                 if ($invoice->paid_amount <= 0) {

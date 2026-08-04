@@ -41,7 +41,7 @@ class ShipmentController extends Controller
         $query = $this->service->query();
 
         if ($request->filled('status')) {
-            $allowedStatuses = ['preparing', 'in_transit', 'delivered', 'cancelled'];
+            $allowedStatuses = ['preparing', 'in_transit', 'customs', 'delivered', 'cancelled'];
             if (in_array($request->status, $allowedStatuses)) {
                 $query->where('status', $request->status);
             }

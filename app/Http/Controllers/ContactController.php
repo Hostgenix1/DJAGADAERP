@@ -59,7 +59,8 @@ class ContactController extends Controller
             })
             ->editColumn('created_at', fn ($m) => $m->created_at?->format('d M Y H:i'))
             ->editColumn('updated_at', fn ($m) => $m->updated_at?->format('d M Y H:i'))
-            ->rawColumns(['actions'])
+            ->editColumn('is_primary', fn ($c) => $c->is_primary ? '<span class="badge badge-success">Yes</span>' : '<span class="badge badge-secondary">No</span>')
+            ->rawColumns(['actions', 'is_primary'])
             ->make(true);
     }
 

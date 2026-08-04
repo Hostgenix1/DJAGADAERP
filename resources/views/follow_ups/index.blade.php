@@ -16,7 +16,7 @@
             <div class="card-header">
                 <h3 class="card-title"><i class="fas fa-calendar-check mr-1"></i> Follow-ups</h3>
                 <div class="card-tools">
-                    @can('create-follow_ups')
+                    @can('create-follow-ups')
                         <a href="{{ route('follow_ups.create') }}" class="btn btn-primary btn-sm">
                             <i class="fas fa-plus"></i> New Follow-up
                         </a>

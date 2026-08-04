@@ -14,6 +14,8 @@ class StoreCommunicationRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'type' => 'required|string',
+            'direction' => 'required|string|in:inbound,outbound',
             'communicable_type' => 'required',
             'communicable_id' => 'required',
             'subject' => 'nullable|max:255',
