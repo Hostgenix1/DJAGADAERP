@@ -52,9 +52,7 @@
                 <a href="{{ route('password.request') }}">I forgot my password</a>
             @endif
         </p>
-        @if (Route::has('register'))
-            <p class="mb-0"><a href="{{ route('register') }}" class="text-center">Sign up for a new account</a></p>
-        @endif
+
     </div>
 </div>
 @endsection
