@@ -217,7 +217,8 @@ class QuoteController extends Controller
             'iban'          => $svc->get('company_bank_iban'),
             'swift_code'    => $svc->get('company_bank_swift'),
         ];
-        $html = view('quotes.pdf', compact('quote', 'company', 'bankAccount'))->render();
+        $qrSvg = \SimpleSoftwareIO\QrCode\Facades\QrCode::size(120)->generate($quote->number);
+        $html = view('quotes.pdf', compact('quote', 'company', 'bankAccount', 'qrSvg'))->render();
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHtml($html)
             ->setPaper('a4')
             ->set_option('isHtml5ParserEnabled', true)
