@@ -16,6 +16,34 @@
                 <i class="fas fa-edit mr-1"></i> Edit
             </a>
         @endif
+        @if(in_array($order->status, ['draft']))
+            <form method="POST" action="{{ route('orders.update-status', $order) }}" class="d-inline mr-2">
+                @csrf @method('PATCH')
+                <input type="hidden" name="status" value="confirmed">
+                <button class="btn btn-primary btn-sm" onclick="return confirm('Confirm this order?');"><i class="fas fa-check mr-1"></i> Confirm</button>
+            </form>
+        @endif
+        @if($order->status === 'confirmed')
+            <form method="POST" action="{{ route('orders.update-status', $order) }}" class="d-inline mr-2">
+                @csrf @method('PATCH')
+                <input type="hidden" name="status" value="processing">
+                <button class="btn btn-warning btn-sm" onclick="return confirm('Start processing?');"><i class="fas fa-cog mr-1"></i> Process</button>
+            </form>
+        @endif
+        @if($order->status === 'processing')
+            <form method="POST" action="{{ route('orders.update-status', $order) }}" class="d-inline mr-2">
+                @csrf @method('PATCH')
+                <input type="hidden" name="status" value="completed">
+                <button class="btn btn-success btn-sm" onclick="return confirm('Mark as completed?');"><i class="fas fa-check-double mr-1"></i> Complete</button>
+            </form>
+        @endif
+        @if(!in_array($order->status, ['completed', 'cancelled']))
+            <form method="POST" action="{{ route('orders.update-status', $order) }}" class="d-inline mr-2">
+                @csrf @method('PATCH')
+                <input type="hidden" name="status" value="cancelled">
+                <button class="btn btn-outline-danger btn-sm" onclick="return confirm('Cancel this order?');"><i class="fas fa-times mr-1"></i> Cancel</button>
+            </form>
+        @endif
         @if(in_array($order->status, ['draft', 'cancelled']))
             <form method="POST" action="{{ route('orders.destroy', $order) }}" class="d-inline" onsubmit="return confirm('Delete this order?');">
                 @csrf @method('DELETE')

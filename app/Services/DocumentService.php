@@ -24,7 +24,7 @@ class DocumentService
             $existing->update(['is_latest' => false]);
         }
 
-        $path = $file->store('documents', 'public');
+        $path = $file->store('documents', 'local');
 
         return Document::create([
             'documentable_type' => get_class($model),
@@ -44,8 +44,8 @@ class DocumentService
 
     public function delete(Document $document): bool
     {
-        if (Storage::disk('public')->exists($document->file_path)) {
-            Storage::disk('public')->delete($document->file_path);
+        if (Storage::disk('local')->exists($document->file_path)) {
+            Storage::disk('local')->delete($document->file_path);
         }
 
         return $document->delete();

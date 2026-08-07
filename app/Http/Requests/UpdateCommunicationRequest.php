@@ -14,13 +14,15 @@ class UpdateCommunicationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'communicable_type' => 'sometimes|nullable',
-            'communicable_id' => 'sometimes|nullable',
+            'type' => 'sometimes|string|in:call,email,meeting,note,whatsapp',
+            'direction' => 'sometimes|string|in:inbound,outbound',
+            'communicable_type' => 'sometimes|nullable|string',
+            'communicable_id' => 'sometimes|nullable|integer',
             'subject' => 'sometimes|max:255',
-            'body' => 'sometimes|nullable',
-            'contact_id' => 'sometimes|nullable',
-            'user_id' => 'sometimes|nullable',
-            'occurred_at' => 'sometimes|nullable',
+            'body' => 'sometimes|nullable|string',
+            'contact_id' => 'sometimes|nullable|integer',
+            'user_id' => 'sometimes|nullable|integer',
+            'occurred_at' => 'sometimes|nullable|date',
         ];
     }
 }

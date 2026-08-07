@@ -143,6 +143,31 @@ class OrderController extends Controller
         return redirect()->route('orders.show', $order)->with('success', 'Order updated.');
     }
 
+    public function updateStatus(Request $request, Order $order)
+    {
+        $this->authorize('update-orders');
+
+        $data = $request->validate([
+            'status' => 'required|in:confirmed,processing,completed,cancelled',
+        ]);
+
+        $allowed = [
+            'draft'      => ['confirmed', 'cancelled'],
+            'confirmed'  => ['processing', 'cancelled'],
+            'processing' => ['completed', 'cancelled'],
+            'completed'  => [],
+            'cancelled'  => ['draft'],
+        ];
+
+        if (!in_array($data['status'], $allowed[$order->status] ?? [])) {
+            return back()->with('error', 'Cannot change status from "'.$order->status.'" to "'.$data['status'].'".');
+        }
+
+        $order->update(['status' => $data['status']]);
+
+        return redirect()->route('orders.show', $order)->with('success', 'Order status updated to '.ucfirst($data['status']).'.');
+    }
+
     public function destroy(Order $order)
     {
         $this->authorize('delete-orders');

@@ -14,13 +14,13 @@ class StoreFollowUpRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'type' => 'required|string',
+            'type' => 'required|string|in:call,email,meeting,note,task',
             'followable_type' => 'required',
-            'followable_id' => 'required',
-            'due_date' => 'required',
-            'completed_at' => 'nullable',
-            'note' => 'nullable',
-            'assigned_to' => 'nullable',
+            'followable_id' => 'required|integer',
+            'due_date' => 'required|date',
+            'completed_at' => 'nullable|date',
+            'note' => 'nullable|string',
+            'assigned_to' => 'nullable|string|max:255',
         ];
     }
 }

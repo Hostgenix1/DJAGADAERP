@@ -135,6 +135,10 @@ class InvoiceController extends Controller
     {
         $this->authorize('update-invoices');
 
+        if (!in_array($invoice->status, ['draft'])) {
+            return back()->with('error', 'Only draft invoices can be edited.');
+        }
+
         $data = $request->validate([
             'type' => 'required|in:commercial,proforma,credit_note,packing_list,delivery_note',
             'customer_id' => 'required|exists:customers,id',
@@ -229,6 +233,11 @@ class InvoiceController extends Controller
     public function destroy(Invoice $invoice)
     {
         $this->authorize('delete-invoices');
+
+        if (!in_array($invoice->status, ['draft', 'cancelled'])) {
+            return back()->with('error', 'Only draft or cancelled invoices can be deleted.');
+        }
+
         $invoice->items()->delete();
         $invoice->delete();
         return redirect()->route('invoices.index')->with('success', 'Invoice deleted.');

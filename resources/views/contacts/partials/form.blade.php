@@ -40,7 +40,7 @@
             @enderror
         </div>
 <div class="col-md-6 col-field">
-            <div class="form-check"><input type="checkbox" name="is_primary" id="is_primary" value="1" class="form-check-input @error('is_primary') is-invalid @enderror" {{ old('is_primary', $form->is_primary ?? false) ? 'checked' : '' }}><label class="form-check-label" for="is_primary">Primary Contact</label><div class="invalid-feedback">@error('is_primary') {{ $message }} @enderror</div></div>
+            <div class="form-check"><input type="hidden" name="is_primary" value="0"><input type="checkbox" name="is_primary" id="is_primary" value="1" class="form-check-input @error('is_primary') is-invalid @enderror" {{ old('is_primary', $form->is_primary ?? false) ? 'checked' : '' }}><label class="form-check-label" for="is_primary">Primary Contact</label><div class="invalid-feedback">@error('is_primary') {{ $message }} @enderror</div></div>
             @error('is_primary')
                 <span class="text-danger small">{{ $message }}</span>
             @enderror

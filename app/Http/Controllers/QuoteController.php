@@ -122,6 +122,10 @@ class QuoteController extends Controller
     {
         $this->authorize('update-quotes');
 
+        if (in_array($quote->status, ['converted'])) {
+            return back()->with('error', 'Converted quotes cannot be edited.');
+        }
+
         $data = $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'currency_id' => 'nullable|exists:currencies,id',
@@ -224,6 +228,11 @@ class QuoteController extends Controller
     public function destroy(Quote $quote)
     {
         $this->authorize('delete-quotes');
+
+        if (in_array($quote->status, ['converted'])) {
+            return back()->with('error', 'Converted quotes cannot be deleted.');
+        }
+
         $quote->items()->delete();
         $quote->delete();
 

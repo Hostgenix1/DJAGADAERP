@@ -33,7 +33,7 @@ class RolesAndPermissionsSeeder extends Seeder
         $salesPerms = ['view-dashboard','view-customers','create-customers','update-customers','view-contacts','create-contacts','update-contacts',
             'view-leads','create-leads','update-leads','view-follow-ups','create-follow-ups','update-follow-ups',
             'view-communications','create-communications','update-communications',
-            'view-brands','view-categories','view-suppliers','view-products',
+            'view-brands','view-product_categories','view-suppliers','view-products',
             'view-quotes','create-quotes','update-quotes',
             'view-invoices','create-invoices','update-invoices',
             'view-payments','create-payments',

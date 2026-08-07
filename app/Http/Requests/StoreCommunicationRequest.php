@@ -14,15 +14,15 @@ class StoreCommunicationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'type' => 'required|string',
+            'type' => 'required|string|in:call,email,meeting,note,whatsapp',
             'direction' => 'required|string|in:inbound,outbound',
-            'communicable_type' => 'required',
-            'communicable_id' => 'required',
+            'communicable_type' => 'required|string',
+            'communicable_id' => 'required|integer',
             'subject' => 'nullable|max:255',
-            'body' => 'nullable',
-            'contact_id' => 'nullable',
-            'user_id' => 'nullable',
-            'occurred_at' => 'required',
+            'body' => 'nullable|string',
+            'contact_id' => 'nullable|integer',
+            'user_id' => 'nullable|integer',
+            'occurred_at' => 'required|date',
         ];
     }
 }

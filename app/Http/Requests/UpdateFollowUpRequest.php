@@ -14,12 +14,13 @@ class UpdateFollowUpRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'type' => 'sometimes|string|in:call,email,meeting,note,task',
             'followable_type' => 'sometimes|nullable',
-            'followable_id' => 'sometimes|nullable',
-            'due_date' => 'sometimes|nullable',
-            'completed_at' => 'sometimes|nullable',
-            'note' => 'sometimes|nullable',
-            'assigned_to' => 'sometimes|nullable',
+            'followable_id' => 'sometimes|nullable|integer',
+            'due_date' => 'sometimes|nullable|date',
+            'completed_at' => 'nullable|date',
+            'note' => 'sometimes|nullable|string',
+            'assigned_to' => 'sometimes|nullable|string|max:255',
         ];
     }
 }

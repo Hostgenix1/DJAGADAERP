@@ -33,6 +33,15 @@
     </div>
     <div class="col-lg-3 col-md-6 col-sm-6 col-12">
         <div class="info-box">
+            <span class="info-box-icon bg-warning"><i class="fas fa-passport"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Customs</span>
+                <span class="info-box-number">{{ $customs }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+        <div class="info-box">
             <span class="info-box-icon bg-success"><i class="fas fa-check-circle"></i></span>
             <div class="info-box-content">
                 <span class="info-box-text">Delivered</span>
@@ -41,38 +50,6 @@
         </div>
     </div>
 </div>
-
-@if(count($shipmentByCurrency) > 0)
-<div class="row mb-3">
-    <div class="col-12">
-        <div class="card card-outline card-secondary">
-            <div class="card-header">
-                <h3 class="card-title"><i class="fas fa-coins mr-1"></i> Shipments by Currency</h3>
-            </div>
-            <div class="card-body p-0">
-                <table class="table table-sm table-striped mb-0">
-                    <thead>
-                        <tr>
-                            <th>Currency</th>
-                            <th class="text-center">Shipments</th>
-                            <th class="text-right">Total Cost</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    @foreach($shipmentByCurrency as $sbc)
-                        <tr>
-                            <td><strong>{{ $sbc['code'] }}</strong> <span class="text-muted">({{ $sbc['symbol'] }})</span></td>
-                            <td class="text-center">{{ $sbc['count'] }}</td>
-                            <td class="text-right">{{ $sbc['symbol'] }}{{ number_format($sbc['total'], 2) }}</td>
-                        </tr>
-                    @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
-@endif
 
 <div class="card card-primary card-outline">
     <div class="card-header">
@@ -161,7 +138,7 @@ $(function () {
         columns: [
             { data: 'DT_RowIndex', orderable: false, searchable: false },
             { data: 'number' },
-            { data: 'customer.company_name', name: 'customer.company_name', defaultContent: '-' },
+            { data: 'customer.company_name', name: 'customer.company_name', defaultContent: '-', searchable: false },
             { data: 'carrier' },
             { data: 'tracking_number' },
             { data: 'shipping_method' },

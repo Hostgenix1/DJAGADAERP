@@ -43,7 +43,7 @@ class Document extends Model
 
     public function getUrlAttribute(): string
     {
-        return asset('storage/'.$this->file_path);
+        return route('documents.download', $this);
     }
 
     public function getFormattedSizeAttribute(): string

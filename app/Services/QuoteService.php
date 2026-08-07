@@ -7,6 +7,8 @@ use App\Models\InvoiceItem;
 use App\Models\Quote;
 use App\Models\QuoteItem;
 
+use Illuminate\Support\Facades\DB;
+
 class QuoteService
 {
     public function createWithItems(array $data, array $items): Quote
@@ -58,43 +60,46 @@ class QuoteService
 
     public function convertToInvoice(Quote $quote, string $type = 'proforma'): Invoice
     {
-        if ($quote->status === 'converted') {
-            throw new \Exception('This quote has already been converted.');
-        }
+        return DB::transaction(function () use ($quote, $type) {
+            $quote->refresh();
+            if ($quote->status === 'converted') {
+                throw new \Exception('This quote has already been converted.');
+            }
 
-        $invoice = Invoice::create([
-            'number' => Invoice::nextNumber($type),
-            'type' => $type,
-            'customer_id' => $quote->customer_id,
-            'currency_id' => $quote->currency_id,
-            'invoice_date' => now(),
-            'due_date' => now()->addDays(30),
-            'status' => 'draft',
-            'subtotal' => $quote->subtotal,
-            'tax_amount' => $quote->tax_amount,
-            'discount' => $quote->discount,
-            'total' => $quote->total,
-            'notes' => $quote->notes,
-            'quote_id' => $quote->id,
-        ]);
-
-        foreach ($quote->items as $item) {
-            InvoiceItem::create([
-                'invoice_id' => $invoice->id,
-                'product_id' => $item->product_id,
-                'description' => $item->description,
-                'qty' => $item->qty,
-                'unit' => $item->unit,
-                'unit_price' => $item->unit_price,
-                'tax_rate' => $item->tax_rate,
-                'discount_pct' => $item->discount_pct,
-                'line_total' => $item->line_total,
+            $invoice = Invoice::create([
+                'number' => Invoice::nextNumber($type),
+                'type' => $type,
+                'customer_id' => $quote->customer_id,
+                'currency_id' => $quote->currency_id,
+                'invoice_date' => now(),
+                'due_date' => now()->addDays(30),
+                'status' => 'draft',
+                'subtotal' => $quote->subtotal,
+                'tax_amount' => $quote->tax_amount,
+                'discount' => $quote->discount,
+                'total' => $quote->total,
+                'notes' => $quote->notes,
+                'quote_id' => $quote->id,
             ]);
-        }
 
-        $quote->update(['status' => 'converted']);
+            foreach ($quote->items as $item) {
+                InvoiceItem::create([
+                    'invoice_id' => $invoice->id,
+                    'product_id' => $item->product_id,
+                    'description' => $item->description,
+                    'qty' => $item->qty,
+                    'unit' => $item->unit,
+                    'unit_price' => $item->unit_price,
+                    'tax_rate' => $item->tax_rate,
+                    'discount_pct' => $item->discount_pct,
+                    'line_total' => $item->line_total,
+                ]);
+            }
 
-        return $invoice;
+            $quote->update(['status' => 'converted']);
+
+            return $invoice;
+        });
     }
 
     public function query()

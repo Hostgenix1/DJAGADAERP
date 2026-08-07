@@ -178,11 +178,11 @@ $(function () {
             { data: 'DT_RowIndex', orderable: false, searchable: false },
             { data: 'number' },
             { data: 'type' },
-            { data: 'customer.company_name', name: 'customer.company_name', defaultContent: '-' },
+            { data: 'customer.company_name', name: 'customer.company_name', defaultContent: '-', searchable: false },
             { data: 'invoice_date' },
             { data: 'due_date' },
             { data: 'total', className: 'text-right' },
-            { data: 'balance', className: 'text-right' },
+            { data: 'balance', className: 'text-right', searchable: false, orderable: false },
             { data: 'status' },
             { data: 'actions', orderable: false, searchable: false }
         ],

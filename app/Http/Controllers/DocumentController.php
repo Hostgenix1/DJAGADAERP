@@ -59,7 +59,7 @@ class DocumentController extends Controller
             'documentable_id' => ['required', 'integer'],
             'category' => ['required', 'string', 'max:50'],
             'title' => ['required', 'string', 'max:255'],
-            'file' => ['required', 'file', 'max:20480'],
+            'file' => ['required', 'file', 'max:20480', 'extensions:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif,csv,txt'],
             'notes' => ['nullable', 'string', 'max:500'],
         ]);
 
@@ -95,11 +95,11 @@ class DocumentController extends Controller
 
         $path = $document->file_path;
 
-        if (! Storage::disk('public')->exists($path)) {
+        if (! Storage::disk('local')->exists($path)) {
             abort(404);
         }
 
-        return Storage::disk('public')->download($path, $document->original_name);
+        return Storage::disk('local')->download($path, $document->original_name);
     }
 
     public function destroy(Document $document)

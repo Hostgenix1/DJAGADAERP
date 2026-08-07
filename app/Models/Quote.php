@@ -42,7 +42,7 @@ class Quote extends Model
 
     public static function nextNumber(): string
     {
-        $last = self::orderBy('id', 'desc')->value('number');
+        $last = self::withTrashed()->orderBy('id', 'desc')->value('number');
         $next = 1;
         if ($last && preg_match('/QT-(\d+)/', $last, $m)) {
             $next = (int) $m[1] + 1;

@@ -59,7 +59,7 @@ $(function () {
             { data: 'account_number', name: 'account_number' },
             { data: 'iban', name: 'iban' },
             { data: 'swift_code', name: 'swift_code' },
-            { data: 'currency', name: 'currency' },
+            { data: 'currency', name: 'currency', searchable: false, orderable: false },
             { data: 'is_default', name: 'is_default' },
             { data: 'actions', name: 'actions', orderable: false, searchable: false }
         ],

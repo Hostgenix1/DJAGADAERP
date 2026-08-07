@@ -82,6 +82,8 @@ class Customer extends Model
             if ($customer->invoices()->exists() || $customer->quotes()->exists() || $customer->orders()->exists() || $customer->shipments()->exists() || $customer->payments()->exists()) {
                 throw new \Exception('Cannot delete customer with existing financial records. Please archive instead.');
             }
+            $customer->leads()->update(['customer_id' => null]);
+            $customer->contacts()->delete();
         });
     }
 }

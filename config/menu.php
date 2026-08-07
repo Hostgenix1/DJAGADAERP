@@ -21,7 +21,7 @@ return array (
     'items' => 
     array (
       0 => array ('label' => 'Brand', 'route' => 'brands.index', 'icon' => 'fa-tag', 'permission' => 'view-brands'),
-      1 => array ('label' => 'Category', 'route' => 'product_categories.index', 'icon' => 'fa-th-large', 'permission' => 'view-categories'),
+      1 => array ('label' => 'Category', 'route' => 'product_categories.index', 'icon' => 'fa-th-large', 'permission' => 'view-product_categories'),
       2 => array ('label' => 'Supplier', 'route' => 'suppliers.index', 'icon' => 'fa-truck', 'permission' => 'view-suppliers'),
       3 => array ('label' => 'Product', 'route' => 'products.index', 'icon' => 'fa-box', 'permission' => 'view-products'),
     ),

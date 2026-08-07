@@ -20,7 +20,11 @@ class StoreCustomerRequest extends FormRequest
             'phone' => 'nullable|max:50',
             'address' => 'nullable',
             'city' => 'nullable|max:100',
+            'emirate' => 'nullable|max:100',
             'country' => 'nullable|max:100',
+            'tax_registration_number' => 'nullable|max:15',
+            'po_box' => 'nullable|max:20',
+            'postal_code' => 'nullable|max:10',
             'currency_id' => 'nullable',
             'is_active' => 'nullable',
         ];

@@ -24,4 +24,26 @@ class Contact extends Model
     {
         return $this->belongsTo(Customer::class, 'customer_id', 'id');
     }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saving(function (Contact $contact) {
+            if ($contact->is_primary && $contact->customer_id) {
+                static::where('customer_id', $contact->customer_id)
+                    ->where('id', '!=', $contact->id)
+                    ->update(['is_primary' => false]);
+            }
+        });
+
+        static::deleted(function (Contact $contact) {
+            if ($contact->is_primary && $contact->customer_id) {
+                $nextPrimary = static::where('customer_id', $contact->customer_id)->first();
+                if ($nextPrimary) {
+                    $nextPrimary->update(['is_primary' => true]);
+                }
+            }
+        });
+    }
 }

@@ -176,7 +176,7 @@ $(function () {
         columns: [
             { data: 'DT_RowIndex', orderable: false, searchable: false },
             { data: 'number' },
-            { data: 'customer.company_name', name: 'customer.company_name', defaultContent: '-' },
+            { data: 'customer.company_name', name: 'customer.company_name', defaultContent: '-', searchable: false },
             { data: 'date' },
             { data: 'valid_until', defaultContent: '-' },
             { data: 'total', className: 'text-right' },

@@ -20,18 +20,10 @@ class ShipmentController extends Controller
         $total = Shipment::count();
         $preparing = Shipment::where('status', 'preparing')->count();
         $inTransit = Shipment::where('status', 'in_transit')->count();
+        $customs = Shipment::where('status', 'customs')->count();
         $delivered = Shipment::where('status', 'delivered')->count();
-        $defaultCurrency = \App\Models\Currency::where('is_default', true)->first();
 
-        $shipmentByCurrency = Shipment::where('status', '!=', 'cancelled')
-            ->whereNotNull('total_cost')
-            ->leftJoin('currencies', 'shipments.currency_id', '=', 'currencies.id')
-            ->selectRaw('currencies.code, currencies.symbol, COUNT(*) as count, SUM(shipments.total_cost) as total')
-            ->groupBy('currencies.code', 'currencies.symbol')
-            ->get()
-            ->toArray();
-
-        return view('shipments.index', compact('total', 'preparing', 'inTransit', 'delivered', 'defaultCurrency', 'shipmentByCurrency'));
+        return view('shipments.index', compact('total', 'preparing', 'inTransit', 'customs', 'delivered'));
     }
 
     public function datatable(Request $request)
@@ -91,6 +83,11 @@ class ShipmentController extends Controller
         ]);
 
         $data['number'] = Shipment::nextNumber();
+
+        if ($data['status'] === 'delivered') {
+            $data['delivered_at'] = now();
+        }
+
         $shipment = Shipment::create($data);
 
         return redirect()->route('shipments.show', $shipment)->with('success', 'Shipment created.');
@@ -137,6 +134,8 @@ class ShipmentController extends Controller
 
         if ($data['status'] === 'delivered' && !$shipment->delivered_at) {
             $data['delivered_at'] = now();
+        } elseif ($data['status'] !== 'delivered' && $shipment->delivered_at) {
+            $data['delivered_at'] = null;
         }
 
         $shipment->update($data);

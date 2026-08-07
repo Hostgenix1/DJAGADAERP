@@ -62,7 +62,7 @@ class Invoice extends Model
             'delivery_note' => 'DN',
             default => 'INV',
         };
-        $last = self::where('type', $type)->orderBy('id', 'desc')->value('number');
+        $last = self::where('type', $type)->withTrashed()->orderBy('id', 'desc')->value('number');
         $next = 1;
         if ($last && preg_match('/(\d+)$/', $last, $m)) {
             $next = (int) $m[1] + 1;

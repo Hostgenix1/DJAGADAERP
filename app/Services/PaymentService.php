@@ -29,6 +29,10 @@ class PaymentService
                 if ($invoice->status === 'cancelled') {
                     throw new \InvalidArgumentException("Cannot allocate to a cancelled invoice ({$invoice->number}).");
                 }
+                $remainingBalance = $invoice->total - $invoice->paid_amount;
+                if ($alloc['amount'] > $remainingBalance) {
+                    throw new \InvalidArgumentException("Allocation amount ({$alloc['amount']}) exceeds remaining balance ({$remainingBalance}) for invoice {$invoice->number}.");
+                }
                 $invoice->increment('paid_amount', $alloc['amount']);
                 $invoice->refresh();
                 if ($invoice->paid_amount >= $invoice->total) {
@@ -51,7 +55,7 @@ class PaymentService
                 $invoice->decrement('paid_amount', $pivotAmount);
                 $invoice->refresh();
                 if ($invoice->paid_amount <= 0) {
-                    $invoice->update(['status' => 'sent']);
+                    $invoice->update(['status' => 'draft']);
                 } elseif ($invoice->paid_amount < $invoice->total) {
                     $invoice->update(['status' => 'partial']);
                 }
