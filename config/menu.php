@@ -64,6 +64,16 @@ return array (
   ),
   6 => 
   array (
+    'label' => 'Purchasing',
+    'icon' => 'fa-folder-open',
+    'items' => 
+    array (
+      0 => array ('label' => 'Purchase Order', 'route' => 'purchase_orders.index', 'icon' => 'fa-clipboard-list', 'permission' => 'view-purchase-orders'),
+      1 => array ('label' => 'Supplier Bills', 'route' => 'supplier_bills.index', 'icon' => 'fa-file-invoice-dollar', 'permission' => 'view-supplier-bills'),
+    ),
+  ),
+  7 => 
+  array (
     'label' => 'Payments',
     'icon' => 'fa-folder-open',
     'items' => 
@@ -71,7 +81,7 @@ return array (
       0 => array ('label' => 'Payment', 'route' => 'payments.index', 'icon' => 'fa-money-check-alt', 'permission' => 'view-payments'),
     ),
   ),
-  7 => 
+  8 => 
   array (
     'label' => 'Documents',
     'icon' => 'fa-folder-open',
@@ -80,7 +90,7 @@ return array (
       0 => array ('label' => 'All Documents', 'route' => 'documents.index', 'icon' => 'fa-file-alt', 'permission' => 'view-documents'),
     ),
   ),
-  8 => 
+  9 => 
   array (
     'label' => 'Settings',
     'icon' => 'fa-folder-open',
@@ -88,12 +98,14 @@ return array (
     array (
       0 => array ('label' => 'Bank Accounts', 'route' => 'bank-accounts.index', 'icon' => 'fa-university', 'permission' => 'view-bank-accounts'),
       1 => array ('label' => 'Currency', 'route' => 'currencies.index', 'icon' => 'fa-money-bill', 'permission' => 'view-currencies'),
-      2 => array ('label' => 'Company', 'route' => 'admin.settings.company', 'icon' => 'fa-building', 'permission' => 'view-settings'),
-      3 => array ('label' => 'Taxes', 'route' => 'admin.settings.taxes', 'icon' => 'fa-percent', 'permission' => 'view-settings'),
-      4 => array ('label' => 'Audit Log', 'route' => 'admin.settings.audit', 'icon' => 'fa-history', 'permission' => 'view-settings'),
+      2 => array ('label' => 'Payment Terms', 'route' => 'admin.settings.payment_terms', 'icon' => 'fa-calendar-alt', 'permission' => 'view-settings'),
+      3 => array ('label' => 'Units', 'route' => 'admin.settings.units', 'icon' => 'fa-ruler-combined', 'permission' => 'view-settings'),
+      4 => array ('label' => 'Company', 'route' => 'admin.settings.company', 'icon' => 'fa-building', 'permission' => 'view-settings'),
+      5 => array ('label' => 'Taxes', 'route' => 'admin.settings.taxes', 'icon' => 'fa-percent', 'permission' => 'view-settings'),
+      6 => array ('label' => 'Audit Log', 'route' => 'admin.settings.audit', 'icon' => 'fa-history', 'permission' => 'view-settings'),
     ),
   ),
-  9 => 
+  10 => 
   array (
     'label' => 'User Management',
     'icon' => 'fa-folder-open',

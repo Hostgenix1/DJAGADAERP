@@ -35,6 +35,17 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::post('/settings/taxes', [SettingsController::class, 'taxStore'])->name('settings.taxes.store');
     Route::put('/settings/taxes/{tax}', [SettingsController::class, 'taxUpdate'])->name('settings.taxes.update');
     Route::delete('/settings/taxes/{tax}', [SettingsController::class, 'taxDestroy'])->name('settings.taxes.destroy');
+    Route::get('/settings/payment-terms', [SettingsController::class, 'paymentTerms'])->name('settings.payment_terms');
+    Route::get('/settings/payment-terms/data', [SettingsController::class, 'paymentTermsDatatable'])->name('settings.payment_terms.data');
+    Route::post('/settings/payment-terms', [SettingsController::class, 'paymentTermStore'])->name('settings.payment_terms.store');
+    Route::put('/settings/payment-terms/{paymentTerm}', [SettingsController::class, 'paymentTermUpdate'])->name('settings.payment_terms.update');
+    Route::delete('/settings/payment-terms/{paymentTerm}', [SettingsController::class, 'paymentTermDestroy'])->name('settings.payment_terms.destroy');
+    Route::post('/settings/payment-terms/defaults', [SettingsController::class, 'paymentTermDefaults'])->name('settings.payment_terms.defaults');
+    Route::get('/settings/units', [SettingsController::class, 'units'])->name('settings.units');
+    Route::get('/settings/units/data', [SettingsController::class, 'unitsDatatable'])->name('settings.units.data');
+    Route::post('/settings/units', [SettingsController::class, 'unitStore'])->name('settings.units.store');
+    Route::put('/settings/units/{unit}', [SettingsController::class, 'unitUpdate'])->name('settings.units.update');
+    Route::delete('/settings/units/{unit}', [SettingsController::class, 'unitDestroy'])->name('settings.units.destroy');
     Route::get('/settings/audit', [SettingsController::class, 'audit'])->name('settings.audit');
     Route::get('/settings/audit/data', [SettingsController::class, 'auditDatatable'])->name('settings.audit.data');
 });

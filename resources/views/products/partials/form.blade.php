@@ -89,7 +89,13 @@
         </div>
 <div class="col-md-6 col-field">
             <label for="unit" class="form-label">Unit</label>
-            <input type="text" name="unit" id="unit" class="form-control" value="{{ old('unit', $form->unit ?? '') }}">
+            <select name="unit" id="unit" class="form-control @error('unit') is-invalid @enderror">
+                <option value="">-- Select --</option>
+                @foreach(($relations['units'] ?? []) as $u)
+                    <option value="{{ $u }}" {{ old('unit', $form->unit ?? '') == $u ? 'selected' : '' }}>{{ $u }}</option>
+                @endforeach
+                <option value="__other__" {{ old('unit', $form->unit ?? '') && !in_array(old('unit', $form->unit ?? ''), ($relations['units'] ?? [])) ? 'selected' : '' }}>Other</option>
+            </select>
             @error('unit')
                 <span class="text-danger small">{{ $message }}</span>
             @enderror

@@ -19,8 +19,9 @@
                         <strong>Supplier:</strong> {{ $product->supplier?->company_name ?: '-' }}
                     </div>
                     <div class="col-md-6">
-                        <strong>Buy Price:</strong> {{ $product->currency ? $product->currency->code.' ' : '' }}{{ $product->buy_price ? number_format($product->buy_price, 2) : '-' }}<br>
-                        <strong>Sell Price:</strong> {{ $product->currency ? $product->currency->code.' ' : '' }}{{ $product->sell_price ? number_format($product->sell_price, 2) : '-' }}<br>
+@php $baseCode = \App\Support\CurrencyHelper::baseCurrency()?->code ?: ''; @endphp
+                        <strong>Buy Price:</strong> {{ $product->buy_price ? $baseCode.' '.number_format($product->buy_price, 2) : '-' }}<br>
+                        <strong>Sell Price:</strong> {{ $product->sell_price ? $baseCode.' '.number_format($product->sell_price, 2) : '-' }}<br>
                         <strong>Tax:</strong> {{ $product->tax?->name ? $product->tax->name.' ('.$product->tax->rate.'%)' : '-' }}
                     </div>
                 </div>

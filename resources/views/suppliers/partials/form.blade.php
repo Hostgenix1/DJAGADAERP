@@ -56,6 +56,31 @@
             @enderror
         </div>
 <div class="col-md-6 col-field">
+            <label for="currency_id" class="form-label">Default Currency</label>
+            <select name="currency_id" id="currency_id" class="form-control">
+                <option value="">-- Select --</option>
+                @foreach($currencies ?? [] as $id=>$code)
+                    <option value="{{ $id }}" {{ old('currency_id', $form->currency_id ?? '') == $id ? 'selected' : '' }}>{{ $code }}</option>
+                @endforeach
+            </select>
+            @error('currency_id')
+                <span class="text-danger small">{{ $message }}</span>
+            @enderror
+        </div>
+<div class="col-md-6 col-field">
+            <label for="default_payment_term" class="form-label">Default Payment Term (PO / Bills)</label>
+            <select name="default_payment_term" id="default_payment_term" class="form-control">
+                <option value="">-- Select --</option>
+                @foreach($paymentTerms ?? [] as $pt)
+                    <option value="{{ $pt }}" {{ old('default_payment_term', $form->default_payment_term ?? '') === $pt ? 'selected' : '' }}>{{ $pt }}</option>
+                @endforeach
+            </select>
+            <small class="text-muted">Used when converting Purchase Orders to Supplier Bills.</small>
+            @error('default_payment_term')
+                <span class="text-danger small">{{ $message }}</span>
+            @enderror
+        </div>
+<div class="col-md-6 col-field">
             <div class="form-check"><input type="checkbox" name="is_active" id="is_active" value="1" class="form-check-input @error('is_active') is-invalid @enderror" {{ old('is_active', $form->is_active ?? false) ? 'checked' : '' }}><label class="form-check-label" for="is_active">Active</label><div class="invalid-feedback">@error('is_active') {{ $message }} @enderror</div></div>
             @error('is_active')
                 <span class="text-danger small">{{ $message }}</span>

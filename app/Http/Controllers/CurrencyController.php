@@ -42,6 +42,11 @@ class CurrencyController extends Controller
   ),
   4 => 
   array (
+    'label' => 'Default',
+    'data' => 'is_default',
+  ),
+  5 => 
+  array (
     'label' => 'Active',
     'data' => 'is_active',
   ),
@@ -57,9 +62,15 @@ class CurrencyController extends Controller
             ->addColumn('actions', function (Currency $row) {
                 return view('currencies.partials.actions', ['row' => $row])->render();
             })
+            ->editColumn('is_default', fn (Currency $row) => $row->is_default
+                ? '<span class="badge badge-success"><i class="fas fa-check mr-1"></i>Default</span>'
+                : '<span class="text-muted">-</span>')
+            ->editColumn('is_active', fn (Currency $row) => $row->is_active
+                ? '<span class="badge badge-primary">Active</span>'
+                : '<span class="badge badge-secondary">Inactive</span>')
             ->editColumn('created_at', fn ($m) => $m->created_at?->format('d M Y H:i'))
             ->editColumn('updated_at', fn ($m) => $m->updated_at?->format('d M Y H:i'))
-            ->rawColumns(['actions'])
+            ->rawColumns(['actions', 'is_default', 'is_active'])
             ->make(true);
     }
 

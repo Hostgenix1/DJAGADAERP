@@ -73,6 +73,18 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
+                                <label for="bank_address">Bank Address</label>
+                                <textarea name="bank_address" id="bank_address" rows="2"
+                                          class="form-control @error('bank_address') is-invalid @enderror"
+                                          placeholder="Branch address shown on invoices">{{ old('bank_address', $bankAccount->bank_address) }}</textarea>
+                                @error('bank_address')
+                                    <span class="text-danger">{{ $message }}</span>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
                                 <label for="currency_id">Currency <span class="text-danger">*</span></label>
                                 <select name="currency_id" id="currency_id"
                                         class="form-control @error('currency_id') is-invalid @enderror" required>

@@ -73,6 +73,9 @@ class DocumentController extends Controller
             'App\\Models\\Product',
             'App\\Models\\Lead',
             'App\\Models\\Payment',
+            'App\\Models\\Supplier',
+            'App\\Models\\PurchaseOrder',
+            'App\\Models\\SupplierBill',
         ];
         if (!in_array($type, $allowedTypes)) {
             return back()->withErrors(['documentable_type' => 'Invalid type.']);

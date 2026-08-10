@@ -57,8 +57,8 @@ class SupplierController extends Controller
   ),
   7 => 
   array (
-    'label' => 'Active',
-    'data' => 'is_active',
+    'label' => 'Currency',
+    'data' => 'currency_id',
   ),
 )]);
     }
@@ -67,22 +67,41 @@ class SupplierController extends Controller
     {
         $this->authorize('view-suppliers');
 
-        return DataTables::eloquent($this->service->query())
+        return DataTables::eloquent($this->service->query()->with('currency'))
             ->addIndexColumn()
             ->addColumn('actions', function (Supplier $row) {
                 return view('suppliers.partials.actions', ['row' => $row])->render();
             })
+            ->editColumn('currency_id', fn (Supplier $s) => $s->currency?->code ?? '-')
             ->editColumn('created_at', fn ($m) => $m->created_at?->format('d M Y H:i'))
             ->editColumn('updated_at', fn ($m) => $m->updated_at?->format('d M Y H:i'))
             ->rawColumns(['actions'])
             ->make(true);
     }
 
+    public function show(Supplier $supplier)
+    {
+        $this->authorize('view-suppliers');
+
+        $supplier->load(['currency', 'purchaseOrders', 'bills', 'payments', 'documents']);
+
+        $totalPo = $supplier->purchaseOrders->where('status', '!=', 'cancelled')->sum('total');
+        $totalBilled = $supplier->bills->where('status', '!=', 'cancelled')->sum('total');
+        $totalPaid = $supplier->bills->where('status', '!=', 'cancelled')->sum('paid_amount');
+        $outstanding = $totalBilled - $totalPaid;
+        $paymentsTotal = $supplier->payments->sum('amount');
+
+        return view('suppliers.show', compact('supplier', 'totalPo', 'totalBilled', 'totalPaid', 'outstanding', 'paymentsTotal'));
+    }
+
     public function create()
     {
         $this->authorize('create-suppliers');
 
-        return view('suppliers.create', );
+        $currencies = \App\Models\Currency::where('is_active', true)->pluck('code', 'id');
+        $paymentTerms = \App\Support\PaymentTerms::all();
+
+        return view('suppliers.create', compact('currencies', 'paymentTerms'));
     }
 
     public function store(StoreSupplierRequest $request)
@@ -98,9 +117,10 @@ class SupplierController extends Controller
     {
         $this->authorize('update-suppliers');
 
-        $relations = [];
+        $currencies = \App\Models\Currency::where('is_active', true)->pluck('code', 'id');
+        $paymentTerms = \App\Support\PaymentTerms::all();
 
-        return view('suppliers.edit', ['supplier' => $supplier, 'relations' => $relations]);
+        return view('suppliers.edit', compact('supplier', 'currencies', 'paymentTerms'));
     }
 
     public function update(UpdateSupplierRequest $request, Supplier $supplier)

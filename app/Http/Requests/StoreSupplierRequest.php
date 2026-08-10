@@ -22,6 +22,8 @@ class StoreSupplierRequest extends FormRequest
             'city' => 'nullable|max:100',
             'country' => 'nullable|max:100',
             'payment_terms' => 'nullable|max:100',
+            'currency_id' => 'nullable|exists:currencies,id',
+            'default_payment_term' => 'nullable|max:255',
             'is_active' => 'nullable',
         ];
     }

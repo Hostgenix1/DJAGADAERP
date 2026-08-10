@@ -16,10 +16,7 @@ class QuoteService
         $data['number'] = Quote::nextNumber();
         $quote = Quote::create($data);
 
-        foreach ($items as $item) {
-            $quote->items()->create($item);
-        }
-
+        $this->syncItems($quote, $items);
         $quote->recalculate();
 
         return $quote;
@@ -30,13 +27,22 @@ class QuoteService
         $quote->update($data);
 
         $quote->items()->delete();
-        foreach ($items as $item) {
-            $quote->items()->create($item);
-        }
+        $this->syncItems($quote, $items);
 
         $quote->recalculate();
 
         return $quote;
+    }
+
+    private function syncItems(Quote $quote, array $items): void
+    {
+        foreach ($items as $item) {
+            $item['sub_description'] = $item['sub_description'] ?? null;
+            if (empty($item['tax_rate'])) {
+                $item['tax_rate'] = null;
+            }
+            $quote->items()->create($item);
+        }
     }
 
     public function createRevision(Quote $original): Quote
@@ -80,6 +86,15 @@ class QuoteService
                 'total' => $quote->total,
                 'notes' => $quote->notes,
                 'quote_id' => $quote->id,
+                'reference_no' => $quote->reference_no,
+                'payment_terms' => $quote->payment_terms,
+                'delivery_terms' => $quote->delivery_terms,
+                'port_of_loading' => $quote->port_of_loading,
+                'port_of_discharge' => $quote->port_of_discharge,
+                'goods_origin' => $quote->goods_origin,
+                'offer_valid' => $quote->offer_valid,
+                'vat_mode' => $quote->vat_mode ?? 'excluded',
+                'vat_rate' => $quote->vat_rate,
             ]);
 
             foreach ($quote->items as $item) {
@@ -87,6 +102,7 @@ class QuoteService
                     'invoice_id' => $invoice->id,
                     'product_id' => $item->product_id,
                     'description' => $item->description,
+                    'sub_description' => $item->sub_description,
                     'qty' => $item->qty,
                     'unit' => $item->unit,
                     'unit_price' => $item->unit_price,

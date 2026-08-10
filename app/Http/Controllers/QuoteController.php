@@ -67,13 +67,22 @@ class QuoteController extends Controller
         $customers = \App\Models\Customer::pluck('company_name', 'id');
         $currencies = \App\Models\Currency::pluck('code', 'id');
         $products = \App\Models\Product::where('is_active', true)->get(['id', 'name', 'sell_price', 'unit']);
+        $taxes = \App\Models\Tax::sales()->where('is_active', true)->get();
+        $units = \App\Support\Units::all();
+        $paymentTerms = \App\Support\PaymentTerms::all();
+        $incoterms = \App\Support\Incoterms::all();
+        $defaultTax = \App\Models\Tax::sales()->where('is_default', true)->first();
+        $rates = \App\Models\Currency::where('is_active', true)->pluck('rate', 'id');
+        $defaultTermsByType = \App\Support\PaymentTerms::defaultsByType();
 
-        return view('quotes.create', compact('customers', 'currencies', 'products'));
+        return view('quotes.create', compact('customers', 'currencies', 'products', 'taxes', 'units', 'paymentTerms', 'incoterms', 'defaultTax', 'rates', 'defaultTermsByType'));
     }
 
     public function store(Request $request)
     {
         $this->authorize('create-quotes');
+
+        $request->merge($this->normalizeCustomFields($request));
 
         $data = $request->validate([
             'customer_id' => 'required|exists:customers,id',
@@ -82,9 +91,20 @@ class QuoteController extends Controller
             'valid_until' => 'nullable|date|after_or_equal:date',
             'notes' => 'nullable|string|max:1000',
             'terms' => 'nullable|string|max:1000',
+            'reference_no' => 'nullable|string|max:100',
+            'payment_terms' => 'nullable|string|max:1000',
+            'delivery_terms' => 'nullable|string|max:500',
+            'delivery_terms_custom' => 'nullable|string|max:500',
+            'port_of_loading' => 'nullable|string|max:500',
+            'port_of_discharge' => 'nullable|string|max:500',
+            'goods_origin' => 'nullable|string|max:500',
+            'offer_valid' => 'nullable|integer|min:1|max:365',
+            'vat_mode' => 'required|in:none,excluded,included',
+            'vat_rate' => 'nullable|numeric|min:0|max:100',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'nullable|exists:products,id',
             'items.*.description' => 'required|string|max:255',
+            'items.*.sub_description' => 'nullable|string|max:255',
             'items.*.qty' => 'required|numeric|min:0.01',
             'items.*.unit' => 'nullable|string|max:20',
             'items.*.unit_price' => 'required|numeric|min:0',
@@ -114,8 +134,15 @@ class QuoteController extends Controller
         $customers = \App\Models\Customer::pluck('company_name', 'id');
         $currencies = \App\Models\Currency::pluck('code', 'id');
         $products = \App\Models\Product::where('is_active', true)->get(['id', 'name', 'sell_price', 'unit']);
+        $taxes = \App\Models\Tax::sales()->where('is_active', true)->get();
+        $units = \App\Support\Units::all();
+        $paymentTerms = \App\Support\PaymentTerms::all();
+        $incoterms = \App\Support\Incoterms::all();
+        $defaultTax = \App\Models\Tax::sales()->where('is_default', true)->first();
+        $rates = \App\Models\Currency::where('is_active', true)->pluck('rate', 'id');
+        $defaultTermsByType = \App\Support\PaymentTerms::defaultsByType();
 
-        return view('quotes.edit', compact('quote', 'customers', 'currencies', 'products'));
+        return view('quotes.edit', compact('quote', 'customers', 'currencies', 'products', 'taxes', 'units', 'paymentTerms', 'incoterms', 'defaultTax', 'rates', 'defaultTermsByType'));
     }
 
     public function update(Request $request, Quote $quote)
@@ -126,6 +153,8 @@ class QuoteController extends Controller
             return back()->with('error', 'Converted quotes cannot be edited.');
         }
 
+        $request->merge($this->normalizeCustomFields($request));
+
         $data = $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'currency_id' => 'nullable|exists:currencies,id',
@@ -133,9 +162,20 @@ class QuoteController extends Controller
             'valid_until' => 'nullable|date|after_or_equal:date',
             'notes' => 'nullable|string|max:1000',
             'terms' => 'nullable|string|max:1000',
+            'reference_no' => 'nullable|string|max:100',
+            'payment_terms' => 'nullable|string|max:1000',
+            'delivery_terms' => 'nullable|string|max:500',
+            'delivery_terms_custom' => 'nullable|string|max:500',
+            'port_of_loading' => 'nullable|string|max:500',
+            'port_of_discharge' => 'nullable|string|max:500',
+            'goods_origin' => 'nullable|string|max:500',
+            'offer_valid' => 'nullable|integer|min:1|max:365',
+            'vat_mode' => 'required|in:none,excluded,included',
+            'vat_rate' => 'nullable|numeric|min:0|max:100',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'nullable|exists:products,id',
             'items.*.description' => 'required|string|max:255',
+            'items.*.sub_description' => 'nullable|string|max:255',
             'items.*.qty' => 'required|numeric|min:0.01',
             'items.*.unit' => 'nullable|string|max:20',
             'items.*.unit_price' => 'required|numeric|min:0',
@@ -187,6 +227,21 @@ class QuoteController extends Controller
             $logoBase64 = 'data:'.$mime.';base64,'.base64_encode(file_get_contents($fullPath));
         }
 
+        $sigPath = $svc->get('company_signature');
+        $sigBase64 = null;
+        if ($sigPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($sigPath)) {
+            $fullPath = \Illuminate\Support\Facades\Storage::disk('public')->path($sigPath);
+            $ext = strtolower(pathinfo($sigPath, PATHINFO_EXTENSION));
+            $mime = match($ext) {
+                'jpg', 'jpeg' => 'image/jpeg',
+                'png' => 'image/png',
+                'gif' => 'image/gif',
+                'svg' => 'image/svg+xml',
+                default => 'image/png',
+            };
+            $sigBase64 = 'data:'.$mime.';base64,'.base64_encode(file_get_contents($fullPath));
+        }
+
         $company = [
             'name'         => $svc->get('company_name'),
             'address'      => $svc->get('company_address'),
@@ -199,31 +254,31 @@ class QuoteController extends Controller
             'footer'       => $svc->get('company_footer_text'),
             'show_logo'    => $svc->get('show_logo_on_docs'),
             'logo_url'     => $logoBase64,
+            'signature_url' => $sigBase64,
 
             'trade_license' => $svc->get('company_trade_license'),
             'trn'           => $svc->get('company_trn'),
             'free_zone'     => $svc->get('company_free_zone'),
             'entity_type'   => $svc->get('company_entity_type'),
-            'bank_name'    => $svc->get('company_bank_name'),
-            'bank_account' => $svc->get('company_bank_account'),
-            'bank_number'  => '',
-            'bank_iban'    => $svc->get('company_bank_iban'),
-            'bank_swift'   => $svc->get('company_bank_swift'),
         ];
 
-        $bankAccount = (object) [
-            'bank_name'     => $svc->get('company_bank_name'),
-            'account_number' => $svc->get('company_bank_account'),
-            'iban'          => $svc->get('company_bank_iban'),
-            'swift_code'    => $svc->get('company_bank_swift'),
-        ];
+        $bankAccount = \App\Models\CompanyBankAccount::where('is_active', true)->where('is_default', true)->first()
+            ?: \App\Models\CompanyBankAccount::where('is_active', true)->first();
+
+        $company['bank_name']    = $bankAccount?->bank_name ?? $svc->get('company_bank_name');
+        $company['bank_account'] = $bankAccount?->account_name ?? $svc->get('company_bank_account');
+        $company['bank_number']  = $bankAccount?->account_number ?? '';
+        $company['bank_iban']    = $bankAccount?->iban ?? $svc->get('company_bank_iban');
+        $company['bank_swift']   = $bankAccount?->swift_code ?? $svc->get('company_bank_swift');
+        $company['bank_address'] = $bankAccount?->bank_address ?? $svc->get('company_bank_address');
+
         $qrSvg = \SimpleSoftwareIO\QrCode\Facades\QrCode::size(120)->generate($quote->number);
         $html = view('quotes.pdf', compact('quote', 'company', 'bankAccount', 'qrSvg'))->render();
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHtml($html)
             ->setPaper('a4')
             ->set_option('isHtml5ParserEnabled', true)
             ->set_option('isRemoteEnabled', true);
-        return $pdf->download($quote->number.'.pdf');
+        return $pdf->download(str_replace('/', '-', $quote->number).'.pdf');
     }
 
     public function destroy(Quote $quote)
@@ -238,5 +293,24 @@ class QuoteController extends Controller
         $quote->delete();
 
         return redirect()->route('quotes.index')->with('success', 'Quote deleted.');
+    }
+
+    protected function normalizeCustomFields(Request $request): array
+    {
+        $merged = [];
+
+        if ($request->input('payment_terms') === 'Custom' && $request->filled('payment_terms_custom')) {
+            $merged['payment_terms'] = $request->input('payment_terms_custom');
+        }
+
+        if ($request->input('delivery_terms') === 'Custom' && $request->filled('delivery_terms_custom')) {
+            $merged['delivery_terms'] = $request->input('delivery_terms_custom');
+        }
+
+        if ($request->input('vat_rate') === 'custom') {
+            $merged['vat_rate'] = $request->input('vat_rate_custom');
+        }
+
+        return $merged;
     }
 }

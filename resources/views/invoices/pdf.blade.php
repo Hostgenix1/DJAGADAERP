@@ -2,258 +2,222 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<title>{{ $company['name'] }} - Invoice {{ $invoice->number }}</title>
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 10px; color: #2d3748; line-height: 1.5; width: 750px; margin: 0 auto; padding: 25px; }
+    @page { margin: 10mm 10mm 14mm; }
+    * { font-family: 'DejaVu Sans', sans-serif; }
+    body { font-size: 10pt; color: #1E293B; }
 
-.header { display: flex; justify-content: space-between; margin-bottom: 20px; }
-.header-left { flex: 1; }
-.header-right { text-align: right; flex: 1; }
-.company-name { font-size: 18px; font-weight: bold; color: #1a365d; margin-bottom: 4px; }
-.company-detail { font-size: 9px; color: #4a5568; }
-.invoice-title { font-size: 28px; font-weight: bold; color: #2b6cb0; text-transform: uppercase; margin-top: 10px; }
-.invoice-number { font-size: 12px; font-weight: bold; color: #2b6cb0; }
+    /* ── Header ── */
+    .header-table { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
+    .header-table td { vertical-align: top; }
+    .logo { max-height: 150px; max-width: 260px; }
+    .co-info { text-align: right; line-height: 1.45; }
+    .co-name { font-size: 17px; font-weight: bold; color: #111827; }
+    .co-line { font-size: 8.5pt; color: #475569; }
+    .co-badge { font-size: 8pt; color: #64748B; }
 
-.info-bar { display: flex; justify-content: space-between; background: #edf2f7; padding: 10px 15px; border-radius: 4px; margin-bottom: 20px; }
-.info-box { width: 48%; }
-.info-box-title { font-size: 8px; font-weight: bold; text-transform: uppercase; color: #718096; letter-spacing: 0.5px; margin-bottom: 3px; }
-.info-box-value { font-size: 10px; color: #2d3748; }
+    .inv-no-line { display: block; font-size: 14px; font-weight: bold; color: #111827; margin: 2px 0 10px; text-align: right; }
 
-.items-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-.items-table th { background: #2b6cb0; color: #fff; padding: 8px 10px; text-align: left; font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; }
-.items-table th.right { text-align: right; }
-.items-table td { padding: 8px 10px; border-bottom: 1px solid #e2e8f0; font-size: 10px; }
-.items-table td.right { text-align: right; }
-.items-table tr:nth-child(even) td { background: #f7fafc; }
+    /* ── 3-column meta ── */
+    .meta-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+    .meta-box { border: 1px solid #CBD5E1; border-top: 2px solid #111827; padding: 6px 8px; vertical-align: top; background: #fff; }
+    .box-title { font-size: 8.5pt; font-weight: bold; letter-spacing: 1.2px; color: #111827; text-transform: uppercase; margin-bottom: 4px; }
+    .label { font-weight: bold; color: #111827; }
+    .meta-row { padding: 1px 0; line-height: 1.5; }
+    .value { color: #1E293B; }
+    .small { font-size: 8.5pt; }
 
-.bottom-section { display: flex; justify-content: space-between; margin-top: 15px; }
-.notes-box { width: 55%; font-size: 9px; color: #4a5568; }
-.notes-box .label { font-weight: bold; color: #2d3748; margin-bottom: 3px; text-transform: uppercase; font-size: 8px; letter-spacing: 0.5px; }
-.totals-box { width: 42%; }
-.totals-table { width: 100%; border-collapse: collapse; }
-.totals-table td { padding: 6px 10px; font-size: 10px; }
-.totals-table .label-col { text-align: right; color: #4a5568; font-weight: 500; }
-.totals-table .value-col { text-align: right; font-weight: 600; }
-.totals-table .total-row td { border-top: 2px solid #2b6cb0; font-size: 14px; font-weight: bold; color: #2b6cb0; padding: 8px 10px; }
+    /* ── Items ── */
+    table.items { width: 100%; border-collapse: collapse; margin: 6px 0; }
+    table.items th { background: #111827; color: #fff; padding: 5px 6px; text-align: left; font-size: 9pt; letter-spacing: 0.4px; }
+    table.items th.num { text-align: right; }
+    table.items td { padding: 5px 6px; border-bottom: 1px solid #E2E8F0; vertical-align: top; font-size: 10pt; }
+    table.items td.num { text-align: right; white-space: nowrap; }
+    table.items tr:nth-child(even) td { background: #F8FAFC; }
+    .item-desc { font-weight: bold; color: #111827; }
+    .sub-desc { font-size: 8pt; color: #64748B; margin-top: 1px; }
+    .unit-cell { font-weight: bold; color: #111827; text-align: center; }
 
-.bank-bar { background: #edf2f7; padding: 10px 15px; border-radius: 4px; margin-top: 20px; }
-.bank-title { font-size: 8px; font-weight: bold; text-transform: uppercase; color: #718096; letter-spacing: 0.5px; margin-bottom: 5px; }
-.bank-detail { font-size: 9px; color: #2d3748; display: inline-block; margin-right: 25px; }
-.bank-detail strong { color: #1a365d; }
+    /* ── Totals ── */
+    .words { margin-top: 8px; font-size: 9.5pt; font-style: italic; color: #334155; border-top: 1px solid #E2E8F0; padding-top: 6px; }
+    .words b { color: #111827; font-style: normal; text-transform: uppercase; letter-spacing: 0.6px; }
 
-.footer { margin-top: 20px; text-align: center; font-size: 8px; color: #a0aec0; border-top: 1px solid #e2e8f0; padding-top: 10px; }
+    table.totals { width: 260px; margin-left: auto; border-collapse: collapse; margin-top: 4px; }
+    table.totals td { padding: 3px 6px; font-size: 10pt; }
+    table.totals td:last-child { text-align: right; }
+    table.totals tr.total-row td { border-top: 2px solid #111827; font-weight: bold; font-size: 12pt; color: #111827; }
+    .total-due-bg td { background: #111827; color: #fff; font-weight: bold; }
+
+    /* ── Terms ── */
+    .terms-box { border: 1px solid #E2E8F0; padding: 6px 8px; margin-top: 8px; }
+    .terms-title { font-size: 9pt; font-weight: bold; letter-spacing: 1px; color: #111827; text-transform: uppercase; margin-bottom: 3px; }
+    .terms-text { font-size: 9pt; color: #475569; line-height: 1.5; text-align: justify; }
+
+    /* ── Signature ── */
+    .sig-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    .sig-table td { width: 50%; text-align: center; padding: 0 8px; }
+    .sig-line { border-bottom: 1px dotted #94A3B8; height: 24px; margin-bottom: 2px; }
+    .sig-img { max-height: 65px; max-width: 220px; object-fit: contain; margin-bottom: 2px; }
+    .sig-name { font-size: 9.5pt; font-weight: bold; color: #111827; text-transform: uppercase; letter-spacing: 0.8px; }
+    .sig-date { font-size: 8.5pt; color: #64748B; }
 </style>
 </head>
 <body>
 
-<div class="header">
-    <div class="header-left">
-        @if($company['show_logo'] && $company['logo_url'])
-            <img src="{{ $company['logo_url'] }}" style="max-height:45px; margin-bottom:8px;">
-        @endif
-        <div class="company-name">{{ $company['name'] ?? '' }}</div>
-        @if($company['address'])
-            <div class="company-detail">{{ $company['address'] }}</div>
-        @endif
-        @if($company['city'] || $company['country'])
-            <div class="company-detail">{{ $company['city'] }}{{ ($company['city'] && $company['country']) ? ', ' : '' }}{{ $company['country'] }}</div>
-        @endif
-        @if($company['email'])
-            <div class="company-detail">Email: {{ $company['email'] }}</div>
-        @endif
-        @if($company['phone'])
-            <div class="company-detail">Tel: {{ $company['phone'] }}</div>
-        @endif
-        @if($company['trn'])
-            <div class="company-detail"><strong>TRN:</strong> {{ $company['trn'] }}</div>
-        @endif
-        @if($company['trade_license'])
-            <div class="company-detail"><strong>Trade License:</strong> {{ $company['trade_license'] }}</div>
-        @endif
-        @if($company['free_zone'])
-            <div class="company-detail"><strong>Free Zone:</strong> {{ $company['free_zone'] }}</div>
-        @endif
-    </div>
-    <div class="header-right">
-        <div class="invoice-title">INVOICE</div>
-        <div class="invoice-number">{{ $invoice->number }}</div>
-        <div class="company-detail" style="margin-top:8px;">
-            <strong>Date:</strong> {{ $invoice->invoice_date?->format('d M Y') ?? '' }}
-        </div>
-        @if($invoice->due_date)
-            <div class="company-detail">
-                <strong>Due Date:</strong> {{ $invoice->due_date->format('d M Y') }}
-            </div>
-        @endif
-        <div class="company-detail">
-            <strong>Status:</strong> {{ ucfirst($invoice->status) }}
-        </div>
-        <div style="margin-top:8px; display:inline-block;">
-            {!! $qrSvg !!}
-        </div>
-    </div>
-</div>
-
-<div class="info-bar">
-    <div class="info-box">
-        <div class="info-box-title">Bill To</div>
-        <div style="font-weight:bold; font-size:11px; color:#1a365d;">{{ $invoice->customer->company_name ?? 'N/A' }}</div>
-        @if($invoice->customer->contact_person)
-            <div class="info-box-value">Attn: {{ $invoice->customer->contact_person }}</div>
-        @endif
-        @if($invoice->customer->address)
-            <div class="info-box-value">{{ $invoice->customer->address }}</div>
-        @endif
-        @if($invoice->customer->city || $invoice->customer->country)
-            <div class="info-box-value">{{ $invoice->customer->city }}{{ ($invoice->customer->city && $invoice->customer->country) ? ', ' : '' }}{{ $invoice->customer->country }}</div>
-        @endif
-        @if($invoice->customer->emirate)
-            <div class="info-box-value">{{ $invoice->customer->emirate }}</div>
-        @endif
-        @if($invoice->customer->email)
-            <div class="info-box-value">{{ $invoice->customer->email }}</div>
-        @endif
-        @if($invoice->customer->phone)
-            <div class="info-box-value">Tel: {{ $invoice->customer->phone }}</div>
-        @endif
-        @if($invoice->customer->tax_registration_number)
-            <div class="info-box-value"><strong>TRN:</strong> {{ $invoice->customer->tax_registration_number }}</div>
-        @endif
-        @if($invoice->customer->po_box)
-            <div class="info-box-value">PO Box: {{ $invoice->customer->po_box }}</div>
-        @endif
-    </div>
-    <div class="info-box">
-        <div class="info-box-title">Payment Details</div>
-        @if($invoice->currency)
-            <div class="info-box-value"><strong>Currency:</strong> {{ $invoice->currency->name }} ({{ $invoice->currency->code }})</div>
-        @endif
-        @if($invoice->bankAccount)
-            <div class="info-box-value"><strong>Bank:</strong> {{ $invoice->bankAccount->bank_name }}</div>
-            <div class="info-box-value"><strong>Account:</strong> {{ $invoice->bankAccount->account_name }}</div>
-            <div class="info-box-value"><strong>A/C No:</strong> {{ $invoice->bankAccount->account_number }}</div>
-            <div class="info-box-value"><strong>IBAN:</strong> {{ $invoice->bankAccount->iban }}</div>
-            @if($invoice->bankAccount->swift_code)
-                <div class="info-box-value"><strong>SWIFT:</strong> {{ $invoice->bankAccount->swift_code }}</div>
+{{-- ═══ HEADER ═══ --}}
+<table class="header-table">
+    <tr>
+        <td style="width:38%;">
+            @if($company['show_logo'] && $company['logo_url'])
+                <img src="{{ $company['logo_url'] }}" class="logo" alt="Logo">
+            @else
+                <div class="co-name">{{ $company['name'] }}</div>
             @endif
-        @endif
-        @if($invoice->type && $invoice->type !== 'commercial')
-            <div class="info-box-value" style="margin-top:5px;"><strong>Type:</strong> {{ ucfirst(str_replace('_',' ',$invoice->type)) }}</div>
-        @endif
-    </div>
-</div>
+        </td>
+        <td class="co-info">
+            <div class="co-name">{{ $company['name'] }}</div>
+            @if($company['address'])<div class="co-line">{{ $company['address'] }}</div>@endif
+            @if(!empty($company['free_zone']))<div class="co-line">{{ $company['free_zone'] }}</div>@endif
+            @if($company['city'] || $company['country'])<div class="co-line">{{ trim($company['city'].(($company['city'] && $company['country']) ? ', ' : '').$company['country']) }}</div>@endif
+            @if($company['phone'])<div class="co-line">Tel: {{ $company['phone'] }}</div>@endif
+            @if($company['email'])<div class="co-line">Email: {{ $company['email'] }}</div>@endif
+            @if(!empty($company['trade_license']))<div class="co-line">License: {{ $company['trade_license'] }}</div>@endif
+            @if(!empty($company['trn']))<div class="co-line">TRN: {{ $company['trn'] }}</div>@endif
+            @if(!empty($company['registration']))<div class="co-line">Reg: {{ $company['registration'] }}</div>@endif
+        </td>
+    </tr>
+</table>
 
-<table class="items-table">
+<div class="inv-no-line">{{ $invoice->type === 'proforma' ? 'PROFORMA INVOICE' : strtoupper(str_replace('_',' ', $invoice->type)) }} {{ $invoice->number }}</div>
+
+{{-- ═══ 3-COLUMN META ═══ --}}
+<table class="meta-table">
+    <tr>
+        {{-- BILL TO --}}
+        <td class="meta-box" style="width:34%;">
+            <div class="box-title">Bill To</div>
+            <div class="meta-row value" style="font-weight:bold; font-size:10px;">{{ $invoice->customer?->company_name }}</div>
+            @if($invoice->customer?->address)<div class="meta-row value">{{ $invoice->customer->address }}</div>@endif
+            @if($invoice->customer?->city || $invoice->customer?->country)
+                <div class="meta-row value">{{ trim($invoice->customer->city.' '.($invoice->customer->country??'')) }}</div>
+            @endif
+            @if($invoice->customer?->email)<div class="meta-row value">Email: {{ $invoice->customer->email }}</div>@endif
+            @if($invoice->customer?->phone)<div class="meta-row value">Tel: {{ $invoice->customer->phone }}</div>@endif
+        </td>
+
+        {{-- META --}}
+        <td class="meta-box" style="width:33%; border-left:none;">
+            <div class="box-title">Details</div>
+            <div class="meta-row"><span class="label">Invoice Date:</span> <span class="value">{{ $invoice->invoice_date?->format('d/m/Y') }}</span></div>
+            @if($invoice->due_date)<div class="meta-row"><span class="label">Due Date:</span> <span class="value">{{ $invoice->due_date->format('d/m/Y') }}</span></div>@endif
+            @if($invoice->offer_valid)
+<div class="meta-row"><span class="label">Valid For:</span> <span class="value">{{ $invoice->offer_valid }} days</span></div>
+<div class="meta-row"><span class="label">Valid Until:</span> <span class="value">{{ \Carbon\Carbon::parse($invoice->invoice_date)->addDays($invoice->offer_valid)->format('d/m/Y') }}</span></div>
+@endif
+            @if($invoice->reference_no)<div class="meta-row"><span class="label">Reference No:</span> <span class="value">{{ $invoice->reference_no }}</span></div>@endif
+            @if($invoice->payment_terms)<div class="meta-row"><span class="label">Payment Terms:</span> <span class="value">{{ $invoice->payment_terms }}</span></div>@endif
+            @if($invoice->delivery_terms)<div class="meta-row"><span class="label">Delivery Terms:</span> <span class="value">{{ $invoice->delivery_terms }}</span></div>@endif
+            @if($invoice->port_of_loading)<div class="meta-row"><span class="label">Port of Loading:</span> <span class="value">{{ $invoice->port_of_loading }}</span></div>@endif
+            @if($invoice->port_of_discharge)<div class="meta-row"><span class="label">Port of Discharge:</span> <span class="value">{{ $invoice->port_of_discharge }}</span></div>@endif
+            @if($invoice->goods_origin)<div class="meta-row"><span class="label">Goods Origin:</span> <span class="value">{{ $invoice->goods_origin }}</span></div>@endif
+        </td>
+
+        {{-- BANK DETAILS --}}
+        <td class="meta-box" style="width:33%; border-left:none;">
+            <div class="box-title">Bank Details</div>
+            @if(!empty($company['bank_account']))<div class="meta-row"><span class="label">Account Name:</span> <span class="value">{{ $company['bank_account'] }}</span></div>@endif
+            @if(!empty($company['bank_iban']))<div class="meta-row"><span class="label">IBAN:</span> <span class="value">{{ $company['bank_iban'] }}</span></div>@endif
+            @if(!empty($company['bank_number']))<div class="meta-row"><span class="label">Account No:</span> <span class="value">{{ $company['bank_number'] }}</span></div>@endif
+            @if(!empty($company['bank_name']))<div class="meta-row"><span class="label">Bank Name:</span> <span class="value">{{ $company['bank_name'] }}</span></div>@endif
+            @if(!empty($company['bank_swift']))<div class="meta-row"><span class="label">SWIFT Code:</span> <span class="value">{{ $company['bank_swift'] }}</span></div>@endif
+            @if(!empty($company['bank_address']))<div class="meta-row"><span class="label">Address:</span> <span class="value">{{ $company['bank_address'] }}</span></div>@endif
+        </td>
+    </tr>
+</table>
+
+{{-- ═══ ITEMS ═══ --}}
+<table class="items">
     <thead>
-        <tr>
-            <th style="width:5%;">#</th>
-            <th style="width:35%;">Description</th>
-            <th style="width:8%;" class="right">Qty</th>
-            <th style="width:8%;" class="right">Unit</th>
-            <th style="width:12%;" class="right">Unit Price</th>
-            <th style="width:8%;" class="right">Tax %</th>
-            <th style="width:12%;" class="right">Discount</th>
-            <th style="width:12%;" class="right">Total</th>
-        </tr>
+    <tr>
+        <th style="width:4%;">#</th>
+        <th>Description</th>
+        <th class="num" style="width:9%;">Quantity</th>
+        <th style="width:8%;">Unit</th>
+        <th class="num" style="width:13%;">Unit Price</th>
+        <th class="num" style="width:8%;">Taxes</th>
+        <th class="num" style="width:13%;">Total Amount</th>
+    </tr>
     </thead>
     <tbody>
-        @forelse($invoice->items as $index => $item)
+    @foreach($invoice->items as $i => $item)
+        @php
+            $effTax = $item->tax_rate ?? $invoice->vat_rate;
+            $effTax = ($item->tax_rate === null && $invoice->vat_mode === 'none') ? 0 : $effTax;
+            $effTax = $effTax ?? 0;
+        @endphp
         <tr>
-            <td>{{ $index + 1 }}</td>
+            <td>{{ $i + 1 }}</td>
             <td>
-                {{ $item->description ?? $item->product->name ?? '' }}
+                <div class="item-desc">{{ $item->description }}</div>
+                @if($item->sub_description)<div class="sub-desc">{{ $item->sub_description }}</div>@endif
             </td>
-            <td class="right">{{ number_format($item->qty, 2) }}</td>
-            <td class="right">{{ $item->unit ?? '-' }}</td>
-            <td class="right">{{ $invoice->currency?->symbol ?? '$' }} {{ number_format($item->unit_price, 2) }}</td>
-            <td class="right">{{ $item->tax_rate > 0 ? number_format($item->tax_rate, 1).'%' : '-' }}</td>
-            <td class="right">{{ $item->discount_pct > 0 ? number_format($item->discount_pct, 2).'%' : '-' }}</td>
-            <td class="right">{{ $invoice->currency?->symbol ?? '$' }} {{ number_format($item->line_total, 2) }}</td>
+            <td class="num">{{ rtrim(rtrim(\App\Support\SettingsHelper::formatMoney($item->qty), '0'), '.') }}</td>
+            <td class="unit-cell">{{ $item->unit ?: '-' }}</td>
+            <td class="num">{{ $invoice->currency?->code }} {{ \App\Support\SettingsHelper::formatMoney($item->unit_price) }}@if($item->unit) / {{ $item->unit }}@endif</td>
+            <td class="num">{{ $effTax > 0 ? rtrim(rtrim($effTax,'0'),'.').'%' : '0%' }}</td>
+            <td class="num">{{ $invoice->currency?->code }} {{ \App\Support\SettingsHelper::formatMoney($item->line_total * (1 + $effTax/100)) }}</td>
         </tr>
-        @empty
-        <tr>
-            <td colspan="8" style="text-align:center; color:#a0aec0; padding:20px;">No items</td>
-        </tr>
-        @endforelse
+    @endforeach
     </tbody>
 </table>
 
-<div class="bottom-section">
-    <div class="notes-box">
-        @if($invoice->notes)
-            <div class="label">Notes</div>
-            <div>{{ $invoice->notes }}</div>
-        @endif
-        @if($invoice->terms)
-            <div class="label" style="margin-top:8px;">Terms & Conditions</div>
-            <div>{{ $invoice->terms }}</div>
-        @endif
-    </div>
-
-    <div class="totals-box">
-        <table class="totals-table">
-            <tr>
-                <td class="label-col">Subtotal</td>
-                <td class="value-col">{{ $invoice->currency?->symbol ?? '$' }} {{ number_format($invoice->subtotal, 2) }}</td>
-            </tr>
-            @if($invoice->tax_amount > 0)
-            <tr>
-                <td class="label-col">Tax</td>
-                <td class="value-col">{{ $invoice->currency?->symbol ?? '$' }} {{ number_format($invoice->tax_amount, 2) }}</td>
-            </tr>
-            @endif
-            @if($invoice->discount > 0)
-            <tr>
-                <td class="label-col">Discount</td>
-                <td class="value-col" style="color:#991b1b;">-{{ $invoice->currency?->symbol ?? '$' }} {{ number_format($invoice->discount, 2) }}</td>
-            </tr>
-            @endif
-            <tr class="total-row">
-                <td class="label-col">TOTAL</td>
-                <td class="value-col">{{ $invoice->currency?->symbol ?? '$' }} {{ number_format($invoice->total, 2) }}</td>
-            </tr>
-            @if($invoice->paid_amount > 0)
-            <tr>
-                <td class="label-col">Paid</td>
-                <td class="value-col" style="color:#166534;">-{{ $invoice->currency?->symbol ?? '$' }} {{ number_format($invoice->paid_amount, 2) }}</td>
-            </tr>
-            @endif
-            @if($invoice->balance > 0)
-            <tr>
-                <td class="label-col" style="font-weight:bold;">Balance Due</td>
-                <td class="value-col" style="color:#991b1b; font-weight:bold;">{{ $invoice->currency?->symbol ?? '$' }} {{ number_format($invoice->balance, 2) }}</td>
-            </tr>
-            @endif
-        </table>
-    </div>
+{{-- ═══ WORDS + TOTALS ═══ --}}
+<div class="words">
+    <b>Total Amount in Words:</b>
+    {{ \App\Support\NumberToWords::toWords($invoice->total, \App\Support\SettingsHelper::wordsLang()) }} {{ $invoice->currency?->code ?? '' }}
 </div>
 
-@if(!empty($company['bank_name']) || !empty($company['bank_iban']))
-<div class="bank-bar">
-    <div class="bank-title">Bank Details</div>
-    @if(!empty($company['bank_name']))
-        <span class="bank-detail"><strong>Bank:</strong> {{ $company['bank_name'] }}</span>
+<table class="totals">
+    <tr><td>Total Amount</td><td>{{ $invoice->currency?->code }} {{ \App\Support\SettingsHelper::formatMoney($invoice->subtotal + $invoice->tax_amount) }}</td></tr>
+    <tr><td>Tax ({{ $invoice->vat_mode === 'included' ? 'Incl.' : ($invoice->vat_rate ? rtrim(rtrim($invoice->vat_rate,'0'),'.').'%' : '0%') }})</td><td>{{ $invoice->currency?->code }} {{ \App\Support\SettingsHelper::formatMoney($invoice->tax_amount) }}</td></tr>
+    @if((float)$invoice->discount > 0)
+    <tr><td>Discount</td><td>- {{ $invoice->currency?->code }} {{ \App\Support\SettingsHelper::formatMoney($invoice->discount) }}</td></tr>
     @endif
-    @if(!empty($company['bank_account']))
-        <span class="bank-detail"><strong>Account Name:</strong> {{ $company['bank_account'] }}</span>
+    <tr class="total-row"><td>Total Due</td><td>{{ $invoice->currency?->code }} {{ \App\Support\SettingsHelper::formatMoney($invoice->total) }}</td></tr>
+    @if((float)$invoice->paid_amount > 0)
+    <tr><td>Paid</td><td>- {{ $invoice->currency?->code }} {{ \App\Support\SettingsHelper::formatMoney($invoice->paid_amount) }}</td></tr>
+    <tr class="total-row"><td>Balance Due</td><td>{{ $invoice->currency?->code }} {{ \App\Support\SettingsHelper::formatMoney($invoice->total - $invoice->paid_amount) }}</td></tr>
     @endif
-    @if(!empty($company['bank_number']))
-        <span class="bank-detail"><strong>A/C No:</strong> {{ $company['bank_number'] }}</span>
-    @endif
-    @if(!empty($company['bank_iban']))
-        <span class="bank-detail"><strong>IBAN:</strong> {{ $company['bank_iban'] }}</span>
-    @endif
-    @if(!empty($company['bank_swift']))
-        <span class="bank-detail"><strong>SWIFT:</strong> {{ $company['bank_swift'] }}</span>
-    @endif
+</table>
+
+{{-- ═══ TERMS ═══ --}}
+@if($invoice->terms || $company['footer'])
+<div class="terms-box">
+    <div class="terms-title">Terms &amp; Conditions</div>
+    <div class="terms-text">{{ $invoice->terms ?: $company['footer'] }}</div>
 </div>
 @endif
 
-@if($company['footer'])
-<div class="footer">{{ $company['footer'] }}</div>
-@endif
-
-<div class="footer" style="margin-top:5px;">Generated by {{ $company['name'] ?? 'DJAGADA ERP' }}</div>
+{{-- ═══ SIGNATURE ═══ --}}
+<table class="sig-table">
+    <tr>
+        <td>
+            @if($company['signature_url'])
+                <img src="{{ $company['signature_url'] }}" class="sig-img" alt="Signature & Stamp">
+            @else
+                <div class="sig-line"></div>
+            @endif
+            <div class="sig-name">DJAGADA FZ-LLC</div>
+            <div class="sig-date">Authorized Signature &amp; Stamp &nbsp;·&nbsp; Date: ___ / ___ / ______</div>
+        </td>
+        <td>
+            <div class="sig-line"></div>
+            <div class="sig-name">Customer</div>
+            <div class="sig-date">Authorized Signature &amp; Stamp &nbsp;·&nbsp; Date: ___ / ___ / ______</div>
+        </td>
+    </tr>
+</table>
 
 </body>
 </html>

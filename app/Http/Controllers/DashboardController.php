@@ -23,11 +23,15 @@ class DashboardController extends Controller
         $topProducts = $this->service->getTopSellingProducts();
         $revenueByCurrency = $this->service->getRevenueByCurrency();
         $outstandingByCurrency = $this->service->getOutstandingByCurrency();
+        $payablesSummary = $this->service->getPayablesSummary();
+        $payablesByCurrency = $this->service->getPayablesByCurrency();
+        $recentBills = $this->service->getRecentBills();
         $defaultCurrency = \App\Models\Currency::where('is_default', true)->first();
 
         return view('dashboard', compact(
             'stats', 'revenue', 'cashFlow', 'pipeline', 'activities',
-            'topCustomers', 'topProducts', 'revenueByCurrency', 'outstandingByCurrency', 'defaultCurrency'
+            'topCustomers', 'topProducts', 'revenueByCurrency', 'outstandingByCurrency',
+            'payablesSummary', 'payablesByCurrency', 'recentBills', 'defaultCurrency'
         ));
     }
 }

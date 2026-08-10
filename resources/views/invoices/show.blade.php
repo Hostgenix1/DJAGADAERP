@@ -75,6 +75,29 @@
             </div>
         </div>
 
+        {{-- Shipment & Payment details --}}
+        <div class="card card-outline card-light mb-3" style="border-left: 4px solid #1e3a5f;">
+            <div class="card-header py-2">
+                <small class="text-muted text-uppercase font-weight-bold">Shipment &amp; Payment Details</small>
+            </div>
+            <div class="card-body py-2">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div><strong>Reference No:</strong> {{ $invoice->reference_no ?: '—' }}</div>
+                        <div><strong>Payment Terms:</strong> {{ $invoice->payment_terms ?: '—' }}</div>
+                        <div><strong>Delivery Terms:</strong> {{ $invoice->delivery_terms ?: '—' }}</div>
+                        <div><strong>Offer Valid:</strong> {{ $invoice->offer_valid ? $invoice->offer_valid.' days' : '—' }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div><strong>Goods Origin:</strong> {{ $invoice->goods_origin ?: '—' }}</div>
+                        <div><strong>Port of Loading:</strong> {{ $invoice->port_of_loading ?: '—' }}</div>
+                        <div><strong>Port of Discharge:</strong> {{ $invoice->port_of_discharge ?: '—' }}</div>
+                        <div><strong>VAT:</strong> {{ ucfirst($invoice->vat_mode ?? 'excluded') }} @if($invoice->vat_rate) · {{ rtrim(rtrim($invoice->vat_rate,'0'),'.') }}%@endif</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         {{-- Billing info --}}
         <div class="row mb-3">
             <div class="col-md-6">

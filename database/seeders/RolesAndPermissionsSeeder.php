@@ -36,6 +36,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'view-brands','view-product_categories','view-suppliers','view-products',
             'view-quotes','create-quotes','update-quotes',
             'view-invoices','create-invoices','update-invoices',
+            'view-purchase-orders','view-supplier-bills',
             'view-payments','create-payments',
             'view-documents','create-documents'];
         $sales = Role::updateOrCreate(['name' => 'Sales'], ['guard_name' => 'web']);

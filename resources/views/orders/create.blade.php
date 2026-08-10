@@ -39,6 +39,17 @@
                             </select>
                         </div>
                     </div>
+                    <div class="form-group">
+                        <label>Payment Terms</label>
+                        <select name="payment_terms" class="form-control" id="payment-terms-select">
+                            <option value="">-- Select --</option>
+                            @foreach($paymentTerms as $pt)
+                                <option value="{{ $pt }}">{{ $pt }}</option>
+                            @endforeach
+                            <option value="Custom">-- Custom --</option>
+                        </select>
+                        <textarea name="payment_terms_custom" id="payment-terms-custom" class="form-control mt-1 d-none" rows="2" placeholder="Custom payment terms..."></textarea>
+                    </div>
 
                     <h5>Line Items</h5>
                     <table class="table table-sm" id="items-table">
@@ -95,7 +106,8 @@
 </form>
 
 @php
-$productsJson = $products->map(fn($p) => ['id'=>$p->id,'name'=>$p->name,'price'=>(float)$p->sell_price,'unit'=>$p->unit ?: 'pc'])->values();
+$productsJson = $products->map(fn($p) => ['id'=>$p->id,'name'=>$p->name,'price'=>(float)$p->sell_price,'unit'=>$p->unit ?? ''])->values();
+$ratesJson = $rates->map(fn($r,$id)=>[(int)$id, (float)$r])->values()->toArray();
 @endphp
 @endsection
 
@@ -103,14 +115,31 @@ $productsJson = $products->map(fn($p) => ['id'=>$p->id,'name'=>$p->name,'price'=
 <script>
 $(function () {
     const products = @json($productsJson);
+    const rates = Object.fromEntries(@json($ratesJson));
+    const units = @json($units ?? []);
     let idx = 0;
 
+    function rateFor(){
+        const id = $('select[name="currency_id"]').val();
+        return id && rates[id] ? parseFloat(rates[id]) : 1;
+    }
+    function conv(base){ return Math.round(base * rateFor() * 100) / 100; }
+
+    function unitInput(name,val){
+        const v = val||'';
+        const isCustom = v && !units.includes(v);
+        const customDisabled = isCustom ? '' : 'disabled';
+        const selectDisabled = isCustom ? 'disabled' : '';
+        return `<select name="${name}" class="form-control form-control-sm unit-select" ${selectDisabled}><option value="">-- Select Unit --</option>${units.map(u=>`<option value="${u}" ${u===v?'selected':''}>${u}</option>`).join('')}<option value="__other__">-- Other --</option></select><input type="text" name="${name}" class="form-control form-control-sm mt-1 unit-custom ${isCustom?'':'d-none'}" ${customDisabled} value="${v}" placeholder="Custom unit">`;
+    }
+
     function addRow(data) {
+        const base = data?.price ? parseFloat(data.price) : 0;
         const row = `<tr data-idx="${idx}">
             <td><select name="items[${idx}][product_id]" class="form-control form-control-sm prod-select"><option value="">Manual</option>${products.map(p=>`<option value="${p.id}" data-price="${p.price}" data-unit="${p.unit}">${p.name}</option>`).join('')}</select><input type="text" name="items[${idx}][description]" class="form-control form-control-sm mt-1" placeholder="Description" value="${data?.description||''}" required></td>
             <td><input type="number" step="0.01" name="items[${idx}][qty]" class="form-control form-control-sm qty" value="${data?.qty||1}" min="0.01" required></td>
-            <td><input type="text" name="items[${idx}][unit]" class="form-control form-control-sm unit" value="${data?.unit||'pc'}"></td>
-            <td><input type="number" step="0.01" name="items[${idx}][unit_price]" class="form-control form-control-sm price" value="${data?.price||0}" min="0" required></td>
+            <td>${unitInput(`items[${idx}][unit]`, data?.unit||'')}</td>
+            <td><input type="number" step="0.01" name="items[${idx}][unit_price]" class="form-control form-control-sm price" data-base-price="${base}" value="${base?conv(base):(data?.price||0)}" min="0" required></td>
             <td><input type="number" step="0.01" name="items[${idx}][tax_rate]" class="form-control form-control-sm tax" value="${data?.tax||0}" min="0"></td>
             <td><input type="number" step="0.01" name="items[${idx}][discount_pct]" class="form-control form-control-sm disc" value="${data?.disc||0}" min="0"></td>
             <td class="line-total">0.00</td>
@@ -145,12 +174,35 @@ $(function () {
     $('#add-item').click(() => addRow());
     $(document).on('click', '.remove-row', function() { $(this).closest('tr').remove(); recalc(); });
     $(document).on('change keyup', '.qty,.price,.tax,.disc,#discount-input', recalc);
+    $('#payment-terms-select').on('change', function(){
+        $('#payment-terms-custom').toggleClass('d-none', $(this).val() !== 'Custom');
+    });
     $(document).on('change', '.prod-select', function() {
         const opt = $(this).find(':selected');
         const $row = $(this).closest('tr');
-        $row.find('.price').val(opt.data('price') || 0);
-        $row.find('.unit').val(opt.data('unit') || 'pc');
+        const base = parseFloat(opt.data('price')) || 0;
+        $row.find('.price').val(base ? conv(base) : 0).attr('data-base-price', base);
+        const u = opt.data('unit') || '';
+        const $sel = $row.find('.unit-select'), $cust = $row.find('.unit-custom');
+        if (u && !units.includes(u)) { $cust.removeClass('d-none').val(u).prop('disabled', false); $sel.prop('disabled', true).val(''); }
+        else { $sel.val(u).prop('disabled', false); $cust.addClass('d-none').val('').prop('disabled', true); }
         $row.find('input[name$="[description]"]').val(opt.text() !== 'Manual' ? opt.text() : '');
+        recalc();
+    });
+    $(document).on('change', '.unit-select', function() {
+        const $u = $(this), $r = $u.closest('tr'), custom = $r.find('.unit-custom');
+        if ($u.val() === '__other__') { $u.prop('disabled', true); custom.removeClass('d-none').prop('disabled', false).val('').focus(); }
+        else { custom.addClass('d-none').prop('disabled', true).val(''); }
+        recalc();
+    });
+
+    $('select[name="currency_id"]').on('change', function() {
+        const r = rateFor();
+        $('#items-table tbody tr').each(function() {
+            const $price = $(this).find('.price');
+            const base = parseFloat($price.data('base-price')) || 0;
+            $price.val(base ? conv(base) : '');
+        });
         recalc();
     });
 

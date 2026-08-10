@@ -26,11 +26,12 @@ class Payment extends Model
     public function supplier(): BelongsTo { return $this->belongsTo(Supplier::class); }
     public function currency(): BelongsTo { return $this->belongsTo(Currency::class); }
     public function invoices(): BelongsToMany { return $this->belongsToMany(Invoice::class, 'invoice_payments')->withPivot('amount'); }
+    public function supplierBills(): BelongsToMany { return $this->belongsToMany(SupplierBill::class, 'supplier_bill_payments')->withPivot('amount'); }
     public function documents() { return $this->morphMany(Document::class, 'documentable'); }
 
     public static function nextNumber(): string
     {
-        $last = self::orderBy('id', 'desc')->value('number');
+        $last = self::withTrashed()->orderBy('id', 'desc')->value('number');
         $next = 1;
         if ($last && preg_match('/PAY-(\d+)/', $last, $m)) {
             $next = (int) $m[1] + 1;

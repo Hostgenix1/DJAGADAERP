@@ -3,7 +3,7 @@
     @if(in_array($row->type, ['customer']))
         <a href="{{ route('customers.show', $row->customer_id) }}" class="btn btn-sm btn-outline-info" title="Customer"><i class="fas fa-building"></i></a>
     @else
-        <a href="{{ route('suppliers.show', $row->supplier_id) }}" class="btn btn-sm btn-outline-info" title="Supplier"><i class="fas fa-truck"></i></a>
+        <a href="{{ route('suppliers.edit', $row->supplier_id) }}" class="btn btn-sm btn-outline-info" title="Supplier"><i class="fas fa-truck"></i></a>
     @endif
     @can('delete-payments')
         <form method="POST" action="{{ route('payments.destroy', $row) }}" class="d-inline" onsubmit="return confirm('Delete this payment?');">

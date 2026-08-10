@@ -435,6 +435,40 @@
                                 </label>
                             </div>
 
+                            <div class="form-group border rounded p-3 bg-light">
+                                <label class="mb-1">
+                                    <i class="fas fa-signature text-primary mr-1"></i> Authorized Signature & Stamp
+                                </label>
+                                <div class="mb-2">
+                                    @if($svc->get('company_signature'))
+                                        <img src="{{ asset('storage/'.$svc->get('company_signature')) }}" id="sig-preview"
+                                             class="img-thumbnail" style="max-height:90px;background:#fff;">
+                                    @else
+                                        <img src="" id="sig-preview" class="img-thumbnail d-none" style="max-height:90px;">
+                                        <span id="sig-placeholder" class="text-muted d-inline-block"
+                                              style="border:2px dashed #dee2e6;padding:18px 24px;border-radius:8px;">
+                                            <i class="fas fa-pen-nib mr-1"></i> No signature uploaded
+                                        </span>
+                                    @endif
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <label for="company_signature" class="btn btn-sm btn-outline-primary mb-0" style="cursor:pointer;">
+                                        <i class="fas fa-upload mr-1"></i> Upload Signature / Stamp
+                                    </label>
+                                    <input type="file" name="company_signature" id="company_signature" class="d-none" accept="image/*">
+                                    <input type="hidden" name="remove_signature" id="remove_signature" value="0">
+                                    @if($svc->get('company_signature'))
+                                        <button type="button" class="btn btn-sm btn-outline-danger ml-2" id="remove-sig-btn">
+                                            <i class="fas fa-trash mr-1"></i> Remove
+                                        </button>
+                                    @endif
+                                </div>
+                                <small class="text-muted d-block mt-2">
+                                    Auto-appears under "Authorized Signature &amp; Stamp" on invoice/quote PDFs.
+                                    PNG with transparent background recommended.
+                                </small>
+                            </div>
+
                             <div class="form-group">
                                 <label for="company_footer_text">
                                     <i class="fas fa-file-alt text-primary mr-1"></i> Document Footer Text
@@ -473,7 +507,7 @@
             <div class="card card-outline">
                 <div class="card-body d-flex justify-content-between align-items-center">
                     <div>
-                        <small class="text-muted"><i class="fas fa-clock mr-1"></i> Last saved: {{ $svc->get('updated_at') ? now()->diffForHumans($svc->get('updated_at')) : 'Never' }}</small>
+                        <small class="text-muted"><i class="fas fa-clock mr-1"></i> Last saved: {{ \App\Models\Setting::max('updated_at') ? now()->diffForHumans(\App\Models\Setting::max('updated_at')) : 'Never' }}</small>
                     </div>
                     <div>
                         <a href="{{ route('admin.settings.company') }}" class="btn btn-default">
@@ -562,6 +596,29 @@ $(function() {
             $('#remove_logo').val('1');
             $('#logo-preview').addClass('d-none');
             $('#logo-placeholder').removeClass('d-none');
+        }
+    });
+
+    // Signature preview
+    $('#company_signature').on('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                $('#sig-placeholder').addClass('d-none');
+                $('#sig-preview').removeClass('d-none').attr('src', ev.target.result);
+                $('#remove_signature').val('0');
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Remove signature
+    $('#remove-sig-btn').on('click', function() {
+        if (confirm('Remove signature & stamp?')) {
+            $('#remove_signature').val('1');
+            $('#sig-preview').addClass('d-none');
+            $('#sig-placeholder').removeClass('d-none');
         }
     });
 

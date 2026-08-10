@@ -233,6 +233,77 @@
     </div>
 </div>
 
+{{-- Row 5b: Payables (Supplier Bills) --}}
+<div class="row">
+    <div class="col-md-6">
+        <div class="card card-warning card-outline">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-hand-holding-usd mr-1"></i> Payables by Currency</h3>
+                <div class="card-tools">
+                    <span class="badge badge-danger">{{ $payablesSummary['count'] ?? 0 }} open bills</span>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Currency</th>
+                            <th class="text-right">Outstanding</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @forelse($payablesByCurrency as $pbc)
+                        <tr>
+                            <td><strong>{{ $pbc['code'] }}</strong> <span class="text-muted">({{ $pbc['symbol'] }})</span></td>
+                            <td class="text-right">{{ $pbc['symbol'] }}{{ number_format($pbc['total'], 2) }}</td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="2" class="text-muted text-center">No outstanding supplier bills</td></tr>
+                    @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card card-secondary card-outline">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-file-invoice-dollar mr-1"></i> Recent Supplier Bills</h3>
+                <div class="card-tools">
+                    <a href="{{ route('supplier_bills.index') }}" class="btn btn-xs btn-default">View All</a>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Number</th>
+                            <th>Supplier</th>
+                            <th class="text-right">Total</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @forelse($recentBills as $b)
+                        <tr>
+                            <td><a href="{{ route('supplier_bills.show', $b['id']) }}">{{ $b['number'] }}</a></td>
+                            <td>{{ $b['supplier']['company_name'] ?? '-' }}</td>
+                            <td class="text-right">{{ $b['currency']['symbol'] ?? $defaultCurrency?->symbol ?? '$' }}{{ number_format($b['total'], 2) }}</td>
+                            <td>
+                                @php $badge = ['draft' => 'badge-secondary', 'confirmed' => 'badge-info', 'partial' => 'badge-warning', 'paid' => 'badge-success', 'cancelled' => 'badge-danger'][$b['status']] ?? 'badge-secondary'; @endphp
+                                <span class="badge {{ $badge }}">{{ ucfirst($b['status']) }}</span>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="4" class="text-muted text-center">No supplier bills yet</td></tr>
+                    @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
 {{-- Row 6: Revenue Chart + Cash Flow Chart --}}
 <div class="row">
     <div class="col-md-6">

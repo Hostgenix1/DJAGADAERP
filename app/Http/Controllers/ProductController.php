@@ -65,11 +65,6 @@ class ProductController extends Controller
     'label' => 'Dimensions',
     'data' => 'dimensions',
   ),
-  9 => 
-  array (
-    'label' => 'Active',
-    'data' => 'is_active',
-  ),
 )]);
     }
 
@@ -82,6 +77,8 @@ class ProductController extends Controller
             ->addColumn('actions', function (Product $row) {
                 return view('products.partials.actions', ['row' => $row])->render();
             })
+            ->editColumn('buy_price', fn (Product $row) => \App\Support\CurrencyHelper::formatBase($row->buy_price))
+            ->editColumn('sell_price', fn (Product $row) => \App\Support\CurrencyHelper::formatBase($row->sell_price))
             ->editColumn('created_at', fn ($m) => $m->created_at?->format('d M Y H:i'))
             ->editColumn('updated_at', fn ($m) => $m->updated_at?->format('d M Y H:i'))
             ->rawColumns(['actions'])
@@ -103,6 +100,7 @@ class ProductController extends Controller
     $relations['supplier_id'] = \App\Models\Supplier::pluck('company_name', 'id');
     $relations['currency_id'] = \App\Models\Currency::pluck('code', 'id');
     $relations['tax_id'] = \App\Models\Tax::pluck('name', 'id');
+    $relations['units'] = \App\Support\Units::all();
         return view('products.create', ['relations' => $relations]);
     }
 
@@ -123,6 +121,7 @@ class ProductController extends Controller
     $relations['supplier_id'] = \App\Models\Supplier::pluck('company_name', 'id');
     $relations['currency_id'] = \App\Models\Currency::pluck('code', 'id');
     $relations['tax_id'] = \App\Models\Tax::pluck('name', 'id');
+    $relations['units'] = \App\Support\Units::all();
         return view('products.edit', ['product' => $product, 'relations' => $relations]);
     }
 

@@ -33,6 +33,21 @@
                     </div>
                 </div>
 
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <strong>Reference No:</strong> {{ $quote->reference_no ?? '—' }}<br>
+                        <strong>Payment Terms:</strong> {{ $quote->payment_terms ?? '—' }}<br>
+                        <strong>Delivery Terms:</strong> {{ $quote->delivery_terms ?? '—' }}<br>
+                        <strong>Offer Valid:</strong> {{ $quote->offer_valid ? $quote->offer_valid.' days' : '—' }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Goods Origin:</strong> {{ $quote->goods_origin ?? '—' }}<br>
+                        <strong>Port of Loading:</strong> {{ $quote->port_of_loading ?? '—' }}<br>
+                        <strong>Port of Discharge:</strong> {{ $quote->port_of_discharge ?? '—' }}<br>
+                        <strong>VAT:</strong> {{ ucfirst($quote->vat_mode ?? 'excluded') }} @if($quote->vat_rate) · {{ rtrim(rtrim($quote->vat_rate,'0'),'.') }}%@endif
+                    </div>
+                </div>
+
                 <table class="table table-bordered">
                     <thead><tr><th>Description</th><th>Qty</th><th>Unit</th><th>Price</th><th>Tax %</th><th>Disc %</th><th>Line Total</th></tr></thead>
                     <tbody>

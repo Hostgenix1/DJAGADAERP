@@ -22,6 +22,8 @@ class UpdateSupplierRequest extends FormRequest
             'city' => 'sometimes|max:100',
             'country' => 'sometimes|max:100',
             'payment_terms' => 'sometimes|max:100',
+            'currency_id' => 'nullable|exists:currencies,id',
+            'default_payment_term' => 'sometimes|max:255',
             'is_active' => 'sometimes|nullable',
         ];
     }

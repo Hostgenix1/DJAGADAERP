@@ -51,7 +51,7 @@ class PaymentController extends Controller
             ->make(true);
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $this->authorize('create-payments');
         $customers = \App\Models\Customer::pluck('company_name', 'id');
@@ -59,7 +59,14 @@ class PaymentController extends Controller
         $currencies = \App\Models\Currency::pluck('code', 'id');
         $methods = ['cash', 'bank', 'cheque', 'mobile', 'transfer'];
 
-        return view('payments.create', compact('customers', 'suppliers', 'currencies', 'methods'));
+        $preselected = [
+            'type' => $request->input('type', 'customer'),
+            'supplier_id' => $request->input('supplier_id'),
+            'customer_id' => $request->input('customer_id'),
+            'bill_id' => $request->input('bill_id'),
+        ];
+
+        return view('payments.create', compact('customers', 'suppliers', 'currencies', 'methods', 'preselected'));
     }
 
     public function store(Request $request)
@@ -77,12 +84,23 @@ class PaymentController extends Controller
             'reference' => 'nullable|string|max:100',
             'notes' => 'nullable|string|max:500',
             'allocations' => 'nullable|array',
-            'allocations.*.invoice_id' => 'required_with:allocations|exists:invoices,id',
+            'allocations.*.invoice_id' => 'nullable|exists:invoices,id',
+            'allocations.*.supplier_bill_id' => 'nullable|exists:supplier_bills,id',
             'allocations.*.amount' => 'required_with:allocations|numeric|min:0.01',
         ]);
 
         $allocations = $data['allocations'] ?? [];
         unset($data['allocations']);
+
+        $allocations = array_map(function ($a) {
+            if (empty($a['supplier_bill_id'])) {
+                unset($a['supplier_bill_id']);
+            }
+            if (empty($a['invoice_id'])) {
+                unset($a['invoice_id']);
+            }
+            return $a;
+        }, $allocations);
 
         $this->service->createWithAllocation($data, $allocations);
 
@@ -119,9 +137,23 @@ class PaymentController extends Controller
         return view('payments.outstanding', compact('invoices'));
     }
 
-    public function outstandingJson()
+    public function outstandingJson(Request $request)
     {
         $this->authorize('view-payments');
+
+        if ($request->input('type') === 'supplier') {
+            $bills = \App\Models\SupplierBill::with('supplier', 'currency')
+                ->whereIn('status', ['confirmed', 'partial'])
+                ->whereRaw('total - paid_amount > 0')
+                ->get()
+                ->map(fn ($b) => [
+                    'id'      => $b->id,
+                    'label'   => $b->number . ' — ' . ($b->supplier?->company_name ?? 'N/A') . ' (Bal: ' . ($b->currency?->symbol ?? '$') . number_format($b->total - $b->paid_amount, 2) . ')',
+                    'balance' => (float) ($b->total - $b->paid_amount),
+                ]);
+            return response()->json($bills);
+        }
+
         $invoices = \App\Models\Invoice::with('customer', 'currency')
             ->where('status', '!=', 'cancelled')
             ->whereRaw('total - paid_amount > 0')

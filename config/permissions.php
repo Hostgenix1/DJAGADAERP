@@ -85,6 +85,17 @@ return array (
     14 => 'update-products',
     15 => 'delete-products',
   ),
+  'Purchasing' => 
+  array (
+    0 => 'view-purchase-orders',
+    1 => 'create-purchase-orders',
+    2 => 'update-purchase-orders',
+    3 => 'delete-purchase-orders',
+    4 => 'view-supplier-bills',
+    5 => 'create-supplier-bills',
+    6 => 'update-supplier-bills',
+    7 => 'delete-supplier-bills',
+  ),
   'Documents' => 
   array (
     0 => 'view-documents',

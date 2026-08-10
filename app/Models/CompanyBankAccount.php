@@ -8,7 +8,7 @@ class CompanyBankAccount extends Model
 {
     protected $fillable = [
         'bank_name', 'account_name', 'account_number', 'iban', 'swift_code',
-        'currency_id', 'is_default', 'is_active', 'notes',
+        'bank_address', 'currency_id', 'is_default', 'is_active', 'notes',
     ];
 
     protected $casts = [

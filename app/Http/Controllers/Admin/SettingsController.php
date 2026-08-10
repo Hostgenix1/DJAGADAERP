@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\PaymentTerm;
 use App\Models\Tax;
 use App\Services\SettingsService;
 use Illuminate\Http\Request;
@@ -51,6 +52,8 @@ class SettingsController extends Controller
             'company_smtp_encryption' => ['nullable', 'string'],
             'company_logo' => ['nullable'],
             'show_logo_on_docs' => ['nullable', 'boolean'],
+            'company_signature' => ['nullable', 'image', 'max:2048'],
+            'remove_signature' => ['nullable', 'in:0,1'],
             'company_footer_text' => ['nullable', 'string', 'max:500'],
             'company_notes' => ['nullable', 'string', 'max:1000'],
             'company_terms' => ['nullable', 'string', 'max:1000'],
@@ -99,11 +102,32 @@ class SettingsController extends Controller
             $data['company_logo'] = $request->file('company_logo')->store('logos', 'public');
         }
 
+        if ($request->boolean('remove_signature')) {
+            $old = $this->settings->get('company_signature');
+            if ($old && Storage::disk('public')->exists($old)) {
+                Storage::disk('public')->delete($old);
+            }
+            $data['company_signature'] = null;
+        }
+
+        if ($request->hasFile('company_signature')) {
+            $request->validate([
+                'company_signature' => ['image', 'max:2048'],
+            ]);
+            $old = $this->settings->get('company_signature');
+            if ($old && Storage::disk('public')->exists($old)) {
+                Storage::disk('public')->delete($old);
+            }
+            $data['company_signature'] = $request->file('company_signature')->store('signatures', 'public');
+        }
+
         $this->settings->bulkSet($data);
 
         if ($request->filled('default_currency_id')) {
-            \App\Models\Currency::query()->update(['is_default' => false]);
-            \App\Models\Currency::where('id', $request->input('default_currency_id'))->update(['is_default' => true]);
+            $newBase = \App\Models\Currency::find($request->input('default_currency_id'));
+            if ($newBase) {
+                \App\Support\CurrencyHelper::setDefault($newBase);
+            }
         }
 
         activity()->causedBy(auth()->user())->event('updated')->log('updated company settings');
@@ -181,6 +205,196 @@ class SettingsController extends Controller
         activity()->causedBy(auth()->user())->event('deleted')->log('deleted tax');
 
         return back()->with('success', 'Tax deleted.');
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* payment terms                                                       */
+    /* ------------------------------------------------------------------ */
+
+    public function paymentTerms()
+    {
+        $this->authorize('view-settings');
+
+        $docTypes = [
+            'quote' => 'Quotation',
+            'proforma' => 'Proforma Invoice',
+            'commercial' => 'Commercial Invoice',
+            'purchase_order' => 'Purchase Order',
+            'supplier_bill' => 'Supplier Bill',
+        ];
+
+        $defaults = [];
+        foreach ($docTypes as $key => $label) {
+            $defaults[$key] = \App\Support\PaymentTerms::defaultFor($key);
+        }
+        $defaults['incoterms_list'] = \App\Support\SettingsHelper::get('incoterms_list', '');
+
+        return view('admin.settings.payment-terms', compact('docTypes', 'defaults'));
+    }
+
+    public function paymentTermsDatatable()
+    {
+        $this->authorize('view-settings');
+
+        return DataTables::eloquent(PaymentTerm::query())
+            ->addIndexColumn()
+            ->addColumn('is_default', fn (PaymentTerm $t) => $t->is_default ? '<span class="badge badge-primary">Default</span>' : '')
+            ->addColumn('is_active', fn (PaymentTerm $t) => $t->is_active ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-secondary">Inactive</span>')
+            ->addColumn('actions', fn (PaymentTerm $t) => view('admin.settings.partials.payment-term-actions', ['row' => $t])->render())
+            ->rawColumns(['is_default', 'is_active', 'actions'])
+            ->editColumn('created_at', fn ($m) => $m->created_at?->format('d M Y H:i'))
+            ->editColumn('updated_at', fn ($m) => $m->updated_at?->format('d M Y H:i'))
+            ->make(true);
+    }
+
+    public function paymentTermStore(Request $request)
+    {
+        $this->authorize('update-settings');
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255', 'unique:payment_terms,name'],
+            'sort_order' => ['nullable', 'integer', 'min:0'],
+        ]);
+
+        $term = PaymentTerm::create([
+            'name' => $data['name'],
+            'sort_order' => $data['sort_order'] ?? 0,
+            'is_active' => true,
+        ]);
+
+        activity()->causedBy(auth()->user())->performedOn($term)->event('created')->log('created');
+
+        return back()->with('success', 'Payment term added.');
+    }
+
+    public function paymentTermUpdate(Request $request, PaymentTerm $paymentTerm)
+    {
+        $this->authorize('update-settings');
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255', 'unique:payment_terms,name,'.$paymentTerm->id],
+            'sort_order' => ['nullable', 'integer', 'min:0'],
+            'is_default' => ['boolean'],
+            'is_active' => ['boolean'],
+        ]);
+
+        $paymentTerm->update($data);
+
+        if (!empty($data['is_default'])) {
+            PaymentTerm::where('id', '!=', $paymentTerm->id)->update(['is_default' => false]);
+        }
+
+        activity()->causedBy(auth()->user())->performedOn($paymentTerm)->event('updated')->log('updated');
+
+        return back()->with('success', 'Payment term updated.');
+    }
+
+    public function paymentTermDestroy(PaymentTerm $paymentTerm)
+    {
+        $this->authorize('update-settings');
+
+        $paymentTerm->delete();
+
+        activity()->causedBy(auth()->user())->event('deleted')->log('deleted payment term');
+
+        return back()->with('success', 'Payment term deleted.');
+    }
+
+    public function paymentTermDefaults(Request $request)
+    {
+        $this->authorize('update-settings');
+
+        $request->validate([
+            'default_pt_quote' => ['nullable', 'string', 'max:255'],
+            'default_pt_proforma' => ['nullable', 'string', 'max:255'],
+            'default_pt_commercial' => ['nullable', 'string', 'max:255'],
+            'default_pt_purchase_order' => ['nullable', 'string', 'max:255'],
+            'default_pt_supplier_bill' => ['nullable', 'string', 'max:255'],
+            'incoterms_list' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $this->settings->bulkSet($request->only([
+            'default_pt_quote', 'default_pt_proforma', 'default_pt_commercial',
+            'default_pt_purchase_order', 'default_pt_supplier_bill',
+            'incoterms_list',
+        ]));
+
+        activity()->causedBy(auth()->user())->event('updated')->log('updated document payment-term defaults');
+
+        return back()->with('success', 'Document defaults saved.');
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* units                                                               */
+    /* ------------------------------------------------------------------ */
+
+    public function units()
+    {
+        $this->authorize('view-settings');
+
+        return view('admin.settings.units');
+    }
+
+    public function unitsDatatable()
+    {
+        $this->authorize('view-settings');
+
+        return DataTables::eloquent(\App\Models\Unit::query())
+            ->addIndexColumn()
+            ->addColumn('is_active', fn (\App\Models\Unit $u) => $u->is_active ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-secondary">Inactive</span>')
+            ->addColumn('actions', fn (\App\Models\Unit $u) => view('admin.settings.partials.unit-actions', ['row' => $u])->render())
+            ->rawColumns(['is_active', 'actions'])
+            ->editColumn('created_at', fn ($m) => $m->created_at?->format('d M Y H:i'))
+            ->editColumn('updated_at', fn ($m) => $m->updated_at?->format('d M Y H:i'))
+            ->make(true);
+    }
+
+    public function unitStore(Request $request)
+    {
+        $this->authorize('update-settings');
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:50', 'unique:units,name'],
+            'sort_order' => ['nullable', 'integer', 'min:0'],
+        ]);
+
+        $unit = \App\Models\Unit::create([
+            'name' => $data['name'],
+            'sort_order' => $data['sort_order'] ?? 0,
+            'is_active' => true,
+        ]);
+
+        activity()->causedBy(auth()->user())->performedOn($unit)->event('created')->log('created');
+
+        return back()->with('success', 'Unit added.');
+    }
+
+    public function unitUpdate(Request $request, \App\Models\Unit $unit)
+    {
+        $this->authorize('update-settings');
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:50', 'unique:units,name,'.$unit->id],
+            'sort_order' => ['nullable', 'integer', 'min:0'],
+            'is_active' => ['boolean'],
+        ]);
+
+        $unit->update($data);
+
+        activity()->causedBy(auth()->user())->performedOn($unit)->event('updated')->log('updated');
+
+        return back()->with('success', 'Unit updated.');
+    }
+
+    public function unitDestroy(\App\Models\Unit $unit)
+    {
+        $this->authorize('update-settings');
+
+        $unit->delete();
+
+        activity()->causedBy(auth()->user())->event('deleted')->log('deleted unit');
+
+        return back()->with('success', 'Unit deleted.');
     }
 
     /* ------------------------------------------------------------------ */

@@ -50,18 +50,28 @@
         </div>
         @endif
 
-        @if($payment->documents->count())
-        <div class="card card-info card-outline">
-            <div class="card-header"><h3 class="card-title">Attachments</h3></div>
-            <div class="card-body">
-                <ul class="list-unstyled">
-                @foreach($payment->documents as $doc)
-                    <li><a href="{{ route('documents.download', $doc->id) }}"><i class="fas fa-file"></i> {{ $doc->name }}</a> <small class="text-muted">{{ $doc->formatted_size }}</small></li>
-                @endforeach
-                </ul>
+        @if($payment->supplierBills->count())
+        <div class="card card-warning card-outline">
+            <div class="card-header"><h3 class="card-title">Allocated Supplier Bills</h3></div>
+            <div class="card-body p-0">
+                <table class="table table-sm">
+                    <thead><tr><th>Bill</th><th>Supplier</th><th>Allocated</th><th>Status</th></tr></thead>
+                    <tbody>
+                    @foreach($payment->supplierBills as $bill)
+                    <tr>
+                        <td><a href="{{ route('supplier_bills.show', $bill->id) }}">{{ $bill->number }}</a></td>
+                        <td>{{ $bill->supplier?->company_name }}</td>
+                        <td>{{ number_format($bill->pivot->amount, 2) }}</td>
+                        <td>{!! $bill->status_badge !!}</td>
+                    </tr>
+                    @endforeach
+                    </tbody>
+                </table>
             </div>
         </div>
         @endif
+
+        @include('documents.partials._upload', ['morphType' => 'payment', 'morphClass' => 'App\\Models\\Payment', 'entity' => $payment, 'documents' => $payment->documents])
     </div>
 </div>
 @endsection

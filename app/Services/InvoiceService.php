@@ -12,10 +12,7 @@ class InvoiceService
         $data['number'] = Invoice::nextNumber($data['type'] ?? 'commercial');
         $invoice = Invoice::create($data);
 
-        foreach ($items as $item) {
-            $invoice->items()->create($item);
-        }
-
+        $this->syncItems($invoice, $items);
         $invoice->recalculate();
 
         return $invoice;
@@ -26,13 +23,21 @@ class InvoiceService
         $invoice->update($data);
         $invoice->items()->delete();
 
-        foreach ($items as $item) {
-            $invoice->items()->create($item);
-        }
-
+        $this->syncItems($invoice, $items);
         $invoice->recalculate();
 
         return $invoice;
+    }
+
+    private function syncItems(Invoice $invoice, array $items): void
+    {
+        foreach ($items as $item) {
+            $item['sub_description'] = $item['sub_description'] ?? null;
+            if (empty($item['tax_rate'])) {
+                $item['tax_rate'] = null;
+            }
+            $invoice->items()->create($item);
+        }
     }
 
     public function query()

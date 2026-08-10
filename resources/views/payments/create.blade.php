@@ -22,22 +22,22 @@
                         <div class="form-group col-md-3">
                             <label>Type *</label>
                             <select name="type" class="form-control" id="payment-type" required>
-                                <option value="customer">Customer Payment</option>
-                                <option value="supplier">Supplier Payment</option>
+                                <option value="customer" {{ $preselected['type'] === 'supplier' ? '' : 'selected' }}>Customer Payment</option>
+                                <option value="supplier" {{ $preselected['type'] === 'supplier' ? 'selected' : '' }}>Supplier Payment</option>
                             </select>
                         </div>
-                        <div class="form-group col-md-5" id="customer-field">
+                        <div class="form-group col-md-5" id="customer-field" style="{{ $preselected['type'] === 'supplier' ? 'display:none' : '' }}">
                             <label>Customer *</label>
                             <select name="customer_id" class="form-control">
                                 <option value="">-- Select --</option>
-                                @foreach($customers as $id=>$n)<option value="{{ $id }}">{{ $n }}</option>@endforeach
+                                @foreach($customers as $id=>$n)<option value="{{ $id }}" {{ (string)$id === (string)$preselected['customer_id'] ? 'selected' : '' }}>{{ $n }}</option>@endforeach
                             </select>
                         </div>
-                        <div class="form-group col-md-5" id="supplier-field" style="display:none">
+                        <div class="form-group col-md-5" id="supplier-field" style="{{ $preselected['type'] === 'supplier' ? '' : 'display:none' }}">
                             <label>Supplier *</label>
                             <select name="supplier_id" class="form-control">
                                 <option value="">-- Select --</option>
-                                @foreach($suppliers as $id=>$n)<option value="{{ $id }}">{{ $n }}</option>@endforeach
+                                @foreach($suppliers as $id=>$n)<option value="{{ $id }}" {{ (string)$id === (string)$preselected['supplier_id'] ? 'selected' : '' }}>{{ $n }}</option>@endforeach
                             </select>
                         </div>
                         <div class="form-group col-md-4">
@@ -70,7 +70,7 @@
                         <textarea name="notes" class="form-control" rows="2"></textarea>
                     </div>
 
-                    <h5 class="mt-4">Allocate to Invoices (optional)</h5>
+                    <h5 class="mt-4">Allocate to {{ $preselected['type'] === 'supplier' ? 'Bills' : 'Invoices' }} (optional)</h5>
                     <div id="allocations"></div>
                     <button type="button" class="btn btn-sm btn-outline-primary mb-3" id="add-alloc"><i class="fas fa-plus"></i> Add Allocation</button>
                 </div>
@@ -91,36 +91,65 @@
 @push('scripts')
 <script>
 $(function(){
+    const isSupplier = function(){ return $('#payment-type').val() === 'supplier'; };
+
     $('#payment-type').on('change',function(){
-        if($(this).val()==='customer'){$('#customer-field').show();$('#supplier-field').hide();}else{$('#customer-field').hide();$('#supplier-field').show();}
-    });
-    let aIdx = 0;
-    let invoiceCache = null;
-
-    $('#add-alloc').click(function(){
-        const addRow = function(invoices) {
-            let opts = '<option value="">-- Select Invoice --</option>';
-            invoices.forEach(function(inv) {
-                opts += '<option value="' + inv.id + '" data-balance="' + inv.balance + '">' + inv.label + '</option>';
-            });
-            const r = '<div class="form-row mb-2 alloc-row">' +
-                '<div class="form-group col-md-6"><select name="allocations[' + aIdx + '][invoice_id]" class="form-control alloc-invoice">' + opts + '</select></div>' +
-                '<div class="form-group col-md-4"><input type="number" step="0.01" name="allocations[' + aIdx + '][amount]" class="form-control alloc-amount" placeholder="Amount" min="0.01"></div>' +
-                '<div class="form-group col-md-2"><button type="button" class="btn btn-sm btn-danger rm-alloc"><i class="fas fa-times"></i></button></div>' +
-                '</div>';
-            $('#allocations').append(r);
-            aIdx++;
-        };
-
-        if (invoiceCache) {
-            addRow(invoiceCache);
-        } else {
-            $.get('{{ route("payments.outstanding-json") }}', function(data) {
-                invoiceCache = data;
-                addRow(data);
-            });
+        if(isSupplier()){
+            $('#customer-field').hide();$('#supplier-field').show();
+            $('#allocations').empty();invoiceCache = {};aIdx = 0;
+            $('#alloc-header').text('Allocate to Bills (optional)');
+        }else{
+            $('#customer-field').show();$('#supplier-field').hide();
+            $('#allocations').empty();invoiceCache = {};aIdx = 0;
+            $('#alloc-header').text('Allocate to Invoices (optional)');
         }
     });
+
+    let aIdx = 0;
+    let invoiceCache = {};
+    @if($preselected['type'] === 'supplier')
+    $('#payment-type').trigger('change');
+    @endif
+
+    const addRow = function(items, kind) {
+        const fieldName = kind === 'bill' ? 'supplier_bill_id' : 'invoice_id';
+        let opts = '<option value="">-- Select ' + (kind === 'bill' ? 'Bill' : 'Invoice') + ' --</option>';
+        items.forEach(function(it) {
+            opts += '<option value="' + it.id + '" data-balance="' + it.balance + '">' + it.label + '</option>';
+        });
+        const r = '<div class="form-row mb-2 alloc-row">' +
+            '<div class="form-group col-md-6"><select name="allocations[' + aIdx + '][' + fieldName + ']" class="form-control alloc-invoice">' + opts + '</select></div>' +
+            '<div class="form-group col-md-4"><input type="number" step="0.01" name="allocations[' + aIdx + '][amount]" class="form-control alloc-amount" placeholder="Amount" min="0.01"></div>' +
+            '<div class="form-group col-md-2"><button type="button" class="btn btn-sm btn-danger rm-alloc"><i class="fas fa-times"></i></button></div>' +
+            '</div>';
+        $('#allocations').append(r);
+        aIdx++;
+    };
+
+    const fetchAndAdd = function(kind, done) {
+        const url = '{{ route("payments.outstanding-json") }}?type=' + kind;
+        if (invoiceCache[kind]) {
+            addRow(invoiceCache[kind], kind);
+            if (done) done();
+        } else {
+            $.get(url, function(data) {
+                invoiceCache[kind] = data;
+                addRow(data, kind);
+                if (done) done();
+            });
+        }
+    };
+
+    $('#add-alloc').click(function(){
+        fetchAndAdd(isSupplier() ? 'supplier' : 'customer');
+    });
+
+    @if($preselected['bill_id'])
+    fetchAndAdd('supplier', function(){
+        $('#allocations .alloc-invoice').last().val({{ $preselected['bill_id'] }});
+    });
+    @endif
+
     $(document).on('click','.rm-alloc',function(){$(this).closest('.alloc-row').remove();});
 });
 </script>

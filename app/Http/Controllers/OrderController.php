@@ -68,8 +68,11 @@ class OrderController extends Controller
         $customers = \App\Models\Customer::pluck('company_name', 'id');
         $currencies = \App\Models\Currency::pluck('code', 'id');
         $products = \App\Models\Product::where('is_active', true)->get(['id', 'name', 'sell_price', 'unit']);
+        $rates = \App\Models\Currency::where('is_active', true)->pluck('rate', 'id');
+        $units = \App\Support\Units::all();
+        $paymentTerms = \App\Support\PaymentTerms::all();
 
-        return view('orders.create', compact('customers', 'currencies', 'products'));
+        return view('orders.create', compact('customers', 'currencies', 'products', 'rates', 'units', 'paymentTerms'));
     }
 
     public function store(Request $request)
@@ -81,6 +84,8 @@ class OrderController extends Controller
             'currency_id' => 'nullable|exists:currencies,id',
             'order_date' => 'required|date',
             'expected_delivery' => 'nullable|date|after_or_equal:order_date',
+            'payment_terms' => 'nullable|string|max:1000',
+            'payment_terms_custom' => 'nullable|string|max:1000',
             'notes' => 'nullable|string|max:1000',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'nullable|exists:products,id',
@@ -92,6 +97,10 @@ class OrderController extends Controller
             'items.*.discount_pct' => 'nullable|numeric|min:0|max:100',
             'discount' => ['nullable', 'numeric', 'min:0'],
         ]);
+
+        if (($data['payment_terms'] ?? null) === 'Custom' && $request->filled('payment_terms_custom')) {
+            $data['payment_terms'] = $request->input('payment_terms_custom');
+        }
 
         $order = $this->service->createWithItems($data, $data['items']);
 
@@ -113,8 +122,11 @@ class OrderController extends Controller
         $customers = \App\Models\Customer::pluck('company_name', 'id');
         $currencies = \App\Models\Currency::pluck('code', 'id');
         $products = \App\Models\Product::where('is_active', true)->get(['id', 'name', 'sell_price', 'unit']);
+        $rates = \App\Models\Currency::where('is_active', true)->pluck('rate', 'id');
+        $units = \App\Support\Units::all();
+        $paymentTerms = \App\Support\PaymentTerms::all();
 
-        return view('orders.edit', compact('order', 'customers', 'currencies', 'products'));
+        return view('orders.edit', compact('order', 'customers', 'currencies', 'products', 'rates', 'units', 'paymentTerms'));
     }
 
     public function update(Request $request, Order $order)
@@ -126,6 +138,8 @@ class OrderController extends Controller
             'currency_id' => 'nullable|exists:currencies,id',
             'order_date' => 'required|date',
             'expected_delivery' => 'nullable|date|after_or_equal:order_date',
+            'payment_terms' => 'nullable|string|max:1000',
+            'payment_terms_custom' => 'nullable|string|max:1000',
             'notes' => 'nullable|string|max:1000',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'nullable|exists:products,id',
@@ -137,6 +151,10 @@ class OrderController extends Controller
             'items.*.discount_pct' => 'nullable|numeric|min:0|max:100',
             'discount' => ['nullable', 'numeric', 'min:0'],
         ]);
+
+        if (($data['payment_terms'] ?? null) === 'Custom' && $request->filled('payment_terms_custom')) {
+            $data['payment_terms'] = $request->input('payment_terms_custom');
+        }
 
         $this->service->updateWithItems($order, $data, $data['items']);
 

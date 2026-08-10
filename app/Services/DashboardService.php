@@ -51,9 +51,38 @@ class DashboardService
     {
         return Invoice::where('status', '!=', 'cancelled')
             ->whereRaw('total - paid_amount > 0')
-            ->join('currencies', 'invoices.currency_id', '=', 'currencies.id')
-            ->selectRaw('currencies.code, currencies.symbol, SUM(invoices.total - invoices.paid_amount) as total')
-            ->groupBy('currencies.code', 'currencies.symbol')
+            ->leftJoin('currencies', 'invoices.currency_id', '=', 'currencies.id')
+            ->selectRaw('COALESCE(currencies.code, "No currency") as code, COALESCE(currencies.symbol, "-") as symbol, SUM(invoices.total - invoices.paid_amount) as total')
+            ->groupByRaw('COALESCE(currencies.code, "No currency"), COALESCE(currencies.symbol, "-")')
+            ->get()
+            ->toArray();
+    }
+
+    public function getPayablesSummary(): array
+    {
+        return \App\Models\SupplierBill::where('status', '!=', 'cancelled')
+            ->whereRaw('total - paid_amount > 0')
+            ->selectRaw('COUNT(*) as count, SUM(total - paid_amount) as total')
+            ->first()
+            ->toArray();
+    }
+
+    public function getPayablesByCurrency(): array
+    {
+        return \App\Models\SupplierBill::where('status', '!=', 'cancelled')
+            ->whereRaw('total - paid_amount > 0')
+            ->leftJoin('currencies', 'supplier_bills.currency_id', '=', 'currencies.id')
+            ->selectRaw('COALESCE(currencies.code, "No currency") as code, COALESCE(currencies.symbol, "-") as symbol, SUM(supplier_bills.total - supplier_bills.paid_amount) as total')
+            ->groupByRaw('COALESCE(currencies.code, "No currency"), COALESCE(currencies.symbol, "-")')
+            ->get()
+            ->toArray();
+    }
+
+    public function getRecentBills(): array
+    {
+        return \App\Models\SupplierBill::with('supplier', 'currency')
+            ->latest()
+            ->limit(5)
             ->get()
             ->toArray();
     }
