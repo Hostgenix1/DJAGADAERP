@@ -52,8 +52,8 @@ class DashboardService
         return Invoice::where('status', '!=', 'cancelled')
             ->whereRaw('total - paid_amount > 0')
             ->leftJoin('currencies', 'invoices.currency_id', '=', 'currencies.id')
-            ->selectRaw('COALESCE(currencies.code, "No currency") as code, COALESCE(currencies.symbol, "-") as symbol, SUM(invoices.total - invoices.paid_amount) as total')
-            ->groupByRaw('COALESCE(currencies.code, "No currency"), COALESCE(currencies.symbol, "-")')
+            ->selectRaw('COALESCE(currencies.code, "No currency") as code, COALESCE(currencies.symbol, "") as symbol, SUM(invoices.total - invoices.paid_amount) as total')
+            ->groupByRaw('COALESCE(currencies.code, "No currency"), COALESCE(currencies.symbol, "")')
             ->get()
             ->toArray();
     }
@@ -72,8 +72,8 @@ class DashboardService
         return \App\Models\SupplierBill::where('status', '!=', 'cancelled')
             ->whereRaw('total - paid_amount > 0')
             ->leftJoin('currencies', 'supplier_bills.currency_id', '=', 'currencies.id')
-            ->selectRaw('COALESCE(currencies.code, "No currency") as code, COALESCE(currencies.symbol, "-") as symbol, SUM(supplier_bills.total - supplier_bills.paid_amount) as total')
-            ->groupByRaw('COALESCE(currencies.code, "No currency"), COALESCE(currencies.symbol, "-")')
+            ->selectRaw('COALESCE(currencies.code, "No currency") as code, COALESCE(currencies.symbol, "") as symbol, SUM(supplier_bills.total - supplier_bills.paid_amount) as total')
+            ->groupByRaw('COALESCE(currencies.code, "No currency"), COALESCE(currencies.symbol, "")')
             ->get()
             ->toArray();
     }
