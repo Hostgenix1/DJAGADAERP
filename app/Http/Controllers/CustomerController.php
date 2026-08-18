@@ -53,6 +53,11 @@ class CustomerController extends Controller
   ),
   6 => 
   array (
+    'label' => 'VAT / TRN',
+    'data' => 'tax_registration_number',
+  ),
+  7 => 
+  array (
     'label' => 'Active',
     'data' => 'is_active',
   ),
