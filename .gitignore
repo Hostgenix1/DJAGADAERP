@@ -29,5 +29,7 @@ Thumbs.db
 # Release artifacts (cPanel update package)
 /v2.5.0-update
 /v2.5.0-update.zip
+/v2.6.0-update
+/v2.6.0-update.zip
 
 /resources.zip
