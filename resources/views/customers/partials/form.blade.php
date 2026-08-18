@@ -10,8 +10,8 @@
         @error('contact_person') <span class="text-danger small">{{ $message }}</span> @enderror
     </div>
     <div class="col-md-6 col-field">
-        <label for="tax_registration_number" class="form-label">TRN (Tax Registration Number)</label>
-        <input type="text" name="tax_registration_number" id="tax_registration_number" class="form-control" maxlength="15" placeholder="15 digits" value="{{ old('tax_registration_number', $form->tax_registration_number ?? '') }}">
+        <label for="tax_registration_number" class="form-label">Tax Registration Number / VAT Number</label>
+        <input type="text" name="tax_registration_number" id="tax_registration_number" class="form-control" maxlength="20" placeholder="Optional — e.g. 100123456700003" value="{{ old('tax_registration_number', $form->tax_registration_number ?? '') }}">
         @error('tax_registration_number') <span class="text-danger small">{{ $message }}</span> @enderror
     </div>
     <div class="col-md-6 col-field">

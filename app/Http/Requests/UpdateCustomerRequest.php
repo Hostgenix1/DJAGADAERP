@@ -25,7 +25,7 @@ class UpdateCustomerRequest extends FormRequest
             'city' => 'sometimes|max:100',
             'emirate' => 'sometimes|nullable|max:100',
             'country' => 'sometimes|max:100',
-            'tax_registration_number' => 'sometimes|nullable|max:15',
+            'tax_registration_number' => 'sometimes|nullable|max:20',
             'po_box' => 'sometimes|nullable|max:20',
             'postal_code' => 'sometimes|nullable|max:10',
             'currency_id' => 'sometimes|nullable',

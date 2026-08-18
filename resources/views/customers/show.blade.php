@@ -26,6 +26,7 @@
                     <tr><th>Phone</th><td>{{ $customer->phone }}</td></tr>
                     <tr><th>City</th><td>{{ $customer->city }}</td></tr>
                     <tr><th>Country</th><td>{{ $customer->country }}</td></tr>
+                    <tr><th>Tax Registration / VAT No</th><td>{{ $customer->tax_registration_number ?: '—' }}</td></tr>
                     <tr><th>Currency</th><td>{{ $customer->currency?->code }}</td></tr>
                     <tr><th>Status</th><td>{!! $customer->is_active ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-secondary">Inactive</span>' !!}</td></tr>
                     <tr><th>Address</th><td>{{ $customer->address }}</td></tr>
