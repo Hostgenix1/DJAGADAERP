@@ -5,14 +5,14 @@
         @error('company_name') <span class="text-danger small">{{ $message }}</span> @enderror
     </div>
     <div class="col-md-6 col-field">
-        <label for="contact_person" class="form-label">Contact Person</label>
-        <input type="text" name="contact_person" id="contact_person" class="form-control" value="{{ old('contact_person', $form->contact_person ?? '') }}">
-        @error('contact_person') <span class="text-danger small">{{ $message }}</span> @enderror
-    </div>
-    <div class="col-md-6 col-field">
         <label for="tax_registration_number" class="form-label">Tax Registration Number / VAT Number</label>
         <input type="text" name="tax_registration_number" id="tax_registration_number" class="form-control" maxlength="20" placeholder="Optional — e.g. 100123456700003" value="{{ old('tax_registration_number', $form->tax_registration_number ?? '') }}">
         @error('tax_registration_number') <span class="text-danger small">{{ $message }}</span> @enderror
+    </div>
+    <div class="col-md-6 col-field">
+        <label for="contact_person" class="form-label">Contact Person</label>
+        <input type="text" name="contact_person" id="contact_person" class="form-control" value="{{ old('contact_person', $form->contact_person ?? '') }}">
+        @error('contact_person') <span class="text-danger small">{{ $message }}</span> @enderror
     </div>
     <div class="col-md-6 col-field">
         <label for="email" class="form-label">Email</label>
