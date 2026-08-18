@@ -95,6 +95,97 @@
     </div>
 </div>
 
+{{-- Financial Summary --}}
+<div class="row mt-3">
+    <div class="col-lg-4 col-6">
+        <div class="info-box">
+            <span class="info-box-icon bg-primary"><i class="fas fa-file-invoice-dollar"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Total Invoiced</span>
+                <span class="info-box-number">{{ number_format($totalInvoiced, 2) }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-6">
+        <div class="info-box">
+            <span class="info-box-icon bg-success"><i class="fas fa-hand-holding-usd"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Paid</span>
+                <span class="info-box-number">{{ number_format($totalPaid, 2) }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-6">
+        <div class="info-box">
+            <span class="info-box-icon {{ $outstanding > 0 ? 'bg-danger' : 'bg-secondary' }}"><i class="fas fa-hourglass-half"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Outstanding Balance</span>
+                <span class="info-box-number">{{ number_format($outstanding, 2) }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-2">
+    <div class="col-md-7">
+        <div class="card card-primary card-outline">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-file-invoice mr-1"></i> Invoices</h3>
+                <div class="card-tools">
+                    <a href="{{ route('invoices.create', ['customer_id' => $customer->id]) }}" class="btn btn-xs btn-primary"><i class="fas fa-plus"></i> New Invoice</a>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-striped mb-0">
+                    <thead><tr><th>Invoice</th><th>Date</th><th>Status</th><th class="text-right">Total</th><th class="text-right">Paid</th><th class="text-right">Balance</th></tr></thead>
+                    <tbody>
+                    @forelse($invoices as $inv)
+                        <tr>
+                            <td><a href="{{ route('invoices.show', $inv) }}">{{ $inv->number }}</a></td>
+                            <td>{{ $inv->invoice_date?->format('d M Y') }}</td>
+                            <td>{!! $inv->status_badge !!}</td>
+                            <td class="text-right">{{ $inv->currency?->code ?? '' }} {{ number_format($inv->total, 2) }}</td>
+                            <td class="text-right">{{ $inv->currency?->code ?? '' }} {{ number_format($inv->paid_amount, 2) }}</td>
+                            <td class="text-right">{{ $inv->currency?->code ?? '' }} {{ number_format($inv->balance, 2) }}</td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="6" class="text-center text-muted">No invoices yet.</td></tr>
+                    @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-5">
+        <div class="card card-success card-outline">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-money-check-alt mr-1"></i> Payments Received</h3>
+                <div class="card-tools">
+                    <a href="{{ route('payments.create', ['type' => 'customer', 'customer_id' => $customer->id]) }}" class="btn btn-xs btn-success"><i class="fas fa-plus"></i> Record Payment</a>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-striped mb-0">
+                    <thead><tr><th>Payment</th><th>Date</th><th>Method</th><th class="text-right">Amount</th><th>Reference</th></tr></thead>
+                    <tbody>
+                    @forelse($payments as $payment)
+                        <tr>
+                            <td><a href="{{ route('payments.show', $payment) }}">{{ $payment->number }}</a></td>
+                            <td>{{ $payment->paid_on?->format('d M Y') }}</td>
+                            <td>{{ ucfirst($payment->method) }}</td>
+                            <td class="text-right">{{ $payment->currency?->code ?? '' }} {{ number_format($payment->amount, 2) }}</td>
+                            <td>{{ $payment->reference ?: '-' }}</td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="5" class="text-center text-muted">No payments recorded.</td></tr>
+                    @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="addCommunication" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">

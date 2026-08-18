@@ -29,7 +29,7 @@ class UpdateSupplierBillRequest extends FormRequest
             'items.*.product_id' => 'nullable|exists:products,id',
             'items.*.description' => 'required|string|max:255',
             'items.*.sub_description' => 'nullable|string|max:255',
-            'items.*.qty' => 'required|numeric|min:0.01',
+            'items.*.qty' => 'required|integer|min:1',
             'items.*.unit' => 'nullable|string|max:20',
             'items.*.unit_price' => 'required|numeric|min:0',
             'items.*.tax_rate' => 'nullable|numeric|min:0|max:100',

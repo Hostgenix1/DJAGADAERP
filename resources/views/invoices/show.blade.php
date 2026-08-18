@@ -19,6 +19,13 @@
         </a>
     </div>
     <div class="d-flex">
+        @if(in_array($invoice->status, ['sent', 'partial', 'overdue']))
+            @can('create-payments')
+                <a href="{{ route('payments.create', ['type' => 'customer', 'customer_id' => $invoice->customer_id, 'invoice_id' => $invoice->id]) }}" class="btn btn-success btn-sm mr-2">
+                    <i class="fas fa-hand-holding-usd mr-1"></i> Record Payment
+                </a>
+            @endcan
+        @endif
         <a href="{{ route('invoices.pdf', $invoice) }}" class="btn btn-danger btn-sm mr-2">
             <i class="fas fa-file-pdf mr-1"></i> Download PDF
         </a>
@@ -85,6 +92,26 @@
                     <div class="col-md-6">
                         <div><strong>Reference No:</strong> {{ $invoice->reference_no ?: '—' }}</div>
                         <div><strong>Payment Terms:</strong> {{ $invoice->payment_terms ?: '—' }}</div>
+                        @if(\App\Support\PaymentTerms::hasMilestones($invoice->payment_terms))
+                            @php $milestones = \App\Support\PaymentTerms::milestones($invoice->payment_terms, (float) $invoice->total); $cum = 0; @endphp
+                            <div class="mt-2">
+                                <small class="text-muted text-uppercase font-weight-bold">Payment Schedule</small>
+                                @foreach($milestones as $ms)
+                                    @php $cum += $ms['amount']; $done = $invoice->paid_amount >= $cum - 0.005; @endphp
+                                    <div class="d-flex justify-content-between align-items-center py-1 {{ !$loop->last ? 'border-bottom' : '' }}">
+                                        <span>{{ $ms['label'] }}</span>
+                                        <span class="text-right">
+                                            {{ $invoice->currency?->code ?? '' }} {{ number_format($ms['amount'], 2) }}
+                                            @if($done)
+                                                <span class="badge badge-success ml-1">Paid</span>
+                                            @else
+                                                <span class="badge badge-warning ml-1">Due</span>
+                                            @endif
+                                        </span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
                         <div><strong>Delivery Terms:</strong> {{ $invoice->delivery_terms ?: '—' }}</div>
                         <div><strong>Offer Valid:</strong> {{ $invoice->offer_valid ? $invoice->offer_valid.' days' : '—' }}</div>
                     </div>

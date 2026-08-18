@@ -213,7 +213,7 @@ $(function () {
         const base = data?.price ? parseFloat(data.price) : 0;
         const row = `<tr data-idx="${idx}">
             <td><select name="items[${idx}][product_id]" class="form-control form-control-sm prod-select"><option value="">Manual</option>${products.map(p=>`<option value="${p.id}" data-price="${p.price}" data-unit="${p.unit}">${p.name}</option>`).join('')}</select><input type="text" name="items[${idx}][description]" class="form-control form-control-sm mt-1" placeholder="Description" value="${data?.description||''}" required><input type="text" name="items[${idx}][sub_description]" class="form-control form-control-sm mt-1" value="${data?.sub_description||''}" placeholder="Sub description (e.g. 2x40ft, 1040 bags/container)"></td>
-            <td><input type="number" step="0.01" name="items[${idx}][qty]" class="form-control form-control-sm qty" value="${data?.qty||1}" min="0.01" required></td>
+            <td><input type="number" step="1" name="items[${idx}][qty]" class="form-control form-control-sm qty" value="${data?.qty||1}" min="1" required></td>
             <td>${unitInput(`items[${idx}][unit]`, data?.unit||'')}</td>
             <td><input type="number" step="0.01" name="items[${idx}][unit_price]" class="form-control form-control-sm price" data-base-price="${base}" value="${base?conv(base):(data?.price||0)}" min="0" required></td>
             <td><input type="number" step="0.01" name="items[${idx}][tax_rate]" class="form-control form-control-sm tax" value="${data?.tax!=null?data.tax:''}" min="0" placeholder="Inv. rate"></td>

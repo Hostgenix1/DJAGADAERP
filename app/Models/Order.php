@@ -64,10 +64,39 @@ class Order extends Model
             'draft' => 'badge-secondary',
             'confirmed' => 'badge-info',
             'processing' => 'badge-warning',
+            'loading' => 'badge-primary',
             'completed' => 'badge-success',
             'cancelled' => 'badge-dark',
             default => 'badge-light',
         };
+    }
+
+    public function productionSteps(): array
+    {
+        $idx = match($this->status) {
+            'draft' => -1,
+            'confirmed' => 0,
+            'processing' => 1,
+            'loading' => 2,
+            'completed' => 3,
+            default => -1,
+        };
+
+        $labels = ['Order Confirmed', 'In Production', 'Loading'];
+        $icons = ['fa-check-circle', 'fa-cog', 'fa-truck-loading'];
+        $metas = [$this->order_date?->format('d M Y'), null, null];
+
+        $steps = [];
+        foreach ($labels as $i => $label) {
+            $steps[] = [
+                'label' => $label,
+                'icon' => $icons[$i],
+                'state' => $idx >= $i + 1 ? 'done' : ($idx === $i ? 'active' : 'upcoming'),
+                'meta' => $metas[$i] ?? null,
+            ];
+        }
+
+        return $steps;
     }
 
     public function recalculate(): void

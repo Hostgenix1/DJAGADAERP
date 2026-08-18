@@ -80,13 +80,19 @@ class CustomerController extends Controller
 
         $customer->load(['contacts', 'documents' => fn ($q) => $q->where('is_latest', true)->latest('id')]);
 
+        $invoices = $customer->invoices()->with('currency')->latest()->get();
+        $payments = $customer->payments()->with('currency')->latest()->get();
+        $totalInvoiced = $invoices->where('status', '!=', 'cancelled')->sum('total');
+        $totalPaid = $invoices->where('status', '!=', 'cancelled')->sum('paid_amount');
+        $outstanding = $totalInvoiced - $totalPaid;
+
         $timeline = collect();
         $timeline->push($customer->communications->map(fn ($c) => ['type' => 'communication', 'icon' => 'fa-comments', 'color' => 'info', 'title' => ucfirst($c->type).($c->subject ? ': '.$c->subject : ''), 'body' => $c->body, 'date' => $c->occurred_at]));
         $timeline->push($customer->follow_ups()->latest('due_date')->limit(20)->get()->map(fn ($f) => ['type' => 'follow_up', 'icon' => 'fa-calendar-check', 'color' => $f->completed_at ? 'success' : 'warning', 'title' => ucfirst($f->type).($f->completed_at ? ' (Done)' : ''), 'body' => $f->note, 'date' => $f->due_date]));
         $timeline->push($customer->documents->map(fn ($d) => ['type' => 'document', 'icon' => 'fa-file-alt', 'color' => 'secondary', 'title' => $d->title.' (v'.$d->version.')', 'body' => $d->original_name, 'date' => $d->created_at]));
         $timeline = $timeline->flatten(1)->sortByDesc('date')->take(50);
 
-        return view('customers.show', compact('customer', 'timeline'));
+        return view('customers.show', compact('customer', 'timeline', 'invoices', 'payments', 'totalInvoiced', 'totalPaid', 'outstanding'));
     }
 
     public function create()

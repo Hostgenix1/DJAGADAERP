@@ -25,8 +25,8 @@ class Payment extends Model
     public function customer(): BelongsTo { return $this->belongsTo(Customer::class); }
     public function supplier(): BelongsTo { return $this->belongsTo(Supplier::class); }
     public function currency(): BelongsTo { return $this->belongsTo(Currency::class); }
-    public function invoices(): BelongsToMany { return $this->belongsToMany(Invoice::class, 'invoice_payments')->withPivot('amount'); }
-    public function supplierBills(): BelongsToMany { return $this->belongsToMany(SupplierBill::class, 'supplier_bill_payments')->withPivot('amount'); }
+    public function invoices(): BelongsToMany { return $this->belongsToMany(Invoice::class, 'invoice_payments')->withPivot('amount', 'previous_status'); }
+    public function supplierBills(): BelongsToMany { return $this->belongsToMany(SupplierBill::class, 'supplier_bill_payments')->withPivot('amount', 'previous_status'); }
     public function documents() { return $this->morphMany(Document::class, 'documentable'); }
 
     public static function nextNumber(): string

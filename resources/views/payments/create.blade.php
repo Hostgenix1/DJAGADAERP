@@ -54,8 +54,15 @@
                         </div>
                         <div class="form-group col-md-4">
                             <label>Currency</label>
-                            <select name="currency_id" class="form-control"><option value="">-- Default --</option>@foreach($currencies as $id=>$c)<option value="{{ $id }}">{{ $c }}</option>@endforeach</select>
+                            <select name="currency_id" class="form-control" id="payment-currency"><option value="">-- Default --</option>@foreach($currencies as $id=>$c)<option value="{{ $id }}">{{ $c }}</option>@endforeach</select>
                         </div>
+                        <div class="form-group col-md-4">
+                            <label>Rate</label>
+                            <input type="number" step="0.0001" min="0.0001" name="rate" class="form-control" id="payment-rate" value="1">
+                            <small class="text-muted">Units of {{ $defaultCurrencyCode ?? 'this currency' }} per 1 base currency (auto-filled, editable)</small>
+                        </div>
+                    </div>
+                    <div class="form-row">
                         <div class="form-group col-md-4">
                             <label>Date *</label>
                             <input type="date" name="paid_on" class="form-control" value="{{ now()->format('Y-m-d') }}" required>
@@ -71,6 +78,7 @@
                     </div>
 
                     <h5 class="mt-4">Allocate to {{ $preselected['type'] === 'supplier' ? 'Bills' : 'Invoices' }} (optional)</h5>
+                    <small id="alloc-total-hint" class="text-muted d-none mb-2 d-block"></small>
                     <div id="allocations"></div>
                     <button type="button" class="btn btn-sm btn-outline-primary mb-3" id="add-alloc"><i class="fas fa-plus"></i> Add Allocation</button>
                 </div>
@@ -103,10 +111,47 @@ $(function(){
             $('#allocations').empty();invoiceCache = {};aIdx = 0;
             $('#alloc-header').text('Allocate to Invoices (optional)');
         }
+        recalcAllocations();
     });
 
     let aIdx = 0;
     let invoiceCache = {};
+    let autoAmountLocked = false;
+    const ratesJson = @json($rates);
+
+    const recalcAllocations = function(){
+        let total = 0;
+        $('#allocations .alloc-amount').each(function(){
+            const v = parseFloat($(this).val());
+            if (!isNaN(v) && v > 0) total += v;
+        });
+        const $amt = $('#payment-amount');
+        if (!autoAmountLocked) $amt.val(total > 0 ? total.toFixed(2) : '');
+        const paymentAmt = parseFloat($amt.val()) || 0;
+        const $hint = $('#alloc-total-hint');
+        if (total > 0) {
+            $hint.text('Allocated: ' + total.toFixed(2) + ' | Remaining: ' + Math.max(0, paymentAmt - total).toFixed(2)).removeClass('d-none');
+        } else {
+            $hint.addClass('d-none');
+        }
+    };
+
+    $('#payment-amount').on('input', function(){
+        autoAmountLocked = $(this).val() !== '';
+    });
+
+    $('#payment-currency').on('change', function(){
+        const r = ratesJson[$(this).val()];
+        $('#payment-rate').val(r ? r : '1');
+        $('#allocations').empty();
+        invoiceCache = {};
+        recalcAllocations();
+    });
+    $('#payment-rate').on('change', function(){
+        $('#allocations').empty();
+        invoiceCache = {};
+        recalcAllocations();
+    });
     @if($preselected['type'] === 'supplier')
     $('#payment-type').trigger('change');
     @endif
@@ -115,25 +160,32 @@ $(function(){
         const fieldName = kind === 'bill' ? 'supplier_bill_id' : 'invoice_id';
         let opts = '<option value="">-- Select ' + (kind === 'bill' ? 'Bill' : 'Invoice') + ' --</option>';
         items.forEach(function(it) {
-            opts += '<option value="' + it.id + '" data-balance="' + it.balance + '">' + it.label + '</option>';
+            const due = it.due ? ' data-due="' + it.due + '" data-due-label="' + (it.due_label || '') + '"' : '';
+            opts += '<option value="' + it.id + '" data-balance="' + it.balance + '"' + due + '>' + it.label + '</option>';
         });
-        const r = '<div class="form-row mb-2 alloc-row">' +
+        const r = '<div class="alloc-row mb-2">' +
+            '<div class="form-row">' +
             '<div class="form-group col-md-6"><select name="allocations[' + aIdx + '][' + fieldName + ']" class="form-control alloc-invoice">' + opts + '</select></div>' +
             '<div class="form-group col-md-4"><input type="number" step="0.01" name="allocations[' + aIdx + '][amount]" class="form-control alloc-amount" placeholder="Amount" min="0.01"></div>' +
             '<div class="form-group col-md-2"><button type="button" class="btn btn-sm btn-danger rm-alloc"><i class="fas fa-times"></i></button></div>' +
+            '</div>' +
+            '<small class="alloc-due-hint text-muted d-block px-1 mb-1"></small>' +
             '</div>';
         $('#allocations').append(r);
         aIdx++;
     };
 
     const fetchAndAdd = function(kind, done) {
-        const url = '{{ route("payments.outstanding-json") }}?type=' + kind;
-        if (invoiceCache[kind]) {
-            addRow(invoiceCache[kind], kind);
+        const cur = $('#payment-currency').val() || '';
+        const rate = $('#payment-rate').val() || '';
+        const url = '{{ route("payments.outstanding-json") }}?type=' + kind + '&currency_id=' + encodeURIComponent(cur) + '&rate=' + encodeURIComponent(rate);
+        const cacheKey = kind + '|' + cur + '|' + rate;
+        if (invoiceCache[cacheKey]) {
+            addRow(invoiceCache[cacheKey], kind);
             if (done) done();
         } else {
             $.get(url, function(data) {
-                invoiceCache[kind] = data;
+                invoiceCache[cacheKey] = data;
                 addRow(data, kind);
                 if (done) done();
             });
@@ -150,7 +202,37 @@ $(function(){
     });
     @endif
 
-    $(document).on('click','.rm-alloc',function(){$(this).closest('.alloc-row').remove();});
+    @if($preselected['invoice_id'])
+    fetchAndAdd('customer', function(){
+        $('#allocations .alloc-invoice').last().val({{ $preselected['invoice_id'] }});
+    });
+    @endif
+
+    $(document).on('click','.rm-alloc',function(){
+        $(this).closest('.alloc-row').remove();
+        recalcAllocations();
+    });
+
+    $(document).on('change', '.alloc-invoice', function(){
+        const $opt = $(this).find(':selected');
+        const $row = $(this).closest('.alloc-row');
+        const $amt = $row.find('.alloc-amount');
+        const due = parseFloat($opt.data('due')) || 0;
+        const dueLabel = $opt.data('dueLabel') || '';
+        const bal = parseFloat($opt.data('balance')) || 0;
+        $amt.val(due > 0 ? due : (bal > 0 ? bal : ''));
+        const $hint = $row.find('.alloc-due-hint');
+        if (due > 0 && dueLabel) {
+            $hint.text('Due per terms: ' + due.toFixed(2) + ' (' + dueLabel + ') · Full balance: ' + bal.toFixed(2));
+        } else {
+            $hint.text('');
+        }
+        recalcAllocations();
+    });
+
+    $(document).on('input change', '.alloc-amount', function(){
+        recalcAllocations();
+    });
 });
 </script>
 @endpush

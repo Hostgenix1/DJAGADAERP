@@ -47,6 +47,20 @@
                     <div class="col-md-4">
                         <strong>Currency:</strong> {{ $supplierBill->currency?->code ?? 'Default' }}<br>
                         <strong>Payment Terms:</strong> {{ $supplierBill->payment_terms ?: '—' }}<br>
+                        @if(\App\Support\PaymentTerms::hasMilestones($supplierBill->payment_terms))
+                            @php $milestones = \App\Support\PaymentTerms::milestones($supplierBill->payment_terms, (float) $supplierBill->total); $cum = 0; @endphp
+                            <small class="text-muted text-uppercase font-weight-bold">Payment Schedule</small>
+                            @foreach($milestones as $ms)
+                                @php $cum += $ms['amount']; $done = $supplierBill->paid_amount >= $cum - 0.005; @endphp
+                                <div class="d-flex justify-content-between align-items-center py-1 {{ !$loop->last ? 'border-bottom' : '' }}">
+                                    <small>{{ $ms['label'] }}</small>
+                                    <small class="text-right">
+                                        {{ $supplierBill->currency?->code ?? '' }} {{ number_format($ms['amount'], 2) }}
+                                        <span class="badge {{ $done ? 'badge-success' : 'badge-warning' }} ml-1">{{ $done ? 'Paid' : 'Due' }}</span>
+                                    </small>
+                                </div>
+                            @endforeach
+                        @endif
                         @if($supplierBill->purchaseOrder)
                             <strong>From PO:</strong> <a href="{{ route('purchase_orders.show', $supplierBill->purchaseOrder) }}">{{ $supplierBill->purchaseOrder->number }}</a>
                         @endif

@@ -1,6 +1,13 @@
 @extends('layouts.app')
 @section('title', 'New Shipment')
 
+@php
+    $preselectedOrder = null;
+    if (!empty($preselectedOrderId)) {
+        $preselectedOrder = \App\Models\Order::with('customer')->find($preselectedOrderId);
+    }
+@endphp
+
 @section('content')
 <form method="POST" action="{{ route('shipments.store') }}">
     @csrf
@@ -14,7 +21,7 @@
                     <div class="form-row">
                         <div class="form-group col-md-6">
                             <label>Customer *</label>
-                            <select name="customer_id" class="form-control" required>
+                            <select name="customer_id" id="customer-select" class="form-control" required>
                                 <option value="">-- Select --</option>
                                 @foreach($customers as $id => $n)
                                     <option value="{{ $id }}">{{ $n }}</option>
@@ -23,10 +30,10 @@
                         </div>
                         <div class="form-group col-md-3">
                             <label>Order</label>
-                            <select name="order_id" class="form-control">
+                            <select name="order_id" id="order-select" class="form-control">
                                 <option value="">-- Optional --</option>
                                 @foreach($orders as $id => $n)
-                                    <option value="{{ $id }}">{{ $n }}</option>
+                                    <option value="{{ $id }}" @selected(isset($preselectedOrderId) && $preselectedOrderId == $id)>{{ $n }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -110,4 +117,13 @@
         </div>
     </div>
 </form>
+@if($preselectedOrder)
+<script>
+    $(function(){
+        if (!$('#customer-select').val() && {{ $preselectedOrder->customer_id ?: 'null' }}) {
+            $('#customer-select').val({{ $preselectedOrder->customer_id }});
+        }
+    });
+</script>
+@endif
 @endsection

@@ -11,6 +11,20 @@
         </a>
     </div>
     <div class="d-flex">
+        @if($shipment->status === 'preparing')
+            <form method="POST" action="{{ route('shipments.update-status', $shipment) }}" class="d-inline mr-2">
+                @csrf @method('PATCH')
+                <input type="hidden" name="status" value="in_transit">
+                <button class="btn btn-warning btn-sm" onclick="return confirm('Mark as In Transit?');"><i class="fas fa-ship mr-1"></i> Mark In Transit</button>
+            </form>
+        @endif
+        @if(in_array($shipment->status, ['in_transit', 'customs']))
+            <form method="POST" action="{{ route('shipments.update-status', $shipment) }}" class="d-inline mr-2">
+                @csrf @method('PATCH')
+                <input type="hidden" name="status" value="delivered">
+                <button class="btn btn-success btn-sm" onclick="return confirm('Mark as Arrived (delivered)?');"><i class="fas fa-flag-checkered mr-1"></i> Mark Arrived</button>
+            </form>
+        @endif
         @if(in_array($shipment->status, ['preparing', 'in_transit', 'customs']))
             <a href="{{ route('shipments.edit', $shipment) }}" class="btn btn-info btn-sm mr-2">
                 <i class="fas fa-edit mr-1"></i> Edit
@@ -24,6 +38,25 @@
         @endif
     </div>
 </div>
+
+@if($shipment->status !== 'cancelled')
+<div class="card card-outline shadow-sm mb-3">
+    <div class="card-header py-2" style="background:#d1ecf1;">
+        <h6 class="card-title mb-0 font-weight-bold" style="color:#0c5460;">
+            <i class="fas fa-shipping-fast mr-2"></i>Shipping / Logistics Progress
+            @if($shipment->status === 'delivered')
+                <span class="badge badge-success ml-2"><i class="fas fa-check mr-1"></i>Delivered</span>
+            @endif
+            @if($shipment->status === 'customs')
+                <span class="badge badge-warning ml-2"><i class="fas fa-landmark mr-1"></i>Customs Hold</span>
+            @endif
+        </h6>
+    </div>
+    <div class="card-body py-3">
+        @include('partials.progress-tracker', ['steps' => $shipment->shippingSteps(), 'shipMoving' => $shipment->status === 'in_transit'])
+    </div>
+</div>
+@endif
 
 <div class="row">
     <div class="col-lg-8">

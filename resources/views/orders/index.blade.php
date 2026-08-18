@@ -130,6 +130,11 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a class="nav-link filter-tab" href="#" data-status="loading">
+                    <i class="fas fa-truck-loading mr-1"></i> Loading
+                </a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link filter-tab" href="#" data-status="completed">
                     <i class="fas fa-check-double mr-1"></i> Completed
                 </a>

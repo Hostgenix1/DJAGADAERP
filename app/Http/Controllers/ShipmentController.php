@@ -52,15 +52,16 @@ class ShipmentController extends Controller
             ->make(true);
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $this->authorize('create-shipments');
 
         $customers = \App\Models\Customer::pluck('company_name', 'id');
         $orders = \App\Models\Order::pluck('number', 'id');
         $invoices = \App\Models\Invoice::pluck('number', 'id');
+        $preselectedOrderId = $request->integer('order_id') ?: null;
 
-        return view('shipments.create', compact('customers', 'orders', 'invoices'));
+        return view('shipments.create', compact('customers', 'orders', 'invoices', 'preselectedOrderId'));
     }
 
     public function store(Request $request)
@@ -141,6 +142,43 @@ class ShipmentController extends Controller
         $shipment->update($data);
 
         return redirect()->route('shipments.show', $shipment)->with('success', 'Shipment updated.');
+    }
+
+    public function updateStatus(Request $request, Shipment $shipment)
+    {
+        $this->authorize('update-shipments');
+
+        $data = $request->validate([
+            'status' => 'required|in:in_transit,customs,delivered,cancelled',
+        ]);
+
+        $allowed = [
+            'preparing'  => ['in_transit', 'cancelled'],
+            'in_transit' => ['customs', 'delivered', 'cancelled'],
+            'customs'    => ['in_transit', 'delivered', 'cancelled'],
+            'delivered'  => [],
+            'cancelled'  => [],
+        ];
+
+        if (!in_array($data['status'], $allowed[$shipment->status] ?? [])) {
+            return back()->with('error', 'Cannot change status from "'.str_replace('_', ' ', $shipment->status).'" to "'.str_replace('_', ' ', $data['status']).'".');
+        }
+
+        $updates = ['status' => $data['status']];
+
+        if ($data['status'] === 'delivered' && !$shipment->delivered_at) {
+            $updates['delivered_at'] = now();
+        } elseif ($data['status'] !== 'delivered') {
+            $updates['delivered_at'] = null;
+        }
+
+        if ($data['status'] === 'in_transit' && !$shipment->shipped_at) {
+            $updates['shipped_at'] = now();
+        }
+
+        $shipment->update($updates);
+
+        return redirect()->route('shipments.show', $shipment)->with('success', 'Shipment status updated to '.ucfirst(str_replace('_', ' ', $data['status'])).'.');
     }
 
     public function destroy(Shipment $shipment)

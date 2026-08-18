@@ -57,6 +57,7 @@ class PaymentController extends Controller
         $customers = \App\Models\Customer::pluck('company_name', 'id');
         $suppliers = \App\Models\Supplier::pluck('company_name', 'id');
         $currencies = \App\Models\Currency::pluck('code', 'id');
+        $rates = \App\Models\Currency::where('is_active', true)->pluck('rate', 'id');
         $methods = ['cash', 'bank', 'cheque', 'mobile', 'transfer'];
 
         $preselected = [
@@ -64,20 +65,24 @@ class PaymentController extends Controller
             'supplier_id' => $request->input('supplier_id'),
             'customer_id' => $request->input('customer_id'),
             'bill_id' => $request->input('bill_id'),
+            'invoice_id' => $request->input('invoice_id'),
         ];
 
-        return view('payments.create', compact('customers', 'suppliers', 'currencies', 'methods', 'preselected'));
+        $defaultCurrencyCode = \App\Models\Currency::where('is_default', true)->value('code');
+
+        return view('payments.create', compact('customers', 'suppliers', 'currencies', 'rates', 'methods', 'preselected', 'defaultCurrencyCode'));
     }
 
     public function store(Request $request)
     {
         $this->authorize('create-payments');
 
-        $data = $request->validate([
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
             'type' => 'required|in:customer,supplier',
             'customer_id' => 'nullable|required_if:type,customer|exists:customers,id',
             'supplier_id' => 'nullable|required_if:type,supplier|exists:suppliers,id',
             'currency_id' => 'nullable|exists:currencies,id',
+            'rate' => 'nullable|numeric|min:0.0001|max:999999',
             'method' => 'required|in:cash,bank,cheque,mobile,transfer',
             'amount' => 'required|numeric|min:0.01',
             'paid_on' => 'required|date',
@@ -87,7 +92,22 @@ class PaymentController extends Controller
             'allocations.*.invoice_id' => 'nullable|exists:invoices,id',
             'allocations.*.supplier_bill_id' => 'nullable|exists:supplier_bills,id',
             'allocations.*.amount' => 'required_with:allocations|numeric|min:0.01',
-        ]);
+        ])->after(function ($v) use ($request) {
+            $type = $request->input('type');
+            foreach ($request->input('allocations', []) as $i => $alloc) {
+                if ($type === 'supplier' && ! empty($alloc['invoice_id'])) {
+                    $v->errors()->add("allocations.$i.invoice_id", 'Supplier payments can only be allocated to supplier bills.');
+                }
+                if ($type === 'customer' && ! empty($alloc['supplier_bill_id'])) {
+                    $v->errors()->add("allocations.$i.supplier_bill_id", 'Customer payments can only be allocated to invoices.');
+                }
+                if (empty($alloc['invoice_id']) && empty($alloc['supplier_bill_id'])) {
+                    $v->errors()->add("allocations.$i.amount", 'Each allocation must target an invoice or a supplier bill.');
+                }
+            }
+        });
+
+        $data = $validator->validate();
 
         $allocations = $data['allocations'] ?? [];
         unset($data['allocations']);
@@ -102,7 +122,16 @@ class PaymentController extends Controller
             return $a;
         }, $allocations);
 
-        $this->service->createWithAllocation($data, $allocations);
+        if (empty($data['currency_id'])) {
+            $data['currency_id'] = \App\Models\Currency::where('is_default', true)->value('id');
+        }
+        $data['rate'] = $data['rate'] ?? \App\Support\CurrencyHelper::rateOf($data['currency_id']);
+
+        try {
+            $this->service->createWithAllocation($data, $allocations);
+        } catch (\InvalidArgumentException $e) {
+            return back()->withInput()->with('error', $e->getMessage());
+        }
 
         return redirect()->route('payments.index')->with('success', 'Payment recorded.');
     }
@@ -141,6 +170,15 @@ class PaymentController extends Controller
     {
         $this->authorize('view-payments');
 
+        $payCurrencyId = $request->integer('currency_id') ?: null;
+        $payRate = $request->filled('rate') ? (float) $request->input('rate') : null;
+        $payCurrency = $payCurrencyId ? \App\Models\Currency::find($payCurrencyId) : null;
+        $code = $payCurrency?->code ?? ($request->input('currency_code') ?: '');
+        $labelRate = $payRate ?? \App\Support\CurrencyHelper::rateOf($payCurrencyId);
+
+        $convert = fn (float $amount, ?int $fromCurrencyId): float => $amount <= 0 ? 0
+            : \App\Support\CurrencyHelper::convert($amount, $fromCurrencyId, $payCurrencyId);
+
         if ($request->input('type') === 'supplier') {
             $bills = \App\Models\SupplierBill::with('supplier', 'currency')
                 ->whereIn('status', ['confirmed', 'partial'])
@@ -148,8 +186,10 @@ class PaymentController extends Controller
                 ->get()
                 ->map(fn ($b) => [
                     'id'      => $b->id,
-                    'label'   => $b->number . ' — ' . ($b->supplier?->company_name ?? 'N/A') . ' (Bal: ' . ($b->currency?->symbol ?? '$') . number_format($b->total - $b->paid_amount, 2) . ')',
-                    'balance' => (float) ($b->total - $b->paid_amount),
+                    'label'   => $b->number . ' — ' . ($b->supplier?->company_name ?? 'N/A') . ' (Bal: ' . ($code ?: ($b->currency?->code ?? 'Base')) . ' ' . number_format($convert($b->total - $b->paid_amount, $b->currency_id), 2) . ')',
+                    'balance' => (float) $convert($b->total - $b->paid_amount, $b->currency_id),
+                    'due'     => ($due = \App\Support\PaymentTerms::dueNow($b->payment_terms, (float) $b->total, (float) $b->paid_amount)) ? round($convert($due['amount'], $b->currency_id), 2) : null,
+                    'due_label' => $due['label'] ?? null,
                 ]);
             return response()->json($bills);
         }
@@ -160,8 +200,10 @@ class PaymentController extends Controller
             ->get()
             ->map(fn ($i) => [
                 'id'      => $i->id,
-                'label'   => $i->number . ' — ' . ($i->customer?->company_name ?? 'N/A') . ' (Bal: ' . ($i->currency?->symbol ?? '$') . number_format($i->total - $i->paid_amount, 2) . ')',
-                'balance' => (float) ($i->total - $i->paid_amount),
+                'label'   => $i->number . ' — ' . ($i->customer?->company_name ?? 'N/A') . ' (Bal: ' . ($code ?: ($i->currency?->code ?? 'Base')) . ' ' . number_format($convert($i->total - $i->paid_amount, $i->currency_id), 2) . ')',
+                'balance' => (float) $convert($i->total - $i->paid_amount, $i->currency_id),
+                'due'     => ($due = \App\Support\PaymentTerms::dueNow($i->payment_terms, (float) $i->total, (float) $i->paid_amount)) ? round($convert($due['amount'], $i->currency_id), 2) : null,
+                'due_label' => $due['label'] ?? null,
             ]);
         return response()->json($invoices);
     }
@@ -170,6 +212,9 @@ class PaymentController extends Controller
     {
         $this->authorize('delete-payments');
         \App\Services\PaymentService::reverseAllocations($payment);
+        foreach ($payment->documents as $document) {
+            app(\App\Services\DocumentService::class)->delete($document);
+        }
         $payment->delete();
         return redirect()->route('payments.index')->with('success', 'Payment deleted.');
     }

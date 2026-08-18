@@ -46,4 +46,30 @@ class Shipment extends Model
             default => 'badge-light',
         };
     }
+
+    public function shippingSteps(): array
+    {
+        $idx = match($this->status) {
+            'preparing' => 0,
+            'in_transit', 'customs' => 1,
+            'delivered' => 3,
+            default => -1,
+        };
+
+        $labels = ['Loading', 'In Transit', 'Arrived'];
+        $icons = ['fa-box-open', 'fa-ship', 'fa-flag-checkered'];
+        $metas = [$this->created_at?->format('d M Y'), $this->shipped_at?->format('d M Y H:i'), $this->delivered_at?->format('d M Y H:i')];
+
+        $steps = [];
+        foreach ($labels as $i => $label) {
+            $steps[] = [
+                'label' => $label,
+                'icon' => $icons[$i],
+                'state' => $idx >= $i + 1 ? 'done' : ($idx === $i ? 'active' : 'upcoming'),
+                'meta' => $metas[$i] ?? null,
+            ];
+        }
+
+        return $steps;
+    }
 }

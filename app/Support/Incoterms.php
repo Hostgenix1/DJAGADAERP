@@ -2,13 +2,13 @@
 
 namespace App\Support;
 
-use App\Support\SettingsHelper;
+use App\Services\SettingsService;
 
 class Incoterms
 {
     public static function all(): array
     {
-        $setting = SettingsHelper::get('incoterms_list', '');
+        $setting = app(SettingsService::class)->get('incoterms_list', '');
         if (! empty($setting)) {
             return array_values(array_filter(array_map('trim', explode(',', $setting))));
         }

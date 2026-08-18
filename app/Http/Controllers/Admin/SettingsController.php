@@ -227,7 +227,7 @@ class SettingsController extends Controller
         foreach ($docTypes as $key => $label) {
             $defaults[$key] = \App\Support\PaymentTerms::defaultFor($key);
         }
-        $defaults['incoterms_list'] = \App\Support\SettingsHelper::get('incoterms_list', '');
+        $defaults['incoterms_list'] = app(\App\Services\SettingsService::class)->get('incoterms_list', '');
 
         return view('admin.settings.payment-terms', compact('docTypes', 'defaults'));
     }

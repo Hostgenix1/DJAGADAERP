@@ -21,6 +21,7 @@ class OrderController extends Controller
         $draft = Order::where('status', 'draft')->count();
         $confirmed = Order::where('status', 'confirmed')->count();
         $processing = Order::where('status', 'processing')->count();
+        $loading = Order::where('status', 'loading')->count();
         $completed = Order::where('status', 'completed')->count();
         $totalAmount = (float) Order::where('status', '!=', 'cancelled')->sum('total');
         $defaultCurrency = \App\Models\Currency::where('is_default', true)->first();
@@ -32,7 +33,7 @@ class OrderController extends Controller
             ->get()
             ->toArray();
 
-        return view('orders.index', compact('totalOrders', 'draft', 'confirmed', 'processing', 'completed', 'totalAmount', 'defaultCurrency', 'orderByCurrency'));
+        return view('orders.index', compact('totalOrders', 'draft', 'confirmed', 'processing', 'loading', 'completed', 'totalAmount', 'defaultCurrency', 'orderByCurrency'));
     }
 
     public function datatable(Request $request)
@@ -42,7 +43,7 @@ class OrderController extends Controller
         $query = $this->service->query();
 
         if ($request->filled('status')) {
-            $allowedStatuses = ['draft', 'confirmed', 'processing', 'completed', 'cancelled'];
+            $allowedStatuses = ['draft', 'confirmed', 'processing', 'loading', 'completed', 'cancelled'];
             if (in_array($request->status, $allowedStatuses)) {
                 $query->where('status', $request->status);
             }
@@ -110,7 +111,7 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         $this->authorize('view-orders');
-        $order->load(['customer', 'currency', 'items.product']);
+        $order->load(['customer', 'currency', 'items.product', 'shipments']);
 
         return view('orders.show', compact('order'));
     }
@@ -166,13 +167,14 @@ class OrderController extends Controller
         $this->authorize('update-orders');
 
         $data = $request->validate([
-            'status' => 'required|in:confirmed,processing,completed,cancelled',
+            'status' => 'required|in:confirmed,processing,loading,completed,cancelled',
         ]);
 
         $allowed = [
             'draft'      => ['confirmed', 'cancelled'],
             'confirmed'  => ['processing', 'cancelled'],
-            'processing' => ['completed', 'cancelled'],
+            'processing' => ['loading', 'cancelled'],
+            'loading'    => ['completed', 'cancelled'],
             'completed'  => [],
             'cancelled'  => ['draft'],
         ];
