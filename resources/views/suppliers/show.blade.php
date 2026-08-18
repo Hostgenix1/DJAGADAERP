@@ -29,9 +29,9 @@
                     <p class="mb-1"><strong>Address:</strong> {{ $supplier->address ?: '—' }}</p>
                     <p class="mb-1"><strong>City:</strong> {{ $supplier->city ?: '—' }}</p>
                     <p class="mb-1"><strong>Country:</strong> {{ $supplier->country ?: '—' }}</p>
+                    <p class="mb-1"><strong>Tax Registration / VAT No:</strong> {{ $supplier->tax_registration_number ?: '—' }}</p>
                     <p class="mb-1"><strong>Currency:</strong> {{ $supplier->currency?->code ?: '—' }}</p>
                     <p class="mb-1"><strong>Payment Terms:</strong> {{ $supplier->payment_terms ?: '—' }}</p>
-                    @if($supplier->tax_number)<p class="mb-1"><strong>Tax No:</strong> {{ $supplier->tax_number }}</p>@endif
                 </div>
             </div>
         </div>

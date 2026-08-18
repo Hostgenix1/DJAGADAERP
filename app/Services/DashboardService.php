@@ -178,4 +178,78 @@ class DashboardService
             ->get(['id', 'company_name'])
             ->toArray();
     }
+
+    /**
+     * Resolve [start, end] dates from a period key: month / quarter / year / all.
+     */
+    public function periodRange(string $period): array
+    {
+        return match ($period) {
+            'month' => [now()->startOfMonth(), now()->endOfMonth()],
+            'quarter' => [now()->startOfQuarter(), now()->endOfQuarter()],
+            'year' => [now()->startOfYear(), now()->endOfYear()],
+            default => [null, null],
+        };
+    }
+
+    /**
+     * Profit & Loss summary for a given period, all converted to the base (default) currency.
+     */
+    public function getPnl(string $period = 'month'): array
+    {
+        [$start, $end] = $this->periodRange($period);
+
+        $baseId = \App\Support\CurrencyHelper::baseCurrencyId();
+
+        $sumInBase = function ($amount, $currencyId) use ($baseId) {
+            return \App\Support\CurrencyHelper::convert($amount, $currencyId, $baseId);
+        };
+
+        $dateCol = fn ($col) => $start
+            ? fn ($q) => $q->whereBetween($col, [$start, $end])
+            : fn ($q) => $q;
+
+        $invoices = Invoice::where('status', '!=', 'cancelled');
+        $dateCol('invoice_date')($invoices);
+        $revenue = $invoices->get(['total', 'currency_id'])->sum(fn ($i) => $sumInBase($i->total, $i->currency_id));
+
+        $bills = \App\Models\SupplierBill::where('status', '!=', 'cancelled');
+        $dateCol('bill_date')($bills);
+        $supplierCost = $bills->get(['total', 'currency_id'])->sum(fn ($b) => $sumInBase($b->total, $b->currency_id));
+
+        $expenses = \App\Models\Expense::query();
+        $dateCol('expense_date')($expenses);
+        $expenses = $expenses->get(['amount', 'category', 'currency_id']);
+        $operatingExpenses = $expenses->where('category', '!=', 'payroll')->sum(fn ($e) => $sumInBase($e->amount, $e->currency_id));
+        $expensePayroll = $expenses->where('category', 'payroll')->sum(fn ($e) => $sumInBase($e->amount, $e->currency_id));
+
+        $payroll = \App\Models\PayrollEntry::where('status', '!=', 'draft');
+        $dateCol('created_at')($payroll);
+        $salaryCost = $payroll->get(['net_salary', 'currency_id'])->sum(fn ($p) => $sumInBase($p->net_salary, $p->currency_id));
+
+        $salaries = $salaryCost + $expensePayroll;
+
+        $grossProfit = $revenue - $supplierCost;
+        $netProfit = $grossProfit - $operatingExpenses - $salaries;
+
+        return [
+            'period' => $period,
+            'revenue' => round($revenue, 2),
+            'supplier_cost' => round($supplierCost, 2),
+            'operating_expenses' => round($operatingExpenses, 2),
+            'salaries' => round($salaries, 2),
+            'gross_profit' => round($grossProfit, 2),
+            'net_profit' => round($netProfit, 2),
+            'base_currency' => \App\Support\CurrencyHelper::baseCurrency(),
+        ];
+    }
+
+    public function getShipmentStats(): array
+    {
+        return [
+            'in_transit' => \App\Models\Shipment::where('status', 'in_transit')->count(),
+            'arrived' => \App\Models\Shipment::where('status', 'delivered')->count(),
+            'preparing' => \App\Models\Shipment::where('status', 'preparing')->count(),
+        ];
+    }
 }

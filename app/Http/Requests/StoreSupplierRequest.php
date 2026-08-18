@@ -21,6 +21,7 @@ class StoreSupplierRequest extends FormRequest
             'address' => 'nullable',
             'city' => 'nullable|max:100',
             'country' => 'nullable|max:100',
+            'tax_registration_number' => 'nullable|max:20',
             'payment_terms' => 'nullable|max:100',
             'currency_id' => 'nullable|exists:currencies,id',
             'default_payment_term' => 'nullable|max:255',

@@ -103,6 +103,7 @@
             @endif
             @if($po->supplier?->email)<div class="meta-row value">Email: {{ $po->supplier->email }}</div>@endif
             @if($po->supplier?->phone)<div class="meta-row value">Tel: {{ $po->supplier->phone }}</div>@endif
+            @if($po->supplier?->tax_registration_number)<div class="meta-row value">VAT/TRN: {{ $po->supplier->tax_registration_number }}</div>@endif
         </td>
 
         {{-- META --}}

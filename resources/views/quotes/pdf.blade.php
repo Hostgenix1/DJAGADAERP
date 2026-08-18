@@ -93,6 +93,7 @@
             @endif
             @if($quote->customer?->email)<div class="meta-row value">Email: {{ $quote->customer->email }}</div>@endif
             @if($quote->customer?->phone)<div class="meta-row value">Tel: {{ $quote->customer->phone }}</div>@endif
+            @if($quote->customer?->tax_registration_number)<div class="meta-row value">VAT/TRN: {{ $quote->customer->tax_registration_number }}</div>@endif
         </td>
 
         <td class="meta-box" style="width:33%; border-left:none;">

@@ -104,6 +104,7 @@
             @endif
             @if($invoice->customer?->email)<div class="meta-row value">Email: {{ $invoice->customer->email }}</div>@endif
             @if($invoice->customer?->phone)<div class="meta-row value">Tel: {{ $invoice->customer->phone }}</div>@endif
+            @if($invoice->customer?->tax_registration_number)<div class="meta-row value">VAT/TRN: {{ $invoice->customer->tax_registration_number }}</div>@endif
         </td>
 
         {{-- META --}}

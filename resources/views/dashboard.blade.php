@@ -3,6 +3,85 @@
 
 @section('content')
 
+{{-- Period selector --}}
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card card-outline card-light mb-0">
+            <div class="card-body py-2 d-flex justify-content-between align-items-center">
+                <span class="text-muted"><i class="fas fa-chart-pie mr-1"></i> Financial Overview</span>
+                <div class="btn-group btn-group-sm">
+                    @foreach(['month' => 'This Month', 'quarter' => 'This Quarter', 'year' => 'This Year', 'all' => 'All Time'] as $pk => $pl)
+                        <a href="{{ route('dashboard', ['period' => $pk]) }}"
+                           class="btn {{ $period === $pk ? 'btn-primary' : 'btn-light border' }}">{{ $pl }}</a>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Profit & Loss --}}
+<div class="row">
+    <div class="col-lg-2 col-6">
+        <div class="small-box bg-info">
+            <div class="inner">
+                <h3>{{ $pnl['base_currency']?->symbol ?? '$' }}{{ number_format($pnl['revenue'], 2) }}</h3>
+                <p>Revenue / Sales</p>
+            </div>
+            <div class="icon"><i class="fas fa-dollar-sign"></i></div>
+            <a href="{{ route('invoices.index') }}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+        </div>
+    </div>
+    <div class="col-lg-2 col-6">
+        <div class="small-box bg-danger">
+            <div class="inner">
+                <h3>{{ $pnl['base_currency']?->symbol ?? '$' }}{{ number_format($pnl['supplier_cost'], 2) }}</h3>
+                <p>Supplier Costs</p>
+            </div>
+            <div class="icon"><i class="fas fa-truck"></i></div>
+            <a href="{{ route('supplier_bills.index') }}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+        </div>
+    </div>
+    <div class="col-lg-2 col-6">
+        <div class="small-box bg-warning">
+            <div class="inner">
+                <h3>{{ $pnl['base_currency']?->symbol ?? '$' }}{{ number_format($pnl['operating_expenses'], 2) }}</h3>
+                <p>Operating Expenses</p>
+            </div>
+            <div class="icon"><i class="fas fa-tools"></i></div>
+            <a href="{{ route('expenses.index') }}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+        </div>
+    </div>
+    <div class="col-lg-2 col-6">
+        <div class="small-box bg-dark">
+            <div class="inner">
+                <h3>{{ $pnl['base_currency']?->symbol ?? '$' }}{{ number_format($pnl['salaries'], 2) }}</h3>
+                <p>Payroll / Salaries</p>
+            </div>
+            <div class="icon"><i class="fas fa-user-tie"></i></div>
+            <a href="{{ route('payroll.index') }}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+        </div>
+    </div>
+    <div class="col-lg-2 col-6">
+        <div class="small-box bg-success">
+            <div class="inner">
+                <h3>{{ $pnl['base_currency']?->symbol ?? '$' }}{{ number_format($pnl['gross_profit'], 2) }}</h3>
+                <p>Gross Profit</p>
+            </div>
+            <div class="icon"><i class="fas fa-percentage"></i></div>
+        </div>
+    </div>
+    <div class="col-lg-2 col-6">
+        <div class="small-box bg-primary">
+            <div class="inner">
+                <h3>{{ $pnl['base_currency']?->symbol ?? '$' }}{{ number_format($pnl['net_profit'], 2) }}</h3>
+                <p>Net Profit</p>
+            </div>
+            <div class="icon"><i class="fas fa-chart-line"></i></div>
+        </div>
+    </div>
+</div>
+
 {{-- Row 1: Main Financial KPIs --}}
 <div class="row">
     <div class="col-lg-3 col-6">
@@ -135,7 +214,7 @@
     </div>
 </div>
 
-{{-- Row 4: Orders, Shipments & Leads --}}
+{{-- Row 4: Orders & Shipments --}}
 <div class="row">
     <div class="col-lg-3 col-sm-6">
         <div class="info-box">
@@ -148,19 +227,19 @@
     </div>
     <div class="col-lg-3 col-sm-6">
         <div class="info-box">
-            <span class="info-box-icon bg-danger"><i class="fas fa-shipping-fast"></i></span>
+            <span class="info-box-icon bg-danger"><i class="fas fa-ship"></i></span>
             <div class="info-box-content">
                 <span class="info-box-text">Shipments In Transit</span>
-                <span class="info-box-number">{{ $stats['shipments_in_transit'] }}</span>
+                <span class="info-box-number">{{ $shipmentStats['in_transit'] }}</span>
             </div>
         </div>
     </div>
     <div class="col-lg-3 col-sm-6">
         <div class="info-box">
-            <span class="info-box-icon bg-primary"><i class="fas fa-handshake"></i></span>
+            <span class="info-box-icon bg-success"><i class="fas fa-anchor"></i></span>
             <div class="info-box-content">
-                <span class="info-box-text">Active Leads</span>
-                <span class="info-box-number">{{ $stats['active_leads'] }}</span>
+                <span class="info-box-text">Arrived Shipments</span>
+                <span class="info-box-number">{{ $shipmentStats['arrived'] }}</span>
             </div>
         </div>
     </div>

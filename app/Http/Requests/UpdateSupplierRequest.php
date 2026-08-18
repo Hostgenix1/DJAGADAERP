@@ -21,6 +21,7 @@ class UpdateSupplierRequest extends FormRequest
             'address' => 'sometimes|nullable',
             'city' => 'sometimes|max:100',
             'country' => 'sometimes|max:100',
+            'tax_registration_number' => 'sometimes|max:20',
             'payment_terms' => 'sometimes|max:100',
             'currency_id' => 'nullable|exists:currencies,id',
             'default_payment_term' => 'sometimes|max:255',

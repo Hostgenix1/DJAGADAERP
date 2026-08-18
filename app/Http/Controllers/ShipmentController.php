@@ -74,6 +74,8 @@ class ShipmentController extends Controller
             'invoice_id' => 'nullable|exists:invoices,id',
             'carrier' => 'nullable|string|max:255',
             'tracking_number' => 'nullable|string|max:255',
+            'container_count' => 'nullable|integer|min:1',
+            'container_size' => 'nullable|in:20ft,40ft',
             'shipping_method' => 'required|in:air,sea,land,courier',
             'origin' => 'nullable|string|max:255',
             'destination' => 'nullable|string|max:255',
@@ -124,6 +126,8 @@ class ShipmentController extends Controller
             'invoice_id' => 'nullable|exists:invoices,id',
             'carrier' => 'nullable|string|max:255',
             'tracking_number' => 'nullable|string|max:255',
+            'container_count' => 'nullable|integer|min:1',
+            'container_size' => 'nullable|in:20ft,40ft',
             'shipping_method' => 'required|in:air,sea,land,courier',
             'origin' => 'nullable|string|max:255',
             'destination' => 'nullable|string|max:255',
@@ -179,6 +183,45 @@ class ShipmentController extends Controller
         $shipment->update($updates);
 
         return redirect()->route('shipments.show', $shipment)->with('success', 'Shipment status updated to '.ucfirst(str_replace('_', ' ', $data['status'])).'.');
+    }
+
+    public function pdf(Shipment $shipment)
+    {
+        $this->authorize('view-shipments');
+        $shipment->load(['customer', 'order', 'invoice']);
+
+        $svc = app(\App\Services\SettingsService::class);
+        $logoPath = $svc->get('company_logo');
+        $logoBase64 = null;
+        if ($logoPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($logoPath)) {
+            $fullPath = \Illuminate\Support\Facades\Storage::disk('public')->path($logoPath);
+            $ext = strtolower(pathinfo($logoPath, PATHINFO_EXTENSION));
+            $mime = match($ext) {
+                'jpg', 'jpeg' => 'image/jpeg',
+                'png' => 'image/png',
+                'gif' => 'image/gif',
+                'svg' => 'image/svg+xml',
+                default => 'image/png',
+            };
+            $logoBase64 = 'data:'.$mime.';base64,'.base64_encode(file_get_contents($fullPath));
+        }
+
+        $company = [
+            'name' => $svc->get('company_name'),
+            'address' => $svc->get('company_address'),
+            'city' => $svc->get('company_city'),
+            'country' => $svc->get('company_country'),
+            'email' => $svc->get('company_email'),
+            'phone' => $svc->get('company_phone'),
+            'trn' => $svc->get('company_trn'),
+            'show_logo' => $svc->get('show_logo_on_docs'),
+            'logo_url' => $logoBase64,
+        ];
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('shipments.pdf', compact('shipment', 'company'))
+            ->setPaper('a4');
+
+        return $pdf->stream('shipment-'.$shipment->number.'.pdf');
     }
 
     public function destroy(Shipment $shipment)

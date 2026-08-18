@@ -53,13 +53,13 @@ return array (
       0 => array ('label' => 'Order', 'route' => 'orders.index', 'icon' => 'fa-shopping-cart', 'permission' => 'view-orders'),
     ),
   ),
-  5 => 
+   5 => 
   array (
     'label' => 'Shipments',
-    'icon' => 'fa-folder-open',
+    'icon' => 'fa-ship',
     'items' => 
     array (
-      0 => array ('label' => 'Shipment', 'route' => 'shipments.index', 'permission' => 'view-shipments'),
+      0 => array ('label' => 'Shipment', 'route' => 'shipments.index', 'icon' => 'fa-ship', 'permission' => 'view-shipments'),
     ),
   ),
   6 => 
@@ -83,6 +83,27 @@ return array (
   ),
   8 => 
   array (
+    'label' => 'Expenses',
+    'icon' => 'fa-receipt',
+    'items' => 
+    array (
+      0 => array ('label' => 'Expenses', 'route' => 'expenses.index', 'icon' => 'fa-receipt', 'permission' => 'view-expenses'),
+    ),
+  ),
+  9 => 
+  array (
+    'label' => 'HR & Payroll',
+    'icon' => 'fa-users-cog',
+    'items' => 
+    array (
+      0 => array ('label' => 'Employees', 'route' => 'employees.index', 'icon' => 'fa-user-tie', 'permission' => 'view-employees'),
+      1 => array ('label' => 'Attendance', 'route' => 'attendance.index', 'icon' => 'fa-calendar-check', 'permission' => 'view-attendance'),
+      2 => array ('label' => 'Leaves', 'route' => 'leaves.index', 'icon' => 'fa-umbrella-beach', 'permission' => 'view-leaves'),
+      3 => array ('label' => 'Payroll', 'route' => 'payroll.index', 'icon' => 'fa-money-check-alt', 'permission' => 'view-payroll'),
+    ),
+  ),
+  10 => 
+  array (
     'label' => 'Documents',
     'icon' => 'fa-folder-open',
     'items' => 
@@ -90,7 +111,7 @@ return array (
       0 => array ('label' => 'All Documents', 'route' => 'documents.index', 'icon' => 'fa-file-alt', 'permission' => 'view-documents'),
     ),
   ),
-  9 => 
+  11 => 
   array (
     'label' => 'Settings',
     'icon' => 'fa-folder-open',
@@ -105,7 +126,7 @@ return array (
       6 => array ('label' => 'Audit Log', 'route' => 'admin.settings.audit', 'icon' => 'fa-history', 'permission' => 'view-settings'),
     ),
   ),
-  10 => 
+  12 => 
   array (
     'label' => 'User Management',
     'icon' => 'fa-folder-open',

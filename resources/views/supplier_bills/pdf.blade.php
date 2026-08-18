@@ -103,6 +103,7 @@
             @endif
             @if($bill->supplier?->email)<div class="meta-row value">Email: {{ $bill->supplier->email }}</div>@endif
             @if($bill->supplier?->phone)<div class="meta-row value">Tel: {{ $bill->supplier->phone }}</div>@endif
+            @if($bill->supplier?->tax_registration_number)<div class="meta-row value">VAT/TRN: {{ $bill->supplier->tax_registration_number }}</div>@endif
         </td>
 
         {{-- META --}}

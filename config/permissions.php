@@ -102,6 +102,32 @@ return array (
     1 => 'create-documents',
     2 => 'delete-documents',
   ),
+  'Expenses' => 
+  array (
+    0 => 'view-expenses',
+    1 => 'create-expenses',
+    2 => 'update-expenses',
+    3 => 'delete-expenses',
+  ),
+  'HR & Payroll' => 
+  array (
+    0 => 'view-employees',
+    1 => 'create-employees',
+    2 => 'update-employees',
+    3 => 'delete-employees',
+    4 => 'view-attendance',
+    5 => 'create-attendance',
+    6 => 'update-attendance',
+    7 => 'delete-attendance',
+    8 => 'view-leaves',
+    9 => 'create-leaves',
+    10 => 'update-leaves',
+    11 => 'delete-leaves',
+    12 => 'view-payroll',
+    13 => 'create-payroll',
+    14 => 'update-payroll',
+    15 => 'delete-payroll',
+  ),
   'Settings' => 
   array (
     0 => 'view-dashboard',

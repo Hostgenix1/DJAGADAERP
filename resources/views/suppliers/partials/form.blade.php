@@ -49,6 +49,14 @@
             @enderror
         </div>
 <div class="col-md-6 col-field">
+            <label for="tax_registration_number" class="form-label">Tax Registration Number / VAT Number</label>
+            <input type="text" name="tax_registration_number" id="tax_registration_number" class="form-control" maxlength="20" value="{{ old('tax_registration_number', $form->tax_registration_number ?? '') }}">
+            <small class="text-muted">Optional — shown on purchase documents.</small>
+            @error('tax_registration_number')
+                <span class="text-danger small">{{ $message }}</span>
+            @enderror
+        </div>
+<div class="col-md-6 col-field">
             <label for="payment_terms" class="form-label">Payment Terms</label>
             <input type="text" name="payment_terms" id="payment_terms" class="form-control" value="{{ old('payment_terms', $form->payment_terms ?? '') }}">
             @error('payment_terms')

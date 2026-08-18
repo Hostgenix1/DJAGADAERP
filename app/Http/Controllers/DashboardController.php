@@ -14,7 +14,11 @@ class DashboardController extends Controller
     {
         $this->authorize('view-dashboard');
 
+        $period = in_array(request('period'), ['month', 'quarter', 'year', 'all']) ? request('period') : 'month';
+
         $stats = $this->service->getStats();
+        $pnl = $this->service->getPnl($period);
+        $shipmentStats = $this->service->getShipmentStats();
         $revenue = $this->service->getMonthlyRevenue();
         $cashFlow = $this->service->getCashFlow();
         $pipeline = $this->service->getPipelineByStage();
@@ -29,7 +33,7 @@ class DashboardController extends Controller
         $defaultCurrency = \App\Models\Currency::where('is_default', true)->first();
 
         return view('dashboard', compact(
-            'stats', 'revenue', 'cashFlow', 'pipeline', 'activities',
+            'stats', 'pnl', 'shipmentStats', 'period', 'revenue', 'cashFlow', 'pipeline', 'activities',
             'topCustomers', 'topProducts', 'revenueByCurrency', 'outstandingByCurrency',
             'payablesSummary', 'payablesByCurrency', 'recentBills', 'defaultCurrency'
         ));

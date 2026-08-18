@@ -6,7 +6,7 @@
 <div class="row">
     <div class="col-lg-3 col-md-6 col-sm-6 col-12">
         <div class="info-box">
-            <span class="info-box-icon bg-info"><i class="fas fa-shipping-fast"></i></span>
+            <span class="info-box-icon bg-info"><i class="fas fa-ship"></i></span>
             <div class="info-box-content">
                 <span class="info-box-text">Total Shipments</span>
                 <span class="info-box-number">{{ $total }}</span>
@@ -24,7 +24,7 @@
     </div>
     <div class="col-lg-3 col-md-6 col-sm-6 col-12">
         <div class="info-box">
-            <span class="info-box-icon bg-warning"><i class="fas fa-truck"></i></span>
+            <span class="info-box-icon bg-warning"><i class="fas fa-ship"></i></span>
             <div class="info-box-content">
                 <span class="info-box-text">In Transit</span>
                 <span class="info-box-number">{{ $inTransit }}</span>
@@ -53,7 +53,7 @@
 
 <div class="card card-primary card-outline">
     <div class="card-header">
-        <h3 class="card-title"><i class="fas fa-shipping-fast mr-1"></i> All Shipments</h3>
+        <h3 class="card-title"><i class="fas fa-ship mr-1"></i> All Shipments</h3>
         <div class="card-tools">
             @can('create-shipments')
                 <a href="{{ route('shipments.create') }}" class="btn btn-primary btn-sm">
@@ -77,7 +77,7 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link filter-tab" href="#" data-status="in_transit">
-                    <i class="fas fa-truck mr-1"></i> In Transit
+                    <i class="fas fa-ship mr-1"></i> In Transit
                 </a>
             </li>
             <li class="nav-item">

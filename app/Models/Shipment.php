@@ -11,7 +11,7 @@ class Shipment extends Model
 
     protected $fillable = [
         'number', 'order_id', 'invoice_id', 'customer_id', 'carrier',
-        'tracking_number', 'shipping_method', 'origin', 'destination',
+        'tracking_number', 'container_count', 'container_size', 'shipping_method', 'origin', 'destination',
         'status', 'shipped_at', 'estimated_arrival', 'delivered_at', 'notes',
     ];
 
@@ -19,6 +19,7 @@ class Shipment extends Model
         'shipped_at' => 'datetime',
         'estimated_arrival' => 'datetime',
         'delivered_at' => 'datetime',
+        'container_count' => 'integer',
     ];
 
     public function order(): BelongsTo { return $this->belongsTo(Order::class); }

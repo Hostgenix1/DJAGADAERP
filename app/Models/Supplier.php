@@ -15,7 +15,7 @@ class Supplier extends Model
 
     protected $fillable = [
         'company_name', 'contact_person', 'email', 'phone', 'address', 'city', 'country',
-        'currency_id', 'payment_terms', 'default_payment_term', 'is_active'
+        'tax_registration_number', 'currency_id', 'payment_terms', 'default_payment_term', 'is_active'
     ];
 
     protected $casts = [
