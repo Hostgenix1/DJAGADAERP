@@ -34,7 +34,7 @@
             <form method="POST" action="{{ route('orders.update-status', $order) }}" class="d-inline mr-2">
                 @csrf @method('PATCH')
                 <input type="hidden" name="status" value="loading">
-                <button class="btn btn-primary btn-sm" onclick="return confirm('Mark as loading?');"><i class="fas fa-truck-loading mr-1"></i> Start Loading</button>
+                <button class="btn btn-primary btn-sm" onclick="return confirm('Mark as loading?');"><i class="fas fa-ship mr-1"></i> Start Loading</button>
             </form>
         @endif
         @if($order->status === 'loading')
@@ -46,7 +46,7 @@
         @endif
         @if(in_array($order->status, ['loading', 'completed']))
             <a href="{{ route('shipments.create', ['order_id' => $order->id]) }}" class="btn btn-outline-primary btn-sm mr-2">
-                <i class="fas fa-shipping-fast mr-1"></i> Create Shipment
+                <i class="fas fa-ship mr-1"></i> Create Shipment
             </a>
         @endif
         @if(!in_array($order->status, ['completed', 'cancelled']))
@@ -86,7 +86,7 @@
 <div class="card card-outline shadow-sm mb-3">
     <div class="card-header py-2" style="background:#d1ecf1;">
         <h6 class="card-title mb-0 font-weight-bold" style="color:#0c5460;">
-            <i class="fas fa-shipping-fast mr-2"></i>Shipping / Logistics Progress
+            <i class="fas fa-ship mr-2"></i>Shipping / Logistics Progress
             <a href="{{ route('shipments.show', $latestShipment) }}" class="btn btn-outline-info btn-xs ml-2">Shipment {{ $latestShipment->number }}</a>
         </h6>
     </div>

@@ -83,7 +83,7 @@ class Order extends Model
         };
 
         $labels = ['Order Confirmed', 'In Production', 'Loading'];
-        $icons = ['fa-check-circle', 'fa-cog', 'fa-truck-loading'];
+        $icons = ['fa-check-circle', 'fa-cog', 'fa-ship'];
         $metas = [$this->order_date?->format('d M Y'), null, null];
 
         $steps = [];

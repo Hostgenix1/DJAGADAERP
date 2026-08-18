@@ -28,33 +28,33 @@ class CustomerController extends Controller
   ),
   1 => 
   array (
+    'label' => 'VAT / TRN',
+    'data' => 'tax_registration_number',
+  ),
+  2 => 
+  array (
     'label' => 'Contact Person',
     'data' => 'contact_person',
   ),
-  2 => 
+  3 => 
   array (
     'label' => 'Email',
     'data' => 'email',
   ),
-  3 => 
+  4 => 
   array (
     'label' => 'Phone',
     'data' => 'phone',
   ),
-  4 => 
+  5 => 
   array (
     'label' => 'City',
     'data' => 'city',
   ),
-  5 => 
+  6 => 
   array (
     'label' => 'Country',
     'data' => 'country',
-  ),
-  6 => 
-  array (
-    'label' => 'VAT / TRN',
-    'data' => 'tax_registration_number',
   ),
   7 => 
   array (

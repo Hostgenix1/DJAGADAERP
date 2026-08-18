@@ -6,7 +6,7 @@
         'steps' => [
             ['label' => 'Order Confirmed', 'icon' => 'fa-check-circle', 'state' => 'done', 'meta' => '12 Aug 2026'],
             ['label' => 'In Production',   'icon' => 'fa-cog',          'state' => 'active', 'meta' => null],
-            ['label' => 'Loading',         'icon' => 'fa-truck-loading','state' => 'upcoming', 'meta' => null],
+            ['label' => 'Loading',         'icon' => 'fa-ship',      'state' => 'upcoming', 'meta' => null],
         ],
         'shipMoving' => false,  // animated ship icon on the line after the active step
     ])
