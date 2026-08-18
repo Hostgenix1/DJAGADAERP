@@ -106,7 +106,7 @@
 </form>
 
 @php
-$productsJson = $products->map(fn($p) => ['id'=>$p->id,'name'=>$p->name,'price'=>(float)$p->sell_price,'unit'=>$p->unit ?? ''])->values();
+$productsJson = $products->map(fn($p) => ['id'=>$p->id,'name'=>$p->name,'price'=>(float)$p->sell_price,'unit'=>$p->unit ?? '','tax'=>$p->tax?->rate !== null ? (float)$p->tax->rate : null])->values();
 $ratesJson = $rates->map(fn($r,$id)=>[(int)$id, (float)$r])->values()->toArray();
 @endphp
 @endsection
@@ -136,7 +136,7 @@ $(function () {
     function addRow(data) {
         const base = data?.price ? parseFloat(data.price) : 0;
         const row = `<tr data-idx="${idx}">
-            <td><select name="items[${idx}][product_id]" class="form-control form-control-sm prod-select"><option value="">Manual</option>${products.map(p=>`<option value="${p.id}" data-price="${p.price}" data-unit="${p.unit}">${p.name}</option>`).join('')}</select><input type="text" name="items[${idx}][description]" class="form-control form-control-sm mt-1" placeholder="Description" value="${data?.description||''}" required></td>
+            <td><select name="items[${idx}][product_id]" class="form-control form-control-sm prod-select"><option value="">Manual</option>${products.map(p=>`<option value="${p.id}" data-price="${p.price}" data-unit="${p.unit}" data-tax="${p.tax!==null?p.tax:''}">${p.name}</option>`).join('')}</select><input type="text" name="items[${idx}][description]" class="form-control form-control-sm mt-1" placeholder="Description" value="${data?.description||''}" required></td>
             <td><input type="number" step="0.01" name="items[${idx}][qty]" class="form-control form-control-sm qty" value="${data?.qty||1}" min="0.01" required></td>
             <td>${unitInput(`items[${idx}][unit]`, data?.unit||'')}</td>
             <td><input type="number" step="0.01" name="items[${idx}][unit_price]" class="form-control form-control-sm price" data-base-price="${base}" value="${base?conv(base):(data?.price||0)}" min="0" required></td>
@@ -187,6 +187,7 @@ $(function () {
         if (u && !units.includes(u)) { $cust.removeClass('d-none').val(u).prop('disabled', false); $sel.prop('disabled', true).val(''); }
         else { $sel.val(u).prop('disabled', false); $cust.addClass('d-none').val('').prop('disabled', true); }
         $row.find('input[name$="[description]"]').val(opt.text() !== 'Manual' ? opt.text() : '');
+        $row.find('.tax').val(opt.data('tax')!==''?opt.data('tax'):'');
         recalc();
     });
     $(document).on('change', '.unit-select', function() {

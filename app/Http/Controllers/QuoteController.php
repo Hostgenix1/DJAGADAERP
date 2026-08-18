@@ -66,7 +66,7 @@ class QuoteController extends Controller
 
         $customers = \App\Models\Customer::pluck('company_name', 'id');
         $currencies = \App\Models\Currency::pluck('code', 'id');
-        $products = \App\Models\Product::where('is_active', true)->get(['id', 'name', 'sell_price', 'unit']);
+        $products = \App\Models\Product::with('tax:id,rate')->where('is_active', true)->get(['id', 'name', 'sell_price', 'unit', 'tax_id']);
         $taxes = \App\Models\Tax::sales()->where('is_active', true)->get();
         $units = \App\Support\Units::all();
         $paymentTerms = \App\Support\PaymentTerms::all();
@@ -133,7 +133,7 @@ class QuoteController extends Controller
 
         $customers = \App\Models\Customer::pluck('company_name', 'id');
         $currencies = \App\Models\Currency::pluck('code', 'id');
-        $products = \App\Models\Product::where('is_active', true)->get(['id', 'name', 'sell_price', 'unit']);
+        $products = \App\Models\Product::with('tax:id,rate')->where('is_active', true)->get(['id', 'name', 'sell_price', 'unit', 'tax_id']);
         $taxes = \App\Models\Tax::sales()->where('is_active', true)->get();
         $units = \App\Support\Units::all();
         $paymentTerms = \App\Support\PaymentTerms::all();

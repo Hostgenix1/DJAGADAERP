@@ -68,7 +68,7 @@ class OrderController extends Controller
 
         $customers = \App\Models\Customer::pluck('company_name', 'id');
         $currencies = \App\Models\Currency::pluck('code', 'id');
-        $products = \App\Models\Product::where('is_active', true)->get(['id', 'name', 'sell_price', 'unit']);
+        $products = \App\Models\Product::with('tax:id,rate')->where('is_active', true)->get(['id', 'name', 'sell_price', 'unit', 'tax_id']);
         $rates = \App\Models\Currency::where('is_active', true)->pluck('rate', 'id');
         $units = \App\Support\Units::all();
         $paymentTerms = \App\Support\PaymentTerms::all();
@@ -122,7 +122,7 @@ class OrderController extends Controller
         $order->load('items');
         $customers = \App\Models\Customer::pluck('company_name', 'id');
         $currencies = \App\Models\Currency::pluck('code', 'id');
-        $products = \App\Models\Product::where('is_active', true)->get(['id', 'name', 'sell_price', 'unit']);
+        $products = \App\Models\Product::with('tax:id,rate')->where('is_active', true)->get(['id', 'name', 'sell_price', 'unit', 'tax_id']);
         $rates = \App\Models\Currency::where('is_active', true)->pluck('rate', 'id');
         $units = \App\Support\Units::all();
         $paymentTerms = \App\Support\PaymentTerms::all();

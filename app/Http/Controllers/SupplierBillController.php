@@ -82,7 +82,7 @@ class SupplierBillController extends Controller
 
         $suppliers = \App\Models\Supplier::where('is_active', true)->get(['id', 'company_name', 'currency_id', 'default_payment_term']);
         $currencies = \App\Models\Currency::pluck('code', 'id');
-        $products = \App\Models\Product::where('is_active', true)->get(['id', 'name', 'buy_price', 'unit']);
+        $products = \App\Models\Product::with('tax:id,rate')->where('is_active', true)->get(['id', 'name', 'buy_price', 'unit', 'tax_id']);
         $taxes = \App\Models\Tax::where('is_active', true)->get();
         $units = \App\Support\Units::all();
         $paymentTerms = \App\Support\PaymentTerms::all();
@@ -130,7 +130,7 @@ class SupplierBillController extends Controller
 
         $suppliers = \App\Models\Supplier::where('is_active', true)->get(['id', 'company_name', 'currency_id', 'default_payment_term']);
         $currencies = \App\Models\Currency::pluck('code', 'id');
-        $products = \App\Models\Product::where('is_active', true)->get(['id', 'name', 'buy_price', 'unit']);
+        $products = \App\Models\Product::with('tax:id,rate')->where('is_active', true)->get(['id', 'name', 'buy_price', 'unit', 'tax_id']);
         $taxes = \App\Models\Tax::where('is_active', true)->get();
         $units = \App\Support\Units::all();
         $paymentTerms = \App\Support\PaymentTerms::all();

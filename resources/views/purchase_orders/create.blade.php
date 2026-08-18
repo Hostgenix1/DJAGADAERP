@@ -151,7 +151,7 @@
 
 @push('scripts')
 @php
-$productsJson = $products->map(fn($p)=>['id'=>$p->id,'name'=>$p->name,'price'=>(float)$p->buy_price,'unit'=>$p->unit ?? '' ])->values();
+$productsJson = $products->map(fn($p)=>['id'=>$p->id,'name'=>$p->name,'price'=>(float)$p->buy_price,'unit'=>$p->unit ?? '','tax'=>$p->tax?->rate !== null ? (float)$p->tax->rate : null])->values();
 $ratesJson = $rates->map(fn($r,$id)=>[(int)$id,(float)$r])->values()->toArray();
 $curCodesJson = $currencies->map(fn($code,$id)=>[(int)$id,$code])->values()->toArray();
 @endphp
@@ -174,7 +174,7 @@ $(function(){
     }
     function addRow(d){
         const base=d?.price?parseFloat(d.price):0;
-        const r=`<tr><td><select name="items[${idx}][product_id]" class="form-control prod-select"><option value="">Manual</option>${products.map(p=>`<option value="${p.id}" data-price="${p.price}" data-unit="${p.unit}">${p.name}</option>`).join('')}</select><input type="text" name="items[${idx}][description]" class="form-control mt-1" value="${d?.description||''}" required placeholder="Item description"><input type="text" name="items[${idx}][sub_description]" class="form-control mt-1" value="${d?.sub_description||''}" placeholder="Sub description"></td><td><input type="number" step="1" name="items[${idx}][qty]" class="form-control qty" value="${d?.qty||1}" min="1" required></td><td>${unitInput(`items[${idx}][unit]`, d?.unit||'')}</td><td><input type="number" step="0.01" name="items[${idx}][unit_price]" class="form-control price" data-base-price="${base}" value="${base?conv(base):(d?.price||0)}" min="0" required></td><td><input type="number" step="0.01" name="items[${idx}][tax_rate]" class="form-control tax" value="${d?.tax!=null?d.tax:''}" min="0" placeholder="Doc rate"></td><td><input type="number" step="0.01" name="items[${idx}][discount_pct]" class="form-control disc" value="${d?.disc||0}" min="0"></td><td class="lt">0.00</td><td><button type="button" class="btn btn-sm btn-danger rm"><i class="fas fa-times"></i></button></td></tr>`;
+        const r=`<tr><td><select name="items[${idx}][product_id]" class="form-control prod-select"><option value="">Manual</option>${products.map(p=>`<option value="${p.id}" data-price="${p.price}" data-unit="${p.unit}" data-tax="${p.tax!==null?p.tax:''}">${p.name}</option>`).join('')}</select><input type="text" name="items[${idx}][description]" class="form-control mt-1" value="${d?.description||''}" required placeholder="Item description"><input type="text" name="items[${idx}][sub_description]" class="form-control mt-1" value="${d?.sub_description||''}" placeholder="Sub description"></td><td><input type="number" step="1" name="items[${idx}][qty]" class="form-control qty" value="${d?.qty||1}" min="1" required></td><td>${unitInput(`items[${idx}][unit]`, d?.unit||'')}</td><td><input type="number" step="0.01" name="items[${idx}][unit_price]" class="form-control price" data-base-price="${base}" value="${base?conv(base):(d?.price||0)}" min="0" required></td><td><input type="number" step="0.01" name="items[${idx}][tax_rate]" class="form-control tax" value="${d?.tax!=null?d.tax:''}" min="0" placeholder="Doc rate"></td><td><input type="number" step="0.01" name="items[${idx}][discount_pct]" class="form-control disc" value="${d?.disc||0}" min="0"></td><td class="lt">0.00</td><td><button type="button" class="btn btn-sm btn-danger rm"><i class="fas fa-times"></i></button></td></tr>`;
         $('#items-table tbody').append(r); idx++; recalc();
     }
     function recalc(){
@@ -196,7 +196,7 @@ $(function(){
         $('#subtotal').text((mode==='included'?s-t:s).toFixed(2));
         $('#tax-total').text(t.toFixed(2));
         const disc=parseFloat($('#discount-input').val())||0;
-        $('#grand-total').text((s-t+(mode==='included'?0:t)-disc).toFixed(2));
+        $('#grand-total').text((s+(mode==='included'?0:t)-disc).toFixed(2));
     }
     $('#add-item').click(()=>addRow());
     $(document).on('click','.rm',function(){$(this).closest('tr').remove();recalc();});
@@ -207,6 +207,7 @@ $(function(){
         const base=parseFloat(o.data('price'))||0;
         $r.find('.price').val(base?conv(base):0).attr('data-base-price',base);
         if(o.text()!=='Manual'){ $r.find('input[name$="[description]"]').val(o.text()); }
+        $r.find('.tax').val(o.data('tax')!==''?o.data('tax'):'');
         recalc();
     });
     $(document).on('change','.unit-select',function(){

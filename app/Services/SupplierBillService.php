@@ -88,7 +88,7 @@ class SupplierBillService
     {
         foreach ($items as $item) {
             $item['sub_description'] = $item['sub_description'] ?? null;
-            if (empty($item['tax_rate'])) {
+            if (!isset($item['tax_rate']) || $item['tax_rate'] === '') {
                 $item['tax_rate'] = null;
             }
             $bill->items()->create($item);

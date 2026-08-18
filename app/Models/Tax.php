@@ -32,4 +32,9 @@ class Tax extends Model
     {
         return $query->where('kind', 'sales');
     }
+
+    public function scopePurchases($query)
+    {
+        return $query->where('kind', 'purchase');
+    }
 }

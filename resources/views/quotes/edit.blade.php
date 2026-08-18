@@ -164,7 +164,7 @@
 </form>
 
 @php
-$productsJson = $products->map(fn($p) => ['id'=>$p->id,'name'=>$p->name,'price'=>(float)$p->sell_price,'unit'=>$p->unit ?: 'pc'])->values();
+$productsJson = $products->map(fn($p) => ['id'=>$p->id,'name'=>$p->name,'price'=>(float)$p->sell_price,'unit'=>$p->unit ?: 'pc','tax'=>$p->tax?->rate !== null ? (float)$p->tax->rate : null])->values();
 $itemsJson = $quote->items->map(fn($i) => ['product_id'=>$i->product_id,'description'=>$i->description,'sub_description'=>$i->sub_description,'qty'=>$i->qty,'unit'=>$i->unit,'price'=>$i->unit_price,'tax'=>$i->tax_rate,'disc'=>$i->discount_pct])->values();
 $ratesJson = $rates->map(fn($r,$id)=>[(int)$id, (float)$r])->values()->toArray();
 @endphp
@@ -197,7 +197,7 @@ $(function () {
         const priceInDoc = data?.price ? parseFloat(data.price) : 0;
         const base = priceInDoc ? Math.round(priceInDoc / rateFor() * 100) / 100 : 0;
         const row = `<tr data-idx="${idx}">
-            <td><select name="items[${idx}][product_id]" class="form-control form-control-sm prod-select"><option value="">Manual</option>${products.map(p=>`<option value="${p.id}" ${data?.product_id==p.id?'selected':''} data-price="${p.price}" data-unit="${p.unit}">${p.name}</option>`).join('')}</select><input type="text" name="items[${idx}][description]" class="form-control form-control-sm mt-1" placeholder="Description" value="${data?.description||''}" required><input type="text" name="items[${idx}][sub_description]" class="form-control form-control-sm mt-1" value="${data?.sub_description||''}" placeholder="Sub description (e.g. 2x40ft, 1040 bags/container)"></td>
+            <td><select name="items[${idx}][product_id]" class="form-control form-control-sm prod-select"><option value="">Manual</option>${products.map(p=>`<option value="${p.id}" ${data?.product_id==p.id?'selected':''} data-price="${p.price}" data-unit="${p.unit}" data-tax="${p.tax!==null?p.tax:''}">${p.name}</option>`).join('')}</select><input type="text" name="items[${idx}][description]" class="form-control form-control-sm mt-1" placeholder="Description" value="${data?.description||''}" required><input type="text" name="items[${idx}][sub_description]" class="form-control form-control-sm mt-1" value="${data?.sub_description||''}" placeholder="Sub description (e.g. 2x40ft, 1040 bags/container)"></td>
             <td><input type="number" step="1" name="items[${idx}][qty]" class="form-control form-control-sm qty" value="${data?.qty||1}" min="1" required></td>
             <td>${unitInput(`items[${idx}][unit]`, data?.unit||'')}</td>
             <td><input type="number" step="0.01" name="items[${idx}][unit_price]" class="form-control form-control-sm price" data-base-price="${base}" value="${priceInDoc?priceInDoc:(data?.price||0)}" min="0" required></td>
@@ -245,6 +245,7 @@ $(function () {
         const base = parseFloat(opt.data('price')) || 0;
         $row.find('.price').val(base ? conv(base) : 0).attr('data-base-price', base);
         $row.find('input[name$="[description]"]').val(opt.text() !== 'Manual' ? opt.text() : '');
+        $row.find('.tax').val(opt.data('tax')!==''?opt.data('tax'):'');
         $row.find('.unit-select').val('').prop('disabled',false);
         $row.find('.unit-custom').addClass('d-none').val('').prop('disabled',true);
         recalc();

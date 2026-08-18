@@ -68,7 +68,7 @@ class PurchaseOrderController extends Controller
 
         $suppliers = \App\Models\Supplier::where('is_active', true)->get(['id', 'company_name', 'currency_id', 'default_payment_term']);
         $currencies = \App\Models\Currency::pluck('code', 'id');
-        $products = \App\Models\Product::where('is_active', true)->get(['id', 'name', 'buy_price', 'unit']);
+        $products = \App\Models\Product::with('tax:id,rate')->where('is_active', true)->get(['id', 'name', 'buy_price', 'unit', 'tax_id']);
         $taxes = \App\Models\Tax::where('is_active', true)->get();
         $units = \App\Support\Units::all();
 $paymentTerms = \App\Support\PaymentTerms::all();
@@ -120,12 +120,12 @@ $paymentTerms = \App\Support\PaymentTerms::all();
 
         $suppliers = \App\Models\Supplier::where('is_active', true)->get(['id', 'company_name', 'currency_id', 'default_payment_term']);
         $currencies = \App\Models\Currency::pluck('code', 'id');
-        $products = \App\Models\Product::where('is_active', true)->get(['id', 'name', 'buy_price', 'unit']);
+        $products = \App\Models\Product::with('tax:id,rate')->where('is_active', true)->get(['id', 'name', 'buy_price', 'unit', 'tax_id']);
         $taxes = \App\Models\Tax::where('is_active', true)->get();
         $units = \App\Support\Units::all();
         $paymentTerms = \App\Support\PaymentTerms::all();
         $incoterms = \App\Support\Incoterms::all();
-        $defaultTax = \App\Models\Tax::sales()->where('is_default', true)->first();
+        $defaultTax = \App\Models\Tax::purchases()->where('is_default', true)->first();
         $rates = \App\Models\Currency::where('is_active', true)->pluck('rate', 'id');
         $defaultTerm = \App\Support\PaymentTerms::defaultFor('purchase_order');
 

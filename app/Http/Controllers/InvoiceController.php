@@ -73,7 +73,7 @@ class InvoiceController extends Controller
         $this->authorize('create-invoices');
         $customers = \App\Models\Customer::pluck('company_name', 'id');
         $currencies = \App\Models\Currency::pluck('code', 'id');
-        $products = \App\Models\Product::where('is_active', true)->get(['id', 'name', 'sell_price', 'unit']);
+        $products = \App\Models\Product::with('tax:id,rate')->where('is_active', true)->get(['id', 'name', 'sell_price', 'unit', 'tax_id']);
         $types = ['commercial', 'proforma', 'credit_note', 'packing_list', 'delivery_note'];
         $bankAccounts = \App\Models\CompanyBankAccount::where('is_active', true)->with('currency')->get();
         $taxes = \App\Models\Tax::sales()->where('is_active', true)->get();
@@ -144,7 +144,7 @@ class InvoiceController extends Controller
         $invoice->load('items');
         $customers = \App\Models\Customer::pluck('company_name', 'id');
         $currencies = \App\Models\Currency::pluck('code', 'id');
-        $products = \App\Models\Product::where('is_active', true)->get(['id', 'name', 'sell_price', 'unit']);
+        $products = \App\Models\Product::with('tax:id,rate')->where('is_active', true)->get(['id', 'name', 'sell_price', 'unit', 'tax_id']);
         $types = ['commercial', 'proforma', 'credit_note', 'packing_list', 'delivery_note'];
         $bankAccounts = \App\Models\CompanyBankAccount::where('is_active', true)->with('currency')->get();
         $taxes = \App\Models\Tax::sales()->where('is_active', true)->get();

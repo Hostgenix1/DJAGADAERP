@@ -164,7 +164,7 @@
     </div>
 </form>
 @php
-$productsJson = $products->map(fn($p)=>['id'=>$p->id,'name'=>$p->name,'price'=>(float)$p->sell_price,'unit'=>$p->unit ?? '' ])->values();
+$productsJson = $products->map(fn($p)=>['id'=>$p->id,'name'=>$p->name,'price'=>(float)$p->sell_price,'unit'=>$p->unit ?? '','tax'=>$p->tax?->rate !== null ? (float)$p->tax->rate : null])->values();
 $itemsJson = $invoice->items->map(fn($i)=>['product_id'=>$i->product_id,'description'=>$i->description,'sub_description'=>$i->sub_description,'qty'=>$i->qty,'unit'=>$i->unit,'price'=>$i->unit_price,'tax'=>$i->tax_rate,'disc'=>$i->discount_pct])->values();
 $ratesJson = $rates->map(fn($r,$id)=>[(int)$id, (float)$r])->values()->toArray();
 @endphp
@@ -195,7 +195,7 @@ $(function(){
     function addRow(d){
         const priceInDoc = d?.price ? parseFloat(d.price) : 0;
         const base = priceInDoc ? Math.round(priceInDoc / rateFor() * 100) / 100 : 0;
-        const r=`<tr><td><select name="items[${idx}][product_id]" class="form-control form-control-sm prod-select"><option value="">Manual</option>${products.map(p=>`<option value="${p.id}" ${(d?.product_id==p.id)?'selected':''} data-price="${p.price}" data-unit="${p.unit}">${p.name}</option>`).join('')}</select><input type="text" name="items[${idx}][description]" class="form-control form-control-sm mt-1" value="${d?.description||''}" required placeholder="Item description"><input type="text" name="items[${idx}][sub_description]" class="form-control form-control-sm mt-1" value="${d?.sub_description||''}" placeholder="Sub description (e.g. 2x40ft, 1040 bags/container)"></td><td><input type="number" step="1" name="items[${idx}][qty]" class="form-control form-control-sm qty" value="${d?.qty||1}" min="1" required></td><td>${unitInput(`items[${idx}][unit]`, d?.unit||'')}</td><td><input type="number" step="0.01" name="items[${idx}][unit_price]" class="form-control form-control-sm price" data-base-price="${base}" value="${priceInDoc?priceInDoc:(d?.price||0)}" min="0" required></td><td><input type="number" step="0.01" name="items[${idx}][tax_rate]" class="form-control form-control-sm tax" value="${d?.tax!=null?d.tax:''}" min="0" placeholder="Inv. rate"></td><td><input type="number" step="0.01" name="items[${idx}][discount_pct]" class="form-control form-control-sm disc" value="${d?.disc||0}" min="0"></td><td class="lt">0.00</td><td><button type="button" class="btn btn-xs btn-danger rm"><i class="fas fa-times"></i></button></td></tr>`;
+        const r=`<tr><td><select name="items[${idx}][product_id]" class="form-control form-control-sm prod-select"><option value="">Manual</option>${products.map(p=>`<option value="${p.id}" ${(d?.product_id==p.id)?'selected':''} data-price="${p.price}" data-unit="${p.unit}" data-tax="${p.tax!==null?p.tax:''}">${p.name}</option>`).join('')}</select><input type="text" name="items[${idx}][description]" class="form-control form-control-sm mt-1" value="${d?.description||''}" required placeholder="Item description"><input type="text" name="items[${idx}][sub_description]" class="form-control form-control-sm mt-1" value="${d?.sub_description||''}" placeholder="Sub description (e.g. 2x40ft, 1040 bags/container)"></td><td><input type="number" step="1" name="items[${idx}][qty]" class="form-control form-control-sm qty" value="${d?.qty||1}" min="1" required></td><td>${unitInput(`items[${idx}][unit]`, d?.unit||'')}</td><td><input type="number" step="0.01" name="items[${idx}][unit_price]" class="form-control form-control-sm price" data-base-price="${base}" value="${priceInDoc?priceInDoc:(d?.price||0)}" min="0" required></td><td><input type="number" step="0.01" name="items[${idx}][tax_rate]" class="form-control form-control-sm tax" value="${d?.tax!=null?d.tax:''}" min="0" placeholder="Inv. rate"></td><td><input type="number" step="0.01" name="items[${idx}][discount_pct]" class="form-control form-control-sm disc" value="${d?.disc||0}" min="0"></td><td class="lt">0.00</td><td><button type="button" class="btn btn-xs btn-danger rm"><i class="fas fa-times"></i></button></td></tr>`;
         $('#items-table tbody').append(r); idx++; recalc();
     }
     function recalc(){
@@ -205,7 +205,7 @@ $(function(){
         $('#items-table tbody tr').each(function(){
             const $r=$(this);
             const q=parseFloat($r.find('.qty').val())||0,p=parseFloat($r.find('.price').val())||0,
-                  tr=parseFloat($r.find('.tax').val()!=='' ? $r.find('.tax').val() : null)||null,
+                  tr=$r.find('.tax').val()!==''?parseFloat($r.find('.tax').val()):null,
                   d=parseFloat($r.find('.disc').val())||0;
             const b=q*p, ad=b-b*d/100;
             const r2 = tr!==null ? tr : rate;
@@ -218,13 +218,13 @@ $(function(){
         $('#subtotal').text((mode==='included'?s-t:s).toFixed(2));
         $('#tax-total').text(t.toFixed(2));
         const disc=parseFloat($('#discount-input').val())||0;
-        $('#grand-total').text((s-t+(mode==='included'?0:t)-disc).toFixed(2));
+        $('#grand-total').text((s+(mode==='included'?0:t)-disc).toFixed(2));
     }
     $('#add-item').click(()=>addRow());
     $(document).on('click','.rm',function(){$(this).closest('tr').remove();recalc();});
     $(document).on('change keyup','.qty,.price,.tax,.disc,#discount-input',recalc);
     $(document).on('change','#vat-mode,#vat-rate-select,#vat-rate-custom',recalc);
-    $(document).on('change','.prod-select',function(){const $r=$(this).closest('tr'),o=$(this).find(':selected');const base=parseFloat(o.data('price'))||0;$r.find('.price').val(base?conv(base):0).attr('data-base-price',base);if(o.text()!=='Manual'){$r.find('input[name$="[description]"]').val(o.text());}$r.find('.unit-select').val('');$r.find('.unit-custom').addClass('d-none').val('').prop('disabled',true);$r.find('.unit-select').prop('disabled',false);recalc();});
+    $(document).on('change','.prod-select',function(){const $r=$(this).closest('tr'),o=$(this).find(':selected');const base=parseFloat(o.data('price'))||0;$r.find('.price').val(base?conv(base):0).attr('data-base-price',base);if(o.text()!=='Manual'){$r.find('input[name$="[description]"]').val(o.text());}$r.find('.tax').val(o.data('tax')!==''?o.data('tax'):'');$r.find('.unit-select').val('');$r.find('.unit-custom').addClass('d-none').val('').prop('disabled',true);$r.find('.unit-select').prop('disabled',false);recalc();});
     $(document).on('change','.unit-select',function(){
         const $u=$(this), $r=$u.closest('tr'), custom=$r.find('.unit-custom');
         if($u.val()==='__other__'){
