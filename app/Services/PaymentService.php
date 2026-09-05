@@ -47,6 +47,9 @@ class PaymentService
                     if (! $bill || $bill->status === 'cancelled' || $bill->status === 'draft') {
                         throw new \InvalidArgumentException("Cannot allocate to a non-confirmed supplier bill ({$billLabel}).");
                     }
+                    if (! empty($data['supplier_id']) && (int) $bill->supplier_id !== (int) $data['supplier_id']) {
+                        throw new \InvalidArgumentException("Bill {$bill->number} does not belong to the selected supplier.");
+                    }
                     $remainingBase = $this->balanceInBase($bill->total - $bill->paid_amount, $bill->currency_id);
                     $allocBase = $this->amountInBase($alloc['amount'], $paymentCurrencyId);
                     if ($allocBase > $remainingBase + 0.005) {
@@ -68,6 +71,9 @@ class PaymentService
                 $invoiceLabel = $invoice?->number ?? 'unknown';
                 if (! $invoice || $invoice->status === 'cancelled') {
                     throw new \InvalidArgumentException("Cannot allocate to a cancelled invoice ({$invoiceLabel}).");
+                }
+                if (! empty($data['customer_id']) && (int) $invoice->customer_id !== (int) $data['customer_id']) {
+                    throw new \InvalidArgumentException("Invoice {$invoice->number} does not belong to the selected customer.");
                 }
                 $remainingBase = $this->balanceInBase($invoice->total - $invoice->paid_amount, $invoice->currency_id);
                 $allocBase = $this->amountInBase($alloc['amount'], $paymentCurrencyId);
@@ -93,20 +99,28 @@ class PaymentService
     {
         DB::transaction(function () use ($payment) {
             foreach ($payment->invoices as $invoice) {
+                $locked = Invoice::whereKey($invoice->id)->lockForUpdate()->first();
+                if (! $locked) {
+                    continue;
+                }
                 $pivotAmount = $invoice->pivot->amount ?? 0;
                 $previousStatus = $invoice->pivot->previous_status;
-                $invoice->decrement('paid_amount', $pivotAmount);
-                $invoice->refresh();
-                $invoice->update(['status' => self::restoreStatus($invoice, $previousStatus, 'sent')]);
+                $locked->update(['paid_amount' => max(0, (float) $locked->paid_amount - (float) $pivotAmount)]);
+                $locked->refresh();
+                $locked->update(['status' => self::restoreStatus($locked, $previousStatus, 'sent')]);
             }
             $payment->invoices()->detach();
 
             foreach ($payment->supplierBills as $bill) {
+                $locked = SupplierBill::whereKey($bill->id)->lockForUpdate()->first();
+                if (! $locked) {
+                    continue;
+                }
                 $pivotAmount = $bill->pivot->amount ?? 0;
                 $previousStatus = $bill->pivot->previous_status;
-                $bill->decrement('paid_amount', $pivotAmount);
-                $bill->refresh();
-                $bill->update(['status' => self::restoreStatus($bill, $previousStatus, 'confirmed')]);
+                $locked->update(['paid_amount' => max(0, (float) $locked->paid_amount - (float) $pivotAmount)]);
+                $locked->refresh();
+                $locked->update(['status' => self::restoreStatus($locked, $previousStatus, 'confirmed')]);
             }
             $payment->supplierBills()->detach();
         });

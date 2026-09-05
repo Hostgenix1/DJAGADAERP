@@ -98,8 +98,6 @@
                                 <option value="preparing">Preparing</option>
                                 <option value="in_transit">In Transit</option>
                                 <option value="customs">Customs</option>
-                                <option value="delivered">Delivered</option>
-                                <option value="cancelled">Cancelled</option>
                             </select>
                         </div>
                         <div class="form-group col-md-4">

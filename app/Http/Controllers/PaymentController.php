@@ -211,11 +211,13 @@ class PaymentController extends Controller
     public function destroy(Payment $payment)
     {
         $this->authorize('delete-payments');
-        \App\Services\PaymentService::reverseAllocations($payment);
-        foreach ($payment->documents as $document) {
-            app(\App\Services\DocumentService::class)->delete($document);
-        }
-        $payment->delete();
+        \Illuminate\Support\Facades\DB::transaction(function () use ($payment) {
+            \App\Services\PaymentService::reverseAllocations($payment);
+            foreach ($payment->documents as $document) {
+                app(\App\Services\DocumentService::class)->delete($document);
+            }
+            $payment->delete();
+        });
         return redirect()->route('payments.index')->with('success', 'Payment deleted.');
     }
 }

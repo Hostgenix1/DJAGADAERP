@@ -164,6 +164,18 @@ $paymentTerms = \App\Support\PaymentTerms::all();
             'status' => 'required|in:draft,confirmed,received,billed,cancelled',
         ]);
 
+        $allowed = [
+            'draft' => ['confirmed', 'cancelled'],
+            'confirmed' => ['received', 'cancelled'],
+            'received' => ['cancelled'],
+            'billed' => [],
+            'cancelled' => ['draft'],
+        ];
+
+        if (!in_array($request->status, $allowed[$purchaseOrder->status] ?? [])) {
+            return back()->with('error', 'Cannot change status from "'.$purchaseOrder->status.'" to "'.$request->status.'". Billed state is set automatically when converting to a supplier bill.');
+        }
+
         $purchaseOrder->update(['status' => $request->status]);
 
         return back()->with('success', 'Status updated to '.ucfirst($request->status).'.');

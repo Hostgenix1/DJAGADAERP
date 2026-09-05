@@ -103,7 +103,7 @@ class Order extends Model
     {
         $this->subtotal = $this->items->sum('line_total');
         $this->tax_amount = $this->items->sum(fn ($i) => $i->line_total * $i->tax_rate / 100);
-        $this->total = $this->subtotal + $this->tax_amount - $this->discount;
+        $this->total = max(0, $this->subtotal + $this->tax_amount - $this->discount);
         $this->save();
     }
 }

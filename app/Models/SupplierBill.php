@@ -92,7 +92,7 @@ class SupplierBill extends Model
             });
             $this->subtotal = round($subtotal - $tax, 2);
             $this->tax_amount = round($tax, 2);
-            $this->total = round($subtotal - $this->discount, 2);
+            $this->total = max(0, round($subtotal - $this->discount, 2));
         } else {
             $tax = $items->sum(function ($i) {
                 $rate = $i->tax_rate !== null ? (float) $i->tax_rate : (float) ($this->vat_rate ?? 0);
@@ -100,7 +100,7 @@ class SupplierBill extends Model
             });
             $this->subtotal = round($subtotal, 2);
             $this->tax_amount = $this->vat_mode === 'none' ? 0 : round($tax, 2);
-            $this->total = round($this->subtotal + $this->tax_amount - $this->discount, 2);
+            $this->total = max(0, round($this->subtotal + $this->tax_amount - $this->discount, 2));
         }
 
         $this->save();

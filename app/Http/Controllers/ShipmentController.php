@@ -79,17 +79,13 @@ class ShipmentController extends Controller
             'shipping_method' => 'required|in:air,sea,land,courier',
             'origin' => 'nullable|string|max:255',
             'destination' => 'nullable|string|max:255',
-            'status' => 'required|in:preparing,in_transit,customs,delivered,cancelled',
+            'status' => 'required|in:preparing,in_transit,customs',
             'shipped_at' => 'nullable|date',
             'estimated_arrival' => 'nullable|date',
             'notes' => 'nullable|string|max:1000',
         ]);
 
         $data['number'] = Shipment::nextNumber();
-
-        if ($data['status'] === 'delivered') {
-            $data['delivered_at'] = now();
-        }
 
         $shipment = Shipment::create($data);
 
@@ -136,6 +132,20 @@ class ShipmentController extends Controller
             'estimated_arrival' => 'nullable|date',
             'notes' => 'nullable|string|max:1000',
         ]);
+
+        if ($data['status'] !== $shipment->status) {
+            $allowed = [
+                'preparing' => ['in_transit', 'cancelled'],
+                'in_transit' => ['customs', 'delivered', 'cancelled'],
+                'customs' => ['in_transit', 'delivered', 'cancelled'],
+                'delivered' => [],
+                'cancelled' => [],
+            ];
+
+            if (!in_array($data['status'], $allowed[$shipment->status] ?? [])) {
+                return back()->with('error', 'Cannot change status from "'.str_replace('_', ' ', $shipment->status).'" to "'.str_replace('_', ' ', $data['status']).'".');
+            }
+        }
 
         if ($data['status'] === 'delivered' && !$shipment->delivered_at) {
             $data['delivered_at'] = now();

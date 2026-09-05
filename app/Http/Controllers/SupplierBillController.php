@@ -170,6 +170,18 @@ class SupplierBillController extends Controller
             'status' => 'required|in:draft,confirmed,paid,partial,cancelled',
         ]);
 
+        $allowed = [
+            'draft' => ['confirmed', 'cancelled'],
+            'confirmed' => ['cancelled'],
+            'partial' => [],
+            'paid' => [],
+            'cancelled' => ['draft'],
+        ];
+
+        if (!in_array($request->status, $allowed[$supplierBill->status] ?? [])) {
+            return back()->with('error', 'Cannot change status from "'.$supplierBill->status.'" to "'.$request->status.'". Paid/partial states are set automatically by payments.');
+        }
+
         $supplierBill->update(['status' => $request->status]);
 
         return back()->with('success', 'Status updated to '.ucfirst($request->status).'.');
