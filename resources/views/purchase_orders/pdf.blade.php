@@ -1,70 +1,70 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <title>{{ $company['name'] }} - Purchase Order {{ $po->number }}</title>
 <style>
     @page { margin: 10mm 10mm 14mm; }
-    * { font-family: 'DejaVu Sans', sans-serif; }
-    body { font-size: 10pt; color: #1E293B; }
+    * { font-family: 'Lato', sans-serif; }
+    body { font-size: 9.6pt; color: #1E293B; }
 
-    /* ── Header ── */
+    /* â”€â”€ Header â”€â”€ */
     .header-table { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
     .header-table td { vertical-align: top; }
     .logo { max-height: 165px; max-width: 260px; }
-    .co-info { text-align: right; line-height: 1.45; }
-    .co-name { font-size: 17px; font-weight: bold; color: #111827; }
-    .co-line { font-size: 8.5pt; color: #475569; }
-    .co-badge { font-size: 8pt; color: #64748B; }
+    .co-info { text-align: right; line-height: 1.3; }
+    .co-name { font-size: 17.6pt; font-weight: normal; color: #111827; }
+    .co-line { font-size: 9.6pt; color: #475569; }
+    .co-badge { font-size: 8.8pt; color: #64748B; }
 
-    .inv-no-line { display: block; font-size: 14px; font-weight: bold; color: #111827; margin: 2px 0 10px; text-align: right; }
+    .inv-no-line { display: block; font-size: 12.8pt; font-weight: bold; color: #111827; margin: 2px 0 10px; text-align: right; }
 
-    /* ── 3-column meta ── */
+    /* â”€â”€ 3-column meta â”€â”€ */
     .meta-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
     .meta-box { border: 1px solid #CBD5E1; border-top: 2px solid #111827; padding: 6px 8px; vertical-align: top; background: #fff; }
-    .box-title { font-size: 8.5pt; font-weight: bold; letter-spacing: 1.2px; color: #111827; text-transform: uppercase; margin-bottom: 4px; }
+    .box-title { font-size: 9.6pt; font-weight: bold; letter-spacing: 1.2px; color: #111827; text-transform: uppercase; margin-bottom: 4px; }
     .label { font-weight: bold; color: #111827; }
-    .meta-row { padding: 1px 0; line-height: 1.5; }
+    .meta-row { padding: 1px 0; line-height: 1.3; }
     .value { color: #1E293B; }
-    .small { font-size: 8.5pt; }
+    .small { font-size: 8.8pt; }
 
-    /* ── Items ── */
+    /* â”€â”€ Items â”€â”€ */
     table.items { width: 100%; border-collapse: collapse; margin: 6px 0; }
-    table.items th { background: #111827; color: #fff; padding: 5px 6px; text-align: left; font-size: 9pt; letter-spacing: 0.4px; white-space: nowrap; }
+    table.items th { background: #111827; color: #fff; padding: 3px 5px; text-align: left; font-size: 9.6pt; letter-spacing: 0.4px; white-space: nowrap; }
     table.items th.num { text-align: right; }
-    table.items td { padding: 5px 6px; border-bottom: 1px solid #E2E8F0; vertical-align: top; font-size: 10pt; }
+    table.items td { padding: 3px 5px; border-bottom: 1px solid #E2E8F0; vertical-align: top; font-size: 9.6pt; }
     table.items td.num { text-align: right; white-space: nowrap; }
     table.items tr:nth-child(even) td { background: #F8FAFC; }
     .item-desc { font-weight: bold; color: #111827; }
-    .sub-desc { font-size: 8pt; color: #64748B; margin-top: 1px; }
+    .sub-desc { font-size: 8.5pt; color: #64748B; margin-top: 1px; }
     .unit-cell { font-weight: bold; color: #111827; text-align: center; }
 
-    /* ── Totals ── */
-    .words { margin-top: 8px; font-size: 9.5pt; font-style: italic; color: #334155; border-top: 1px solid #E2E8F0; padding-top: 6px; }
+    /* â”€â”€ Totals â”€â”€ */
+    .words { margin-top: 8px; font-size: 9.6pt; font-style: italic; color: #334155; border-top: 1px solid #E2E8F0; padding-top: 6px; }
     .words b { color: #111827; font-style: normal; text-transform: uppercase; letter-spacing: 0.6px; }
 
     table.totals { width: 260px; margin-left: auto; border-collapse: collapse; margin-top: 4px; }
-    table.totals td { padding: 3px 6px; font-size: 10pt; }
+    table.totals td { padding: 3px 6px; font-size: 9.6pt; }
     table.totals td:last-child { text-align: right; }
-    table.totals tr.total-row td { border-top: 2px solid #111827; font-weight: bold; font-size: 12pt; color: #111827; }
+    table.totals tr.total-row td { border-top: 2px solid #111827; font-weight: bold; font-size: 11.2pt; color: #111827; }
 
-    /* ── Terms ── */
+    /* â”€â”€ Terms â”€â”€ */
     .terms-box { border: 1px solid #E2E8F0; padding: 6px 8px; margin-top: 8px; }
-    .terms-title { font-size: 9pt; font-weight: bold; letter-spacing: 1px; color: #111827; text-transform: uppercase; margin-bottom: 3px; }
-    .terms-text { font-size: 9pt; color: #475569; line-height: 1.5; text-align: justify; }
+    .terms-title { font-size: 9.6pt; font-weight: bold; letter-spacing: 1px; color: #111827; text-transform: uppercase; margin-bottom: 3px; }
+    .terms-text { font-size: 9.6pt; color: #475569; line-height: 1.3; text-align: justify; }
 
-    /* ── Signature ── */
+    /* â”€â”€ Signature â”€â”€ */
     .sig-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
     .sig-table td { width: 50%; text-align: center; padding: 0 8px; }
     .sig-line { border-bottom: 1px dotted #94A3B8; height: 24px; margin-bottom: 2px; }
     .sig-img { max-height: 65px; max-width: 220px; object-fit: contain; margin-bottom: 2px; }
-    .sig-name { font-size: 9.5pt; font-weight: bold; color: #111827; text-transform: uppercase; letter-spacing: 0.8px; }
-    .sig-date { font-size: 8.5pt; color: #64748B; }
+    .sig-name { font-size: 9.6pt; font-weight: bold; color: #111827; text-transform: uppercase; letter-spacing: 0.8px; }
+    .sig-date { font-size: 8.8pt; color: #64748B; }
 </style>
 </head>
 <body>
 
-{{-- ═══ HEADER ═══ --}}
+{{-- â•â•â• HEADER â•â•â• --}}
 <table class="header-table">
     <tr>
         <td style="width:38%;">
@@ -90,13 +90,13 @@
 
 <div class="inv-no-line">PURCHASE ORDER {{ $po->number }}</div>
 
-{{-- ═══ 3-COLUMN META ═══ --}}
+{{-- â•â•â• 3-COLUMN META â•â•â• --}}
 <table class="meta-table">
     <tr>
         {{-- SUPPLIER --}}
         <td class="meta-box" style="width:34%;">
             <div class="box-title">Supplier</div>
-            <div class="meta-row value" style="font-weight:bold; font-size:10px;">{{ $po->supplier?->company_name }}</div>
+            <div class="meta-row value" style="font-weight:bold; font-size:9.6pt;">{{ $po->supplier?->company_name }}</div>
             @if($po->supplier?->address)<div class="meta-row value">{{ $po->supplier->address }}</div>@endif
             @if($po->supplier?->city || $po->supplier?->country)
                 <div class="meta-row value">{{ trim($po->supplier->city.' '.($po->supplier->country??'')) }}</div>
@@ -132,7 +132,7 @@
     </tr>
 </table>
 
-{{-- ═══ ITEMS ═══ --}}
+{{-- â•â•â• ITEMS â•â•â• --}}
 <table class="items">
     <thead>
     <tr>
@@ -168,7 +168,7 @@
     </tbody>
 </table>
 
-{{-- ═══ WORDS + TOTALS ═══ --}}
+{{-- â•â•â• WORDS + TOTALS â•â•â• --}}
 <div class="words">
     <b>Total Amount in Words:</b>
     {{ \App\Support\NumberToWords::toWords($po->total, \App\Support\SettingsHelper::wordsLang()) }} {{ $po->currency?->code ?? '' }}
@@ -183,7 +183,7 @@
     <tr class="total-row"><td>Total</td><td>{{ $po->currency?->code }} {{ \App\Support\SettingsHelper::formatMoney($po->total) }}</td></tr>
 </table>
 
-{{-- ═══ TERMS ═══ --}}
+{{-- â•â•â• TERMS â•â•â• --}}
 @if($po->notes || $company['footer'])
 <div class="terms-box">
     <div class="terms-title">Terms &amp; Conditions</div>
@@ -191,7 +191,7 @@
 </div>
 @endif
 
-{{-- ═══ SIGNATURE ═══ --}}
+{{-- â•â•â• SIGNATURE â•â•â• --}}
 <table class="sig-table">
     <tr>
         <td>
@@ -201,12 +201,12 @@
                 <div class="sig-line"></div>
             @endif
             <div class="sig-name">{{ $company['name'] }}</div>
-            <div class="sig-date">Authorized Signature &amp; Stamp &nbsp;·&nbsp; Date: ___ / ___ / ______</div>
+            <div class="sig-date">Authorized Signature &amp; Stamp &nbsp;Â·&nbsp; Date: ___ / ___ / ______</div>
         </td>
         <td>
             <div class="sig-line"></div>
             <div class="sig-name">{{ $po->supplier?->company_name }}</div>
-            <div class="sig-date">Authorized Signature &amp; Stamp &nbsp;·&nbsp; Date: ___ / ___ / ______</div>
+            <div class="sig-date">Authorized Signature &amp; Stamp &nbsp;Â·&nbsp; Date: ___ / ___ / ______</div>
         </td>
     </tr>
 </table>

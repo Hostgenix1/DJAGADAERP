@@ -109,6 +109,20 @@ return array (
     2 => 'update-expenses',
     3 => 'delete-expenses',
   ),
+  'Pricing' => 
+  array (
+    0 => 'view-supplier-prices',
+    1 => 'create-supplier-prices',
+    2 => 'update-supplier-prices',
+    3 => 'delete-supplier-prices',
+    4 => 'view-selling-prices',
+    5 => 'create-selling-prices',
+    6 => 'update-selling-prices',
+    7 => 'delete-selling-prices',
+    8 => 'approve-selling-prices',
+    9 => 'view-pricing-costs',
+    10 => 'ai-read-prices',
+  ),
   'HR & Payroll' => 
   array (
     0 => 'view-employees',

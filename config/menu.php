@@ -92,6 +92,16 @@ return array (
   ),
   9 => 
   array (
+    'label' => 'Pricing',
+    'icon' => 'fa-tags',
+    'items' => 
+    array (
+      0 => array ('label' => 'Supplier Prices', 'route' => 'supplier_prices.index', 'icon' => 'fa-truck-loading', 'permission' => 'view-supplier-prices'),
+      1 => array ('label' => 'Selling Prices', 'route' => 'selling_prices.index', 'icon' => 'fa-dollar-sign', 'permission' => 'view-selling-prices'),
+    ),
+  ),
+  10 => 
+  array (
     'label' => 'HR & Payroll',
     'icon' => 'fa-users-cog',
     'items' => 
@@ -102,7 +112,7 @@ return array (
       3 => array ('label' => 'Payroll', 'route' => 'payroll.index', 'icon' => 'fa-money-check-alt', 'permission' => 'view-payroll'),
     ),
   ),
-  10 => 
+  11 => 
   array (
     'label' => 'Documents',
     'icon' => 'fa-folder-open',
@@ -111,7 +121,7 @@ return array (
       0 => array ('label' => 'All Documents', 'route' => 'documents.index', 'icon' => 'fa-file-alt', 'permission' => 'view-documents'),
     ),
   ),
-  11 => 
+  12 => 
   array (
     'label' => 'Settings',
     'icon' => 'fa-folder-open',
@@ -126,7 +136,7 @@ return array (
       6 => array ('label' => 'Audit Log', 'route' => 'admin.settings.audit', 'icon' => 'fa-history', 'permission' => 'view-settings'),
     ),
   ),
-  12 => 
+  13 => 
   array (
     'label' => 'User Management',
     'icon' => 'fa-folder-open',

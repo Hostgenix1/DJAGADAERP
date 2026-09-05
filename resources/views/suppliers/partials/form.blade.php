@@ -43,7 +43,17 @@
         </div>
 <div class="col-md-6 col-field">
             <label for="country" class="form-label">Country</label>
-            <input type="text" name="country" id="country" class="form-control" value="{{ old('country', $form->country ?? '') }}">
+            @php
+                $currentCountry = old('country', $form->country ?? '');
+                $countries = config('countries', []);
+                if ($currentCountry && !in_array($currentCountry, $countries)) { $countries[] = $currentCountry; sort($countries); }
+            @endphp
+            <select name="country" id="country" class="form-control">
+                <option value="">-- Search / Select Country --</option>
+                @foreach($countries as $c)
+                    <option value="{{ $c }}" {{ $currentCountry === $c ? 'selected' : '' }}>{{ $c }}</option>
+                @endforeach
+            </select>
             @error('country')
                 <span class="text-danger small">{{ $message }}</span>
             @enderror
@@ -95,3 +105,16 @@
             @enderror
         </div>
 </div>
+
+@push('styles')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme@2.2.2/dist/select2-bootstrap4.min.css">
+@endpush
+@push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+    <script>
+        $(function () {
+            $('#country').select2({ theme: 'bootstrap4', width: '100%', placeholder: '-- Search / Select Country --', allowClear: true });
+        });
+    </script>
+@endpush

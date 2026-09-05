@@ -5,53 +5,53 @@
 <title>{{ $company['name'] }} - Quote {{ $quote->number }}</title>
 <style>
     @page { margin: 10mm 10mm 14mm; }
-    * { font-family: 'DejaVu Sans', sans-serif; }
-    body { font-size: 10pt; color: #1E293B; }
+    * { font-family: 'Lato', sans-serif; }
+    body { font-size: 9.6pt; color: #1E293B; }
 
     .header-table { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
     .header-table td { vertical-align: top; }
     .logo { max-height: 150px; max-width: 260px; }
-    .co-info { text-align: right; line-height: 1.45; }
-    .co-name { font-size: 17px; font-weight: bold; color: #111827; }
-    .co-line { font-size: 8.5pt; color: #475569; }
+    .co-info { text-align: right; line-height: 1.3; }
+    .co-name { font-size: 17.6pt; font-weight: normal; color: #111827; }
+    .co-line { font-size: 9.6pt; color: #475569; }
 
-    .inv-no-line { display: block; font-size: 14px; font-weight: bold; color: #111827; margin: 2px 0 10px; text-align: right; }
+    .inv-no-line { display: block; font-size: 12.8pt; font-weight: bold; color: #111827; margin: 2px 0 10px; text-align: right; }
 
     .meta-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
     .meta-box { border: 1px solid #CBD5E1; border-top: 2px solid #111827; padding: 6px 8px; vertical-align: top; background: #fff; }
-    .box-title { font-size: 8.5pt; font-weight: bold; letter-spacing: 1.2px; color: #111827; text-transform: uppercase; margin-bottom: 4px; }
+    .box-title { font-size: 9.6pt; font-weight: bold; letter-spacing: 1.2px; color: #111827; text-transform: uppercase; margin-bottom: 4px; }
     .label { font-weight: bold; color: #111827; }
-    .meta-row { padding: 1px 0; line-height: 1.5; }
+    .meta-row { padding: 1px 0; line-height: 1.3; }
     .value { color: #1E293B; }
 
     table.items { width: 100%; border-collapse: collapse; margin: 6px 0; }
-    table.items th { background: #111827; color: #fff; padding: 5px 6px; text-align: left; font-size: 9pt; letter-spacing: 0.4px; }
+    table.items th { background: #111827; color: #fff; padding: 3px 5px; text-align: left; font-size: 9.6pt; letter-spacing: 0.4px; }
     table.items th.num { text-align: right; }
-    table.items td { padding: 5px 6px; border-bottom: 1px solid #E2E8F0; vertical-align: top; font-size: 10pt; }
+    table.items td { padding: 3px 5px; border-bottom: 1px solid #E2E8F0; vertical-align: top; font-size: 9.6pt; }
     table.items td.num { text-align: right; white-space: nowrap; }
     table.items tr:nth-child(even) td { background: #F8FAFC; }
     .item-desc { font-weight: bold; color: #111827; }
-    .sub-desc { font-size: 8pt; color: #64748B; margin-top: 1px; }
+    .sub-desc { font-size: 8.5pt; color: #64748B; margin-top: 1px; }
     .unit-cell { font-weight: bold; color: #111827; text-align: center; }
 
-    .words { margin-top: 8px; font-size: 9.5pt; font-style: italic; color: #334155; border-top: 1px solid #E2E8F0; padding-top: 6px; }
+    .words { margin-top: 8px; font-size: 9.6pt; font-style: italic; color: #334155; border-top: 1px solid #E2E8F0; padding-top: 6px; }
     .words b { color: #111827; font-style: normal; text-transform: uppercase; letter-spacing: 0.6px; }
 
     table.totals { width: 260px; margin-left: auto; border-collapse: collapse; margin-top: 4px; }
-    table.totals td { padding: 3px 6px; font-size: 10pt; }
+    table.totals td { padding: 3px 6px; font-size: 9.6pt; }
     table.totals td:last-child { text-align: right; }
-    table.totals tr.total-row td { border-top: 2px solid #111827; font-weight: bold; font-size: 12pt; color: #111827; }
+    table.totals tr.total-row td { border-top: 2px solid #111827; font-weight: bold; font-size: 11.2pt; color: #111827; }
 
     .terms-box { border: 1px solid #E2E8F0; padding: 6px 8px; margin-top: 8px; }
-    .terms-title { font-size: 9pt; font-weight: bold; letter-spacing: 1px; color: #111827; text-transform: uppercase; margin-bottom: 3px; }
-    .terms-text { font-size: 9pt; color: #475569; line-height: 1.5; text-align: justify; }
+    .terms-title { font-size: 9.6pt; font-weight: bold; letter-spacing: 1px; color: #111827; text-transform: uppercase; margin-bottom: 3px; }
+    .terms-text { font-size: 9.6pt; color: #475569; line-height: 1.3; text-align: justify; }
 
     .sig-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
     .sig-table td { width: 50%; text-align: center; padding: 0 8px; }
     .sig-line { border-bottom: 1px dotted #94A3B8; height: 24px; margin-bottom: 2px; }
     .sig-img { max-height: 65px; max-width: 220px; object-fit: contain; margin-bottom: 2px; }
-    .sig-name { font-size: 9.5pt; font-weight: bold; color: #111827; text-transform: uppercase; letter-spacing: 0.8px; }
-    .sig-date { font-size: 8.5pt; color: #64748B; }
+    .sig-name { font-size: 9.6pt; font-weight: bold; color: #111827; text-transform: uppercase; letter-spacing: 0.8px; }
+    .sig-date { font-size: 8.8pt; color: #64748B; }
 </style>
 </head>
 <body>
@@ -86,7 +86,7 @@
     <tr>
         <td class="meta-box" style="width:34%;">
             <div class="box-title">Bill To</div>
-            <div class="meta-row value" style="font-weight:bold; font-size:10px;">{{ $quote->customer?->company_name }}</div>
+            <div class="meta-row value" style="font-weight:bold; font-size:9.6pt;">{{ $quote->customer?->company_name }}</div>
             @if($quote->customer?->address)<div class="meta-row value">{{ $quote->customer->address }}</div>@endif
             @if($quote->customer?->city || $quote->customer?->country)
                 <div class="meta-row value">{{ trim($quote->customer->city.' '.($quote->customer->country??'')) }}</div>
