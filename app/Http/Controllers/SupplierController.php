@@ -83,7 +83,7 @@ class SupplierController extends Controller
     {
         $this->authorize('view-suppliers');
 
-        $supplier->load(['currency', 'purchaseOrders', 'bills', 'payments', 'documents']);
+        $supplier->load(['currency', 'purchaseOrders', 'bills', 'payments', 'documents', 'supplierPrices.product', 'supplierPrices.currency']);
 
         $totalPo = $supplier->purchaseOrders->where('status', '!=', 'cancelled')->sum('total');
         $totalBilled = $supplier->bills->where('status', '!=', 'cancelled')->sum('total');

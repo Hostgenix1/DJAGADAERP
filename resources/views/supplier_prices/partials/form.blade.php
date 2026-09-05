@@ -5,7 +5,7 @@
             <select name="supplier_id" class="form-control">
                 <option value="">-- Select --</option>
                 @foreach($suppliers as $id => $n)
-                    <option value="{{ $id }}" {{ old('supplier_id', ($form ?? null)?->supplier_id ?? '') == $id ? 'selected' : '' }}>{{ $n }}</option>
+                    <option value="{{ $id }}" {{ old('supplier_id', ($form ?? null)?->supplier_id ?? ($preselectSupplier ?? '')) == $id ? 'selected' : '' }}>{{ $n }}</option>
                 @endforeach
             </select>
         </div>

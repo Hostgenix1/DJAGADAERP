@@ -10,6 +10,9 @@
         </div>
         <div class="col-sm-6">
             <div class="float-right">
+                @can('create-supplier-prices')
+                    <a href="{{ route('supplier_prices.create', ['supplier_id' => $supplier->id]) }}" class="btn btn-sm btn-success"><i class="fas fa-tag mr-1"></i> Record Offer</a>
+                @endcan
                 @can('update-suppliers')
                     <a href="{{ route('suppliers.edit', $supplier) }}" class="btn btn-sm btn-info"><i class="fas fa-pen mr-1"></i> Edit</a>
                 @endcan
@@ -96,11 +99,44 @@
                 </div>
             </div>
 
+            <div class="card card-outline card-info">
+                <div class="card-header">
+                    <h3 class="card-title">Price Offers <span class="badge badge-dark ml-1">Internal</span></h3>
+                    <div class="card-tools">
+                        @can('create-supplier-prices')
+                            <a href="{{ route('supplier_prices.create', ['supplier_id' => $supplier->id]) }}" class="btn btn-xs btn-success"><i class="fas fa-plus"></i> Record Offer</a>
+                        @endcan
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-sm table-striped mb-0">
+                        <thead><tr><th>Received</th><th>Product</th><th class="text-right">Price</th><th>Valid Until</th><th></th></tr></thead>
+                        <tbody>
+                        @forelse($supplier->supplierPrices as $offer)
+                            <tr>
+                                <td>{{ $offer->date_received?->format('d M Y') }}</td>
+                                <td>{{ $offer->product?->name ?: '—' }}</td>
+                                <td class="text-right">{{ $offer->currency?->code ?? '' }} {{ number_format((float) $offer->supplier_price, 2) }}</td>
+                                <td>{{ $offer->valid_until?->format('d M Y') ?? 'No expiry' }}</td>
+                                <td class="text-right">
+                                    @can('update-supplier-prices')
+                                        <a href="{{ route('supplier_prices.edit', $offer) }}" class="btn btn-xs btn-outline-info" title="Edit"><i class="fas fa-pen"></i></a>
+                                    @endcan
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="5" class="text-center text-muted">No price offers recorded yet.</td></tr>
+                        @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <div class="card card-outline card-warning">
                 <div class="card-header">
                     <h3 class="card-title">Supplier Bills & Payments</h3>
                     <div class="card-tools">
-                        <span class="badge badge-danger">{{ $supplier->bills->where('status', '!=', 'cancelled')->whereRaw('total - paid_amount > 0')->count() }} open bills</span>
+                        <span class="badge badge-danger">{{ $supplier->bills->where('status', '!=', 'cancelled')->filter(fn ($b) => ($b->total - $b->paid_amount) > 0)->count() }} open bills</span>
                     </div>
                 </div>
                 <div class="card-body p-0">

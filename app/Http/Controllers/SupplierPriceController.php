@@ -43,7 +43,7 @@ class SupplierPriceController extends Controller
             ->make(true);
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $this->authorize('create-supplier-prices');
 
@@ -51,8 +51,12 @@ class SupplierPriceController extends Controller
         $products = \App\Models\Product::where('is_active', true)->orderBy('name')->pluck('name', 'id');
         $currencies = \App\Models\Currency::where('is_active', true)->pluck('code', 'id');
         $incoterms = \App\Support\Incoterms::all();
+        $preselectSupplier = $request->integer('supplier_id') ?: null;
+        if ($preselectSupplier && ! \App\Models\Supplier::whereKey($preselectSupplier)->exists()) {
+            $preselectSupplier = null;
+        }
 
-        return view('supplier_prices.create', compact('suppliers', 'products', 'currencies', 'incoterms'));
+        return view('supplier_prices.create', compact('suppliers', 'products', 'currencies', 'incoterms', 'preselectSupplier'));
     }
 
     public function store(Request $request)

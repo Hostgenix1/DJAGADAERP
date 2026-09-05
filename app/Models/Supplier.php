@@ -47,6 +47,11 @@ class Supplier extends Model
         return $this->hasMany(SupplierBill::class);
     }
 
+    public function supplierPrices(): HasMany
+    {
+        return $this->hasMany(SupplierPrice::class);
+    }
+
     public function documents()
     {
         return $this->morphMany(Document::class, 'documentable');
