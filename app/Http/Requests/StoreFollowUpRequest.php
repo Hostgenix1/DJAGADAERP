@@ -17,7 +17,7 @@ class StoreFollowUpRequest extends FormRequest
             'type' => 'required|string|in:call,email,meeting,note,task',
             'followable_type' => 'required',
             'followable_id' => 'required|integer',
-            'due_date' => 'required|date',
+            'due_date' => 'required|date|after_or_equal:today',
             'completed_at' => 'nullable|date',
             'note' => 'nullable|string',
             'assigned_to' => 'nullable|string|max:255',

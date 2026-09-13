@@ -58,7 +58,7 @@ class ExpenseController extends Controller
         $this->authorize('create-expenses');
 
         $data = $request->validate([
-            'expense_date' => 'required|date',
+            'expense_date' => 'required|date|after_or_equal:today',
             'amount' => 'required|numeric|min:0',
             'currency_id' => 'nullable|exists:currencies,id',
             'category' => 'required|in:operating,payroll,transport,rent,bank,office,other',
@@ -87,7 +87,7 @@ class ExpenseController extends Controller
         $this->authorize('update-expenses');
 
         $data = $request->validate([
-            'expense_date' => 'required|date',
+            'expense_date' => 'required|date|after_or_equal:today',
             'amount' => 'required|numeric|min:0',
             'currency_id' => 'nullable|exists:currencies,id',
             'category' => 'required|in:operating,payroll,transport,rent,bank,office,other',

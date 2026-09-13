@@ -42,8 +42,9 @@ class EmployeeController extends Controller
         $this->authorize('create-employees');
 
         $currencies = \App\Models\Currency::where('is_active', true)->pluck('code', 'id');
+        $users = \App\Models\User::orderBy('name')->pluck('name', 'id');
 
-        return view('employees.create', compact('currencies'));
+        return view('employees.create', compact('currencies', 'users'));
     }
 
     public function store(Request $request)
@@ -58,6 +59,9 @@ class EmployeeController extends Controller
             'position' => 'nullable|string|max:255',
             'hire_date' => 'nullable|date',
             'base_salary' => 'required|numeric|min:0',
+            'transport_allowance' => 'nullable|numeric|min:0',
+            'iban' => 'nullable|string|max:34',
+            'user_id' => 'nullable|exists:users,id',
             'currency_id' => 'nullable|exists:currencies,id',
             'is_active' => 'nullable',
         ]);
@@ -74,8 +78,9 @@ class EmployeeController extends Controller
         $this->authorize('update-employees');
 
         $currencies = \App\Models\Currency::where('is_active', true)->pluck('code', 'id');
+        $users = \App\Models\User::orderBy('name')->pluck('name', 'id');
 
-        return view('employees.edit', compact('employee', 'currencies'));
+        return view('employees.edit', compact('employee', 'currencies', 'users'));
     }
 
     public function update(Request $request, Employee $employee)
@@ -90,6 +95,9 @@ class EmployeeController extends Controller
             'position' => 'nullable|string|max:255',
             'hire_date' => 'nullable|date',
             'base_salary' => 'required|numeric|min:0',
+            'transport_allowance' => 'nullable|numeric|min:0',
+            'iban' => 'nullable|string|max:34',
+            'user_id' => 'nullable|exists:users,id',
             'currency_id' => 'nullable|exists:currencies,id',
             'is_active' => 'nullable',
         ]);

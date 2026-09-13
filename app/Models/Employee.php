@@ -13,14 +13,21 @@ class Employee extends Model
 
     protected $fillable = [
         'name', 'email', 'phone', 'department', 'position',
-        'hire_date', 'base_salary', 'currency_id', 'is_active',
+        'hire_date', 'base_salary', 'transport_allowance', 'iban',
+        'currency_id', 'user_id', 'is_active',
     ];
 
     protected $casts = [
         'hire_date' => 'date',
         'base_salary' => 'decimal:2',
+        'transport_allowance' => 'decimal:2',
         'is_active' => 'boolean',
     ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function currency(): BelongsTo
     {

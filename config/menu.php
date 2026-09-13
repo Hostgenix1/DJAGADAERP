@@ -110,6 +110,7 @@ return array (
       1 => array ('label' => 'Attendance', 'route' => 'attendance.index', 'icon' => 'fa-calendar-check', 'permission' => 'view-attendance'),
       2 => array ('label' => 'Leaves', 'route' => 'leaves.index', 'icon' => 'fa-umbrella-beach', 'permission' => 'view-leaves'),
       3 => array ('label' => 'Payroll', 'route' => 'payroll.index', 'icon' => 'fa-money-check-alt', 'permission' => 'view-payroll'),
+      4 => array ('label' => 'My Payslips', 'route' => 'my-payslips.index', 'icon' => 'fa-file-pdf', 'permission' => 'view-own-payslips'),
     ),
   ),
   11 => 

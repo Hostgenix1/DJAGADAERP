@@ -223,7 +223,12 @@ class DashboardService
         $operatingExpenses = $expenses->where('category', '!=', 'payroll')->sum(fn ($e) => $sumInBase($e->amount, $e->currency_id));
         $expensePayroll = $expenses->where('category', 'payroll')->sum(fn ($e) => $sumInBase($e->amount, $e->currency_id));
 
-        $payroll = \App\Models\PayrollEntry::where('status', '!=', 'draft');
+        // Salaries = approved/due payroll (accrued, unpaid) + payroll-category expenses (paid out).
+        // Paid entries are excluded here because mark-paid auto-posts them as expenses — no double count.
+        $payroll = \App\Models\PayrollEntry::whereIn('status', [
+            \App\Models\PayrollEntry::STATUS_APPROVED,
+            \App\Models\PayrollEntry::STATUS_DUE,
+        ]);
         $dateCol('created_at')($payroll);
         $salaryCost = $payroll->get(['net_salary', 'currency_id'])->sum(fn ($p) => $sumInBase($p->net_salary, $p->currency_id));
 

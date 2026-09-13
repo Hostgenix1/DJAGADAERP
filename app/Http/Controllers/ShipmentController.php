@@ -80,8 +80,8 @@ class ShipmentController extends Controller
             'origin' => 'nullable|string|max:255',
             'destination' => 'nullable|string|max:255',
             'status' => 'required|in:preparing,in_transit,customs',
-            'shipped_at' => 'nullable|date',
-            'estimated_arrival' => 'nullable|date',
+            'shipped_at' => 'nullable|date|after_or_equal:today',
+            'estimated_arrival' => 'nullable|date|after_or_equal:today',
             'notes' => 'nullable|string|max:1000',
         ]);
 
@@ -128,8 +128,8 @@ class ShipmentController extends Controller
             'origin' => 'nullable|string|max:255',
             'destination' => 'nullable|string|max:255',
             'status' => 'required|in:preparing,in_transit,customs,delivered,cancelled',
-            'shipped_at' => 'nullable|date',
-            'estimated_arrival' => 'nullable|date',
+            'shipped_at' => 'nullable|date|after_or_equal:today',
+            'estimated_arrival' => 'nullable|date|after_or_equal:today',
             'notes' => 'nullable|string|max:1000',
         ]);
 

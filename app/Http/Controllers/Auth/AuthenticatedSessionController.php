@@ -28,6 +28,12 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Employee self-service logins land on their payslips, not the dashboard.
+        $user = $request->user();
+        if ($user->can('view-own-payslips') && ! $user->can('view-dashboard')) {
+            return redirect()->intended(route('my-payslips.index', absolute: false));
+        }
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 

@@ -35,6 +35,9 @@
 
 <div class="row">
     <div class="col-12">
+        @if(($dueCount ?? 0) > 0)
+            <div class="alert alert-warning"><i class="fas fa-bell mr-1"></i> {{ $dueCount }} payroll {{ $dueCount === 1 ? 'entry is' : 'entries are' }} <strong>DUE</strong> for {{ $period }} — mark as paid after bank transfer.</div>
+        @endif
         <div class="card card-primary card-outline">
             <div class="card-header">
                 <h3 class="card-title"><i class="fas fa-money-check-alt mr-1"></i> Payroll Entries</h3>
@@ -52,6 +55,7 @@
                     @can('create-payroll')
                         <a href="{{ route('payroll.create') }}" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> New Payroll</a>
                     @endcan
+                    <a href="{{ route('payroll.export', ['period' => $period]) }}" class="btn btn-success btn-sm" title="Bank salary-transfer file (CSV)"><i class="fas fa-file-csv"></i> Bank File</a>
                 </div>
             </div>
             <div class="card-body p-0">
@@ -67,6 +71,7 @@
                             <th class="text-right">Net</th>
                             <th>Currency</th>
                             <th>Status</th>
+                            <th>Pay Date</th>
                             <th>Paid On</th>
                             <th style="width:130px">Actions</th>
                         </tr>
@@ -105,6 +110,7 @@ $(function () {
             { data: 'net_salary', name: 'net_salary', className: 'text-right' },
             { data: 'currency_id', name: 'currency_id' },
             { data: 'status', name: 'status' },
+            { data: 'pay_date', name: 'pay_date' },
             { data: 'paid_on', name: 'paid_on' },
             { data: 'actions', name: 'actions', orderable: false, searchable: false }
         ],

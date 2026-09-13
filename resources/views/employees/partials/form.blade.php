@@ -32,13 +32,37 @@
     <div class="col-md-6">
         <div class="form-group">
             <label>Hire Date</label>
-            <input type="date" name="hire_date" class="form-control" value="{{ old('hire_date', ($form ?? null)?->hire_date?->format('Y-m-d') ?? '') }}">
+            <input type="date" name="hire_date" data-allow-past="1" class="form-control" value="{{ old('hire_date', ($form ?? null)?->hire_date?->format('Y-m-d') ?? '') }}">
         </div>
     </div>
     <div class="col-md-6">
         <div class="form-group">
             <label>Base Salary *</label>
             <input type="number" step="0.01" min="0" name="base_salary" class="form-control" value="{{ old('base_salary', $form->base_salary ?? '') }}" required>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label>Transport Allowance (monthly default)</label>
+            <input type="number" step="0.01" min="0" name="transport_allowance" class="form-control" value="{{ old('transport_allowance', $form->transport_allowance ?? 0) }}">
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label>Bank IBAN (for salary transfer file)</label>
+            <input type="text" name="iban" class="form-control" maxlength="34" placeholder="e.g. AE070331234567890123456" value="{{ old('iban', $form->iban ?? '') }}">
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label>Portal Login (user account)</label>
+            <select name="user_id" class="form-control">
+                <option value="">-- No portal access --</option>
+                @foreach($users as $id => $uname)
+                    <option value="{{ $id }}" {{ old('user_id', $form->user_id ?? '') == $id ? 'selected' : '' }}>{{ $uname }}</option>
+                @endforeach
+            </select>
+            <small class="text-muted">Linked user can view/download only their own payslips.</small>
         </div>
     </div>
     <div class="col-md-6">

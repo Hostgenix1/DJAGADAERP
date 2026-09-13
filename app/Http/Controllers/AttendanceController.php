@@ -56,7 +56,7 @@ class AttendanceController extends Controller
 
         $data = $request->validate([
             'employee_id' => 'required|exists:employees,id',
-            'date' => 'required|date',
+            'date' => 'required|date|after_or_equal:today',
             'check_in' => 'nullable',
             'check_out' => 'nullable',
             'status' => 'required|in:present,absent,leave,half_day',
@@ -86,7 +86,7 @@ class AttendanceController extends Controller
 
         $data = $request->validate([
             'employee_id' => 'required|exists:employees,id',
-            'date' => 'required|date',
+            'date' => 'required|date|after_or_equal:today',
             'check_in' => 'nullable',
             'check_out' => 'nullable',
             'status' => 'required|in:present,absent,leave,half_day',

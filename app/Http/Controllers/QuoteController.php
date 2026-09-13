@@ -87,7 +87,7 @@ class QuoteController extends Controller
         $data = $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'currency_id' => 'nullable|exists:currencies,id',
-            'date' => 'required|date',
+            'date' => 'required|date|after_or_equal:today',
             'valid_until' => 'nullable|date|after_or_equal:date',
             'notes' => 'nullable|string|max:1000',
             'terms' => 'nullable|string|max:1000',
@@ -158,7 +158,7 @@ class QuoteController extends Controller
         $data = $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'currency_id' => 'nullable|exists:currencies,id',
-            'date' => 'required|date',
+            'date' => 'required|date|after_or_equal:today',
             'valid_until' => 'nullable|date|after_or_equal:date',
             'notes' => 'nullable|string|max:1000',
             'terms' => 'nullable|string|max:1000',

@@ -17,7 +17,7 @@ class UpdateFollowUpRequest extends FormRequest
             'type' => 'sometimes|string|in:call,email,meeting,note,task',
             'followable_type' => 'sometimes|nullable',
             'followable_id' => 'sometimes|nullable|integer',
-            'due_date' => 'sometimes|nullable|date',
+            'due_date' => 'sometimes|nullable|date|after_or_equal:today',
             'completed_at' => 'nullable|date',
             'note' => 'sometimes|nullable|string',
             'assigned_to' => 'sometimes|nullable|string|max:255',

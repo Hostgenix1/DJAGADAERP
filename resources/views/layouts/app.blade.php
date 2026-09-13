@@ -64,6 +64,44 @@
     window._csrf = '{{ csrf_token() }}';
     $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': window._csrf } });
 </script>
+<script>
+/* Global rule: no backdated entries. In data-entry (POST) forms, date /
+   datetime / month inputs cannot go below today (server validates too).
+   Add data-allow-past="1" to an input to opt out (e.g. employee hire date). */
+(function () {
+    function pad(n) { return (n < 10 ? '0' : '') + n; }
+    const now = new Date();
+    const today = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate());
+    const thisMonth = now.getFullYear() + '-' + pad(now.getMonth() + 1);
+    function guard(input) {
+        if (input.dataset.allowPast === '1' || input.readOnly || input.disabled) return;
+        let min = null;
+        if (input.type === 'date' || input.type === 'datetime-local') min = today;
+        else if (input.type === 'month') min = thisMonth;
+        else if (input.type === 'time') return; // time-of-day is not a backdate
+        else return;
+        if (!input.min || input.min < min) { try { input.min = min; } catch (e) {} }
+        input.addEventListener('change', function () {
+            if (input.value && input.value < min) {
+                input.value = '';
+                input.classList.add('is-invalid');
+                setTimeout(function () { input.classList.remove('is-invalid'); }, 2500);
+                if (window.toastr) { toastr.error('Past dates are not allowed.'); }
+            }
+        });
+    }
+    function applyAll() {
+        // Data-entry forms only: skip GET search/filter forms (method defaults to GET).
+        document.querySelectorAll('form').forEach(function (form) {
+            const m = (form.getAttribute('method') || 'GET').toUpperCase();
+            if (m === 'GET' && !form.querySelector('input[name="_token"], input[name="_method"]')) return;
+            form.querySelectorAll('input[type="date"], input[type="datetime-local"], input[type="month"]').forEach(guard);
+        });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', applyAll);
+    else applyAll();
+})();
+</script>
 @stack('scripts')
 </body>
 </html>

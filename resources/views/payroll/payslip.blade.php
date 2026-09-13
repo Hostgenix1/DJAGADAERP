@@ -5,8 +5,8 @@
 <title>Payslip - {{ $payrollEntry->employee?->name }} - {{ $payrollEntry->period }}</title>
 <style>
     @page { margin: 10mm 10mm 14mm; }
-    * { font-family: 'DejaVu Sans', sans-serif; }
-    body { font-size: 10pt; color: #1E293B; }
+    * { font-family: 'Lato', 'DejaVu Sans', sans-serif; }
+    body { font-size: 9.6pt; color: #1E293B; }
 
     .header-table { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
     .header-table td { vertical-align: top; }
@@ -67,6 +67,7 @@
             <div class="box-title">Period &amp; Status</div>
             <div>Period: <b>{{ $payrollEntry->period }}</b></div>
             <div>Status: <b>{{ ucfirst($payrollEntry->status) }}</b></div>
+            @if($payrollEntry->pay_date)<div>Scheduled Pay Date: {{ $payrollEntry->pay_date->format('d M Y') }}</div>@endif
             @if($payrollEntry->paid_on)<div>Paid On: {{ $payrollEntry->paid_on->format('d M Y') }}</div>@endif
             <div>Currency: <b>{{ $payrollEntry->currency?->code ?? ($payrollEntry->employee?->currency?->code ?? '—') }}</b></div>
         </td>
@@ -75,15 +76,37 @@
 
 <table class="earn">
     <tr><th style="width:60%;">Description</th><th class="num">Amount</th></tr>
-    <tr><td>Gross Salary</td><td class="num">{{ number_format($payrollEntry->gross_salary, 2) }}</td></tr>
-    @if($payrollEntry->allowances > 0)
+    <tr><td>Base Salary</td><td class="num">{{ number_format((float) ($payrollEntry->base_salary ?: $payrollEntry->gross_salary), 2) }}</td></tr>
+    @if($payrollEntry->transport_allowance > 0)
+        <tr><td>Transport Allowance</td><td class="num">{{ number_format($payrollEntry->transport_allowance, 2) }}</td></tr>
+    @endif
+    @if($payrollEntry->bonus > 0)
+        <tr><td>Bonus</td><td class="num">{{ number_format($payrollEntry->bonus, 2) }}</td></tr>
+    @endif
+    @if($payrollEntry->other_allowances > 0)
+        <tr><td>Other Allowances</td><td class="num">{{ number_format($payrollEntry->other_allowances, 2) }}</td></tr>
+    @elseif($payrollEntry->allowances > ($payrollEntry->transport_allowance + $payrollEntry->bonus + $payrollEntry->other_allowances))
         <tr><td>Allowances</td><td class="num">{{ number_format($payrollEntry->allowances, 2) }}</td></tr>
     @endif
-    @if($payrollEntry->deductions > 0)
+    @if($payrollEntry->absence_deduction > 0)
+        <tr><td>Absence Deduction ({{ rtrim(rtrim(number_format((float) $payrollEntry->absent_days, 2), '0'), '.') }} day(s))</td><td class="num">-{{ number_format($payrollEntry->absence_deduction, 2) }}</td></tr>
+    @endif
+    @if($payrollEntry->other_deductions > 0)
+        <tr><td>Other Deductions</td><td class="num">-{{ number_format($payrollEntry->other_deductions, 2) }}</td></tr>
+    @elseif($payrollEntry->deductions > ($payrollEntry->absence_deduction + $payrollEntry->other_deductions))
         <tr><td>Deductions</td><td class="num">-{{ number_format($payrollEntry->deductions, 2) }}</td></tr>
     @endif
     <tr class="total"><td>NET PAY</td><td class="num">{{ number_format($payrollEntry->net_salary, 2) }}</td></tr>
 </table>
+
+@if(($payrollEntry->present_days + $payrollEntry->absent_days + $payrollEntry->leave_days) > 0)
+    <div style="margin-top:8px; font-size:9pt; color:#475569;">
+        <b>Attendance ({{ $payrollEntry->period }}):</b>
+        Present {{ rtrim(rtrim(number_format((float) $payrollEntry->present_days, 2), '0'), '.') }} day(s)
+        • Absent {{ rtrim(rtrim(number_format((float) $payrollEntry->absent_days, 2), '0'), '.') }} day(s)
+        • Leave {{ rtrim(rtrim(number_format((float) $payrollEntry->leave_days, 2), '0'), '.') }} day(s)
+    </div>
+@endif
 
 @if($payrollEntry->notes)
     <div style="margin-top:8px; font-size:9pt; color:#475569;"><b>Notes:</b> {{ $payrollEntry->notes }}</div>

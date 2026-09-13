@@ -85,7 +85,7 @@ class PaymentController extends Controller
             'rate' => 'nullable|numeric|min:0.0001|max:999999',
             'method' => 'required|in:cash,bank,cheque,mobile,transfer',
             'amount' => 'required|numeric|min:0.01',
-            'paid_on' => 'required|date',
+            'paid_on' => 'required|date|after_or_equal:today',
             'reference' => 'nullable|string|max:100',
             'notes' => 'nullable|string|max:500',
             'allocations' => 'nullable|array',

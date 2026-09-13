@@ -141,6 +141,7 @@ return array (
     13 => 'create-payroll',
     14 => 'update-payroll',
     15 => 'delete-payroll',
+    16 => 'view-own-payslips',
   ),
   'Settings' => 
   array (

@@ -75,8 +75,8 @@ class SupplierPriceController extends Controller
             'quantity' => 'nullable|numeric|min:0',
             'container_quantity' => 'nullable|numeric|min:0',
             'container_type' => 'nullable|in:20ft,40ft',
-            'date_received' => 'required|date',
-            'valid_until' => 'nullable|date',
+            'date_received' => 'required|date|after_or_equal:today',
+            'valid_until' => 'nullable|date|after_or_equal:date_received',
             'source' => 'required|in:whatsapp,email,other',
             'notes' => 'nullable|string|max:1000',
         ]);
@@ -114,8 +114,8 @@ class SupplierPriceController extends Controller
             'quantity' => 'nullable|numeric|min:0',
             'container_quantity' => 'nullable|numeric|min:0',
             'container_type' => 'nullable|in:20ft,40ft',
-            'date_received' => 'required|date',
-            'valid_until' => 'nullable|date',
+            'date_received' => 'required|date|after_or_equal:today',
+            'valid_until' => 'nullable|date|after_or_equal:date_received',
             'source' => 'required|in:whatsapp,email,other',
             'notes' => 'nullable|string|max:1000',
         ]);

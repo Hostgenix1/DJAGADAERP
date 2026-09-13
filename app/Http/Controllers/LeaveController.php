@@ -56,7 +56,7 @@ class LeaveController extends Controller
         $data = $request->validate([
             'employee_id' => 'required|exists:employees,id',
             'type' => 'required|in:annual,sick,unpaid,other',
-            'start_date' => 'required|date',
+            'start_date' => 'required|date|after_or_equal:today',
             'end_date' => 'required|date|after_or_equal:start_date',
             'days' => 'required|numeric|min:0.5',
             'reason' => 'nullable|string|max:500',
@@ -84,7 +84,7 @@ class LeaveController extends Controller
         $data = $request->validate([
             'employee_id' => 'required|exists:employees,id',
             'type' => 'required|in:annual,sick,unpaid,other',
-            'start_date' => 'required|date',
+            'start_date' => 'required|date|after_or_equal:today',
             'end_date' => 'required|date|after_or_equal:start_date',
             'days' => 'required|numeric|min:0.5',
             'reason' => 'nullable|string|max:500',

@@ -83,7 +83,7 @@ class OrderController extends Controller
         $data = $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'currency_id' => 'nullable|exists:currencies,id',
-            'order_date' => 'required|date',
+            'order_date' => 'required|date|after_or_equal:today',
             'expected_delivery' => 'nullable|date|after_or_equal:order_date',
             'payment_terms' => 'nullable|string|max:1000',
             'payment_terms_custom' => 'nullable|string|max:1000',
@@ -137,7 +137,7 @@ class OrderController extends Controller
         $data = $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'currency_id' => 'nullable|exists:currencies,id',
-            'order_date' => 'required|date',
+            'order_date' => 'required|date|after_or_equal:today',
             'expected_delivery' => 'nullable|date|after_or_equal:order_date',
             'payment_terms' => 'nullable|string|max:1000',
             'payment_terms_custom' => 'nullable|string|max:1000',

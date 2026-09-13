@@ -152,7 +152,7 @@ class SellingPriceController extends Controller
             'destination' => 'nullable|string|max:255',
             'incoterm' => 'nullable|string|max:50',
             'min_qty' => 'nullable|numeric|min:0',
-            'valid_until' => 'nullable|date',
+            'valid_until' => 'nullable|date|after_or_equal:today',
             'status' => 'required|in:draft,approved,expired',
             'approved_for_ai' => 'nullable',
             'notes' => 'nullable|string|max:1000',

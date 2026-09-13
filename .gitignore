@@ -38,3 +38,16 @@ Thumbs.db
 
 /v2.4.0-update
 /v2.4.0-update.zip
+node_modules/
+vendor/
+.env.testing
+npm-debug.log
+yarn-error.log
+/.fleet
+*.zip
+*.wasm
+*.sql.gz
+storage/whatsapp-sessions/
+whatsapp-server/session/
+uploads/
+backup/

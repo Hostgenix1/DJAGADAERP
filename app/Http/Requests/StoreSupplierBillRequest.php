@@ -16,7 +16,7 @@ class StoreSupplierBillRequest extends FormRequest
         return [
             'supplier_id' => 'required|exists:suppliers,id',
             'currency_id' => 'nullable|exists:currencies,id',
-            'bill_date' => 'required|date',
+            'bill_date' => 'required|date|after_or_equal:today',
             'due_date' => 'nullable|date|after_or_equal:bill_date',
             'payment_terms' => 'nullable|string|max:1000',
             'payment_terms_custom' => 'nullable|string|max:1000',
