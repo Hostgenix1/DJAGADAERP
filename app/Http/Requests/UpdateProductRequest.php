@@ -24,6 +24,7 @@ class UpdateProductRequest extends FormRequest
             'supplier_id' => 'sometimes|nullable',
             'buy_price' => 'sometimes|numeric|min:0',
             'sell_price' => 'sometimes|numeric|min:0',
+            'reorder_level' => 'sometimes|nullable|numeric|min:0',
             'currency_id' => 'sometimes|nullable',
             'tax_id' => 'sometimes|nullable',
             'unit' => 'sometimes|max:20',

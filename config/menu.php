@@ -63,6 +63,17 @@ return array (
       0 => array ('label' => 'Shipment', 'route' => 'shipments.index', 'icon' => 'fa-ship', 'permission' => 'view-shipments'),
     ),
   ),
+  15 => 
+  array (
+    'label' => 'Inventory',
+    'icon' => 'fa-warehouse',
+    'items' => 
+    array (
+      0 => array ('label' => 'Stock Levels', 'route' => 'stock.index', 'icon' => 'fa-boxes', 'permission' => 'view-stock'),
+      1 => array ('label' => 'Stock Movements', 'route' => 'stock.movements', 'icon' => 'fa-exchange-alt', 'permission' => 'view-stock'),
+      2 => array ('label' => 'Warehouses', 'route' => 'warehouses.index', 'icon' => 'fa-warehouse', 'permission' => 'view-warehouses'),
+    ),
+  ),
   6 => 
   array (
     'label' => 'Purchasing',

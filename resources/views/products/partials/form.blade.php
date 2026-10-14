@@ -56,10 +56,17 @@
                 <span class="text-danger small">{{ $message }}</span>
             @enderror
         </div>
-<div class="col-md-6 col-field">
+        <div class="col-md-6 col-field">
             <label for="sell_price" class="form-label">Sell Price</label>
             <input type="number" step="0.01" name="sell_price" id="sell_price" class="form-control" value="{{ old('sell_price', $form->sell_price ?? '') }}">
             @error('sell_price')
+                <span class="text-danger small">{{ $message }}</span>
+            @enderror
+        </div>
+        <div class="col-md-6 col-field">
+            <label for="reorder_level" class="form-label">Reorder Level (low stock alert)</label>
+            <input type="number" step="0.01" min="0" name="reorder_level" id="reorder_level" class="form-control" placeholder="e.g. 10" value="{{ old('reorder_level', $form->reorder_level ?? '') }}">
+            @error('reorder_level')
                 <span class="text-danger small">{{ $message }}</span>
             @enderror
         </div>

@@ -18,12 +18,13 @@ class Product extends Model
     protected $table = 'products';
 
     protected $fillable = [
-        'sku', 'name', 'description', 'brand_id', 'category_id', 'supplier_id', 'buy_price', 'sell_price', 'currency_id', 'tax_id', 'unit', 'pack_qty', 'pack_type', 'weight_kg', 'dimensions', 'hs_code', 'country_of_origin', 'specifications', 'certificates', 'is_active'
+        'sku', 'name', 'description', 'brand_id', 'category_id', 'supplier_id', 'buy_price', 'sell_price', 'reorder_level', 'currency_id', 'tax_id', 'unit', 'pack_qty', 'pack_type', 'weight_kg', 'dimensions', 'hs_code', 'country_of_origin', 'specifications', 'certificates', 'is_active'
     ];
 
     protected $casts = [
         'buy_price' => 'decimal:2',
         'sell_price' => 'decimal:2',
+        'reorder_level' => 'decimal:2',
         'weight_kg' => 'decimal:3',
         'is_active' => 'boolean',
     ];
@@ -66,5 +67,10 @@ class Product extends Model
     public function documents()
     {
         return $this->morphMany(\App\Models\Document::class, 'documentable');
+    }
+
+    public function stockMovements(): HasMany
+    {
+        return $this->hasMany(\App\Models\StockMovement::class);
     }
 }

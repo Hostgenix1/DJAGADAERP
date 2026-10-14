@@ -21,6 +21,7 @@ class StoreProductRequest extends FormRequest
             'supplier_id' => 'nullable',
             'buy_price' => 'nullable|numeric|min:0',
             'sell_price' => 'nullable|numeric|min:0',
+            'reorder_level' => 'nullable|numeric|min:0',
             'currency_id' => 'nullable',
             'tax_id' => 'nullable',
             'unit' => 'nullable|max:20',

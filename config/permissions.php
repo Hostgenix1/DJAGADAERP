@@ -96,6 +96,16 @@ return array (
     6 => 'update-supplier-bills',
     7 => 'delete-supplier-bills',
   ),
+  'Inventory' => 
+  array (
+    0 => 'view-stock',
+    1 => 'create-stock-movements',
+    2 => 'delete-stock-movements',
+    3 => 'view-warehouses',
+    4 => 'create-warehouses',
+    5 => 'update-warehouses',
+    6 => 'delete-warehouses',
+  ),
   'Documents' => 
   array (
     0 => 'view-documents',
