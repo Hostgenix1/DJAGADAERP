@@ -276,9 +276,21 @@ class InvoiceController extends Controller
             $company['bank_address'] = $svc->get('company_bank_address');
         }
 
-        $qrSvg = \SimpleSoftwareIO\QrCode\Facades\QrCode::size(120)->generate($invoice->number);
+        // QR code: UAE VAT TLV payload for commercial invoices (what a customer's
+        // tax app scans); plain invoice number for other document types.
+        $qrData = $invoice->number;
+        if ($invoice->type === 'commercial' && ! empty($company['trn'])) {
+            $qrData = \App\Support\UaeVatQr::payload(
+                (string) ($company['name'] ?? ''),
+                (string) $company['trn'],
+                ($invoice->invoice_date ?? now())->format('Y-m-d\TH:i:s\Z'),
+                number_format((float) ($invoice->subtotal + $invoice->tax_amount), 2, '.', ''),
+                number_format((float) $invoice->tax_amount, 2, '.', ''),
+            );
+        }
+        $qrPng = \App\Support\QrPng::dataUri($qrData);
 
-        $html = view('invoices.pdf', compact('invoice', 'qrSvg', 'company'))->render();
+        $html = view('invoices.pdf', compact('invoice', 'qrPng', 'company'))->render();
 
         $pdf = Pdf::loadHtml($html)
             ->setPaper('a4')

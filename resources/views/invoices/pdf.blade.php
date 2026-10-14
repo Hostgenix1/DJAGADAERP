@@ -190,6 +190,16 @@
     <tr><td>Paid</td><td>- {{ $invoice->currency?->code }} {{ \App\Support\SettingsHelper::formatMoney($invoice->paid_amount) }}</td></tr>
     <tr class="total-row"><td>Balance Due</td><td>{{ $invoice->currency?->code }} {{ \App\Support\SettingsHelper::formatMoney($invoice->total - $invoice->paid_amount) }}</td></tr>
     @endif
+    @if(!empty($qrPng))
+    <tr>
+        <td style="padding-top:6px; vertical-align:middle;">
+            <div style="font-size:8pt; color:#64748B;">Scan to verify (UAE VAT)</div>
+        </td>
+        <td class="num" style="padding-top:6px;">
+            <img src="{{ $qrPng }}" style="width:84px; height:84px;" alt="QR">
+        </td>
+    </tr>
+    @endif
 </table>
 
 {{-- ═══ TERMS ═══ --}}

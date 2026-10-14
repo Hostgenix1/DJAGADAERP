@@ -33,6 +33,7 @@ return array (
     'items' => 
     array (
       0 => array ('label' => 'Quotation', 'route' => 'quotes.index', 'icon' => 'fa-file-invoice', 'permission' => 'view-quotes'),
+      1 => array ('label' => 'Proforma Invoice', 'route' => 'proforma_invoices.index', 'icon' => 'fa-file-alt', 'permission' => 'view-invoices'),
     ),
   ),
   3 => 

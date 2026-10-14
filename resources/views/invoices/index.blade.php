@@ -165,6 +165,13 @@
 <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap4.min.js"></script>
 <script>
 $(function () {
+    var urlType = new URLSearchParams(window.location.search).get('type') || '';
+    var allowed = ['commercial', 'proforma', 'credit_note', 'packing_list', 'delivery_note'];
+    var activeFilter = allowed.indexOf(urlType) !== -1 ? urlType : '';
+    if (activeFilter) {
+        $('.filter-tab').removeClass('active');
+        $('.filter-tab[data-type="' + activeFilter + '"]').addClass('active');
+    }
     var table = $('#dt-invoices').DataTable({
         processing: true,
         serverSide: true,
@@ -195,7 +202,6 @@ $(function () {
         }
     });
 
-    var activeFilter = '';
     $('.filter-tab').on('click', function (e) {
         e.preventDefault();
         $('.filter-tab').removeClass('active');
