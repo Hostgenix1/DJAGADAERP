@@ -99,6 +99,8 @@ class PayrollController extends Controller
             'present_days' => 'nullable|numeric|min:0',
             'absent_days' => 'nullable|numeric|min:0',
             'leave_days' => 'nullable|numeric|min:0',
+            'overtime_hours' => 'nullable|numeric|min:0',
+            'overtime_amount' => 'nullable|numeric|min:0',
             'transport_allowance' => 'nullable|numeric|min:0',
             'bonus' => 'nullable|numeric|min:0',
             'other_allowances' => 'nullable|numeric|min:0',
@@ -118,6 +120,8 @@ class PayrollController extends Controller
         $data['present_days'] = $data['present_days'] ?? 0;
         $data['absent_days'] = $data['absent_days'] ?? 0;
         $data['leave_days'] = $data['leave_days'] ?? 0;
+        $data['overtime_hours'] = $data['overtime_hours'] ?? 0;
+        $data['overtime_amount'] = $data['overtime_amount'] ?? 0;
         $data['transport_allowance'] = $data['transport_allowance'] ?? 0;
         $data['bonus'] = $data['bonus'] ?? 0;
         $data['other_allowances'] = $data['other_allowances'] ?? 0;
@@ -132,6 +136,7 @@ class PayrollController extends Controller
             (float) $data['other_allowances'],
             (float) $data['other_deductions'],
             isset($data['absence_deduction']) ? (float) $data['absence_deduction'] : null,
+            (float) $data['overtime_amount'],
         );
 
         // Server is the source of truth: always recompute totals.

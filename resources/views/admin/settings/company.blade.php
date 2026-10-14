@@ -167,6 +167,34 @@
                                 </div>
                             </div>
 
+                            <div class="form-row">
+                                <div class="form-group col-md-4">
+                                    <label for="company_establishment_id">
+                                        <i class="fas fa-building text-primary mr-1"></i> Establishment ID (WPS)
+                                    </label>
+                                    <input type="text" id="company_establishment_id" name="company_establishment_id"
+                                           class="form-control" placeholder="Leave blank until official WPS info"
+                                           value="{{ old('company_establishment_id', $svc->get('company_establishment_id')) }}">
+                                    <small class="text-muted">Shown on payslips only when filled.</small>
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label for="company_routing_code">
+                                        <i class="fas fa-code-branch text-primary mr-1"></i> Routing Code (WPS)
+                                    </label>
+                                    <input type="text" id="company_routing_code" name="company_routing_code"
+                                           class="form-control" placeholder="Bank routing code"
+                                           value="{{ old('company_routing_code', $svc->get('company_routing_code')) }}">
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label for="company_wps_sif_reference">
+                                        <i class="fas fa-file-export text-primary mr-1"></i> WPS / SIF Reference
+                                    </label>
+                                    <input type="text" id="company_wps_sif_reference" name="company_wps_sif_reference"
+                                           class="form-control" placeholder="e.g. SIF-2026-09-0142"
+                                           value="{{ old('company_wps_sif_reference', $svc->get('company_wps_sif_reference')) }}">
+                                </div>
+                            </div>
+
                             <div class="form-group">
                                 <label for="company_website">
                                     <i class="fas fa-globe text-primary mr-1"></i> Website

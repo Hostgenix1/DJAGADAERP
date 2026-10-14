@@ -252,6 +252,24 @@
             </div>
         </div>
     </div>
+    <div class="col-lg-3 col-sm-6">
+        <div class="info-box">
+            <span class="info-box-icon bg-danger"><i class="fas fa-exclamation-triangle"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Low Stock Items</span>
+                <span class="info-box-number">{{ $stats['low_stock'] }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+        <div class="info-box">
+            <span class="info-box-icon bg-success"><i class="fas fa-boxes"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Stock Value</span>
+                <span class="info-box-number">{{ $defaultCurrency?->symbol ?? '$' }}{{ number_format($stats['stock_value'], 2) }}</span>
+            </div>
+        </div>
+    </div>
 </div>
 
 {{-- Row 5: Currency-wise Breakdown --}}

@@ -1,4 +1,7 @@
 <div class="d-flex align-items-center gap-1 flex-nowrap">
+    @can('view-employees')
+        <a href="{{ route('employees.show', $row->id) }}" class="btn btn-sm btn-outline-primary" title="View"><i class="fas fa-eye"></i></a>
+    @endcan
     @can('update-employees')
         <a href="{{ route('employees.edit', $row->id) }}" class="btn btn-sm btn-outline-info" title="Edit"><i class="fas fa-pen"></i></a>
     @endcan

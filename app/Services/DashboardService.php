@@ -34,6 +34,8 @@ class DashboardService
             'monthly_expenses'  => (float) Payment::where('type', 'supplier')->whereMonth('paid_on', now()->month)->whereYear('paid_on', now()->year)->sum('amount'),
             'active_orders'     => \App\Models\Order::whereNotIn('status', ['completed', 'cancelled'])->count(),
             'shipments_in_transit' => \App\Models\Shipment::where('status', 'in_transit')->count(),
+            'low_stock'         => \App\Services\StockService::lowStockProducts()->count(),
+            'stock_value'       => \App\Services\StockService::stockValue(),
         ];
     }
 

@@ -37,6 +37,21 @@ class EmployeeController extends Controller
             ->make(true);
     }
 
+    public function show(Employee $employee)
+    {
+        $this->authorize('view-employees');
+
+        $employee->load(['currency', 'documents', 'user', 'payrollEntries' => fn ($q) => $q->orderByDesc('period')->limit(24)]);
+        $employee->loadSum('payrollEntries as total_net_paid', 'net_salary');
+
+        $leaves = $employee->leaves()->orderByDesc('start_date')->limit(12)->get();
+        $attendanceThisMonth = (int) \App\Models\Attendance::where('employee_id', $employee->id)
+            ->whereBetween('date', [now()->startOfMonth()->toDateString(), now()->endOfMonth()->toDateString()])
+            ->where('status', 'present')->count();
+
+        return view('employees.show', compact('employee', 'leaves', 'attendanceThisMonth'));
+    }
+
     public function create()
     {
         $this->authorize('create-employees');
@@ -55,6 +70,11 @@ class EmployeeController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:50',
+            'date_of_birth' => 'nullable|date|before:today',
+            'nationality' => 'nullable|string|max:100',
+            'emirates_id' => 'nullable|string|max:50',
+            'labour_card_no' => 'nullable|string|max:50',
+            'bank_name' => 'nullable|string|max:100',
             'department' => 'nullable|string|max:255',
             'position' => 'nullable|string|max:255',
             'hire_date' => 'nullable|date',
@@ -91,6 +111,11 @@ class EmployeeController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:50',
+            'date_of_birth' => 'nullable|date|before:today',
+            'nationality' => 'nullable|string|max:100',
+            'emirates_id' => 'nullable|string|max:50',
+            'labour_card_no' => 'nullable|string|max:50',
+            'bank_name' => 'nullable|string|max:100',
             'department' => 'nullable|string|max:255',
             'position' => 'nullable|string|max:255',
             'hire_date' => 'nullable|date',

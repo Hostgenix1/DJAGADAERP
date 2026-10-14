@@ -62,6 +62,9 @@ class SettingsController extends Controller
             'company_trn' => ['nullable', 'string', 'max:15'],
             'company_free_zone' => ['nullable', 'string', 'max:100'],
             'company_entity_type' => ['nullable', 'string', 'max:50'],
+            'company_establishment_id' => ['nullable', 'string', 'max:50'],
+            'company_routing_code' => ['nullable', 'string', 'max:50'],
+            'company_wps_sif_reference' => ['nullable', 'string', 'max:100'],
             'default_currency_id' => ['nullable', 'exists:currencies,id'],
             'remove_logo' => ['nullable', 'in:0,1'],
         ]);
@@ -74,6 +77,7 @@ class SettingsController extends Controller
             'company_smtp_from_name', 'company_smtp_from_email',
 
             'company_trade_license', 'company_trn', 'company_free_zone', 'company_entity_type',
+            'company_establishment_id', 'company_routing_code', 'company_wps_sif_reference',
             'default_currency_id',
         ]);
 

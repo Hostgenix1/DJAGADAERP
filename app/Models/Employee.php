@@ -12,13 +12,14 @@ class Employee extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'name', 'email', 'phone', 'department', 'position',
-        'hire_date', 'base_salary', 'transport_allowance', 'iban',
+        'name', 'email', 'phone', 'date_of_birth', 'nationality', 'emirates_id', 'labour_card_no',
+        'department', 'position', 'hire_date', 'base_salary', 'transport_allowance', 'iban', 'bank_name',
         'currency_id', 'user_id', 'is_active',
     ];
 
     protected $casts = [
         'hire_date' => 'date',
+        'date_of_birth' => 'date',
         'base_salary' => 'decimal:2',
         'transport_allowance' => 'decimal:2',
         'is_active' => 'boolean',
@@ -47,5 +48,10 @@ class Employee extends Model
     public function payrollEntries(): HasMany
     {
         return $this->hasMany(PayrollEntry::class);
+    }
+
+    public function documents()
+    {
+        return $this->morphMany(Document::class, 'documentable');
     }
 }

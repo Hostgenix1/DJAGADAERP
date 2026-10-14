@@ -53,6 +53,12 @@
                     <input type="number" step="0.5" min="0" name="leave_days" id="f-leave" class="form-control" value="{{ old('leave_days', $form->leave_days ?? 0) }}">
                 </div>
             </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label>Overtime (hours)</label>
+                    <input type="number" step="0.5" min="0" name="overtime_hours" id="f-othours" class="form-control" value="{{ old('overtime_hours', $form->overtime_hours ?? 0) }}">
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -83,6 +89,12 @@
                 <div class="form-group">
                     <label>Other Allowances</label>
                     <input type="number" step="0.01" min="0" name="other_allowances" id="f-oallow" class="form-control calc" value="{{ old('other_allowances', $form->other_allowances ?? 0) }}">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label>Overtime Amount</label>
+                    <input type="number" step="0.01" min="0" name="overtime_amount" id="f-otamount" class="form-control calc" value="{{ old('overtime_amount', $form->overtime_amount ?? 0) }}">
                 </div>
             </div>
             <div class="col-md-4">
@@ -161,7 +173,7 @@ $(function(){
         // Mirror server math exactly: per-day rounded FIRST, then absence deduction.
         const perDay = Math.round((wd > 0 ? base / wd : 0) * 100) / 100;
         if (fromAuto) { $('#f-absded').val((Math.round(perDay * absent * 100) / 100).toFixed(2)); }
-        const allow = n($('#f-transport').val()) + n($('#f-bonus').val()) + n($('#f-oallow').val());
+        const allow = n($('#f-transport').val()) + n($('#f-bonus').val()) + n($('#f-oallow').val()) + n($('#f-otamount').val());
         const deduc = n($('#f-absded').val()) + n($('#f-odeduc').val());
         $('#pv-perday').text(perDay.toFixed(2));
         $('#pv-allow').text(allow.toFixed(2));

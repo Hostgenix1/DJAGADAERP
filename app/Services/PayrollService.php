@@ -67,12 +67,13 @@ class PayrollService
         float $otherAllowances,
         float $otherDeductions,
         ?float $absenceDeductionOverride = null,
+        float $overtimeAmount = 0,
     ): array {
         $workingDays = $workingDays > 0 ? $workingDays : self::DAYS_DIVISOR_DEFAULT;
         $perDay = round($baseSalary / $workingDays, 2);
         $absenceDeduction = $absenceDeductionOverride ?? round($perDay * $absentDays, 2);
 
-        $allowances = round($transportAllowance + $bonus + $otherAllowances, 2);
+        $allowances = round($transportAllowance + $bonus + $otherAllowances + $overtimeAmount, 2);
         $deductions = round($absenceDeduction + $otherDeductions, 2);
         $net = round(($baseSalary + $allowances) - $deductions, 2);
 
@@ -99,6 +100,8 @@ class PayrollService
             'transport_allowance' => $transport,
             'bonus' => 0,
             'other_allowances' => 0,
+            'overtime_hours' => 0,
+            'overtime_amount' => 0,
             'absence_deduction' => $calc['absenceDeduction'],
             'other_deductions' => 0,
             'per_day' => $calc['perDay'],
@@ -183,11 +186,35 @@ class PayrollService
             'email' => $svc->get('company_email'),
             'phone' => $svc->get('company_phone'),
             'trn' => $svc->get('company_trn'),
+            'license' => $svc->get('company_trade_license'),
+            'routing_code' => $svc->get('company_routing_code'),
+            'establishment_id' => $svc->get('company_establishment_id'),
+            'wps_sif_reference' => $svc->get('company_wps_sif_reference'),
             'show_logo' => $svc->get('show_logo_on_docs'),
             'logo_url' => $logoBase64,
         ];
 
-        return Pdf::loadView('payroll.payslip', compact('payrollEntry', 'company'))->setPaper('a4');
+        // Payment block: employee bank first, company default bank as fallback.
+        // Everything masked; the whole block hides in the template when empty.
+        $employee = $payrollEntry->employee;
+        $companyBank = \App\Models\CompanyBankAccount::where('is_default', true)->where('is_active', true)->first()
+            ?? \App\Models\CompanyBankAccount::where('is_active', true)->first();
+
+        $payment = [
+            'bank_name' => $employee?->bank_name ?: $companyBank?->bank_name,
+            'iban_masked' => \App\Support\Masking::iban($employee?->iban ?: $companyBank?->iban),
+            'routing_code' => $company['routing_code'],
+            'wps_sif_reference' => $company['wps_sif_reference'],
+            'establishment_id' => $company['establishment_id'],
+        ];
+
+        $maskedEmiratesId = \App\Support\Masking::emiratesId($employee?->emirates_id);
+        $inWords = \App\Support\Masking::amountInWords(
+            (float) $payrollEntry->net_salary,
+            $payrollEntry->currency?->code ?? $employee?->currency?->code
+        );
+
+        return Pdf::loadView('payroll.payslip', compact('payrollEntry', 'company', 'payment', 'maskedEmiratesId', 'inWords'))->setPaper('a4');
     }
 
     /**

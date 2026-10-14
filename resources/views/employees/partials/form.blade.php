@@ -19,6 +19,36 @@
     </div>
     <div class="col-md-6">
         <div class="form-group">
+            <label>Date of Birth</label>
+            <input type="date" name="date_of_birth" data-allow-past="1" class="form-control" value="{{ old('date_of_birth', ($form ?? null)?->date_of_birth?->format('Y-m-d') ?? '') }}">
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label>Nationality</label>
+            <input type="text" name="nationality" class="form-control" placeholder="e.g. Jordan" value="{{ old('nationality', $form->nationality ?? '') }}">
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label>Emirates ID</label>
+            <input type="text" name="emirates_id" class="form-control" placeholder="784-XXXX-XXXXXXX-X" value="{{ old('emirates_id', $form->emirates_id ?? '') }}">
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label>Labour Card No. / Person Code</label>
+            <input type="text" name="labour_card_no" class="form-control" value="{{ old('labour_card_no', $form->labour_card_no ?? '') }}">
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label>Bank Name</label>
+            <input type="text" name="bank_name" class="form-control" placeholder="e.g. Emirates NBD" value="{{ old('bank_name', $form->bank_name ?? '') }}">
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group">
             <label>Department</label>
             <input type="text" name="department" class="form-control" value="{{ old('department', $form->department ?? '') }}" placeholder="e.g. Sales, Operations">
         </div>

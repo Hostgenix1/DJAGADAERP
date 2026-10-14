@@ -22,6 +22,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Money filter: @money($amount) renders 5,366.66
+        \Illuminate\Support\Facades\Blade::directive('money', function ($expression) {
+            return "<?php echo number_format((float) ($expression), 2); ?>";
+        });
     }
 }

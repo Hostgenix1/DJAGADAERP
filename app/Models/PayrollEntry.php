@@ -17,7 +17,7 @@ class PayrollEntry extends Model
 
     protected $fillable = [
         'employee_id', 'period', 'base_salary', 'working_days',
-        'present_days', 'absent_days', 'leave_days',
+        'present_days', 'absent_days', 'leave_days', 'overtime_hours', 'overtime_amount',
         'transport_allowance', 'bonus', 'other_allowances',
         'absence_deduction', 'other_deductions',
         'gross_salary', 'allowances', 'deductions',
@@ -30,6 +30,8 @@ class PayrollEntry extends Model
         'present_days' => 'decimal:2',
         'absent_days' => 'decimal:2',
         'leave_days' => 'decimal:2',
+        'overtime_hours' => 'decimal:2',
+        'overtime_amount' => 'decimal:2',
         'transport_allowance' => 'decimal:2',
         'bonus' => 'decimal:2',
         'other_allowances' => 'decimal:2',
