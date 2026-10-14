@@ -51,3 +51,6 @@ storage/whatsapp-sessions/
 whatsapp-server/session/
 uploads/
 backup/
+
+# Test output artifacts
+/payslip-test-output.pdf
