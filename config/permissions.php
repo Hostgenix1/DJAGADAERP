@@ -106,6 +106,10 @@ return array (
     5 => 'update-warehouses',
     6 => 'delete-warehouses',
   ),
+  'Reports' => 
+  array (
+    0 => 'view-reports',
+  ),
   'Documents' => 
   array (
     0 => 'view-documents',

@@ -134,6 +134,15 @@ return array (
       0 => array ('label' => 'All Documents', 'route' => 'documents.index', 'icon' => 'fa-file-alt', 'permission' => 'view-documents'),
     ),
   ),
+  16 => 
+  array (
+    'label' => 'Reports',
+    'icon' => 'fa-chart-bar',
+    'items' => 
+    array (
+      0 => array ('label' => 'Reports & Analytics', 'route' => 'reports.index', 'icon' => 'fa-chart-bar', 'permission' => 'view-reports'),
+    ),
+  ),
   12 => 
   array (
     'label' => 'Settings',
