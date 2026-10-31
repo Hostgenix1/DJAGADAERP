@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Hostgenix1/DJAGADAERP/releases"><img src="https://img.shields.io/badge/version-v1.0.0-blue" alt="Version"></a>
+  <a href="https://github.com/Hostgenix1/DJAGADAERP/releases"><img src="https://img.shields.io/badge/version-v2.4.0-blue" alt="Version"></a>
   <a href="https://github.com/Hostgenix1/DJAGADAERP/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License"></a>
   <a href="https://github.com/Hostgenix1/DJAGADAERP"><img src="https://img.shields.io/badge/Laravel-13.x-red" alt="Laravel"></a>
   <a href="https://github.com/Hostgenix1/DJAGADAERP"><img src="https://img.shields.io/badge/PHP-8.3-purple" alt="PHP"></a>
@@ -18,63 +18,57 @@
 ## Features
 
 ### Auth & RBAC
-- Login / Register (Laravel Breeze)
+- Login (Laravel Breeze); self-registration is disabled — administrators create users
 - Role-based access control (Super Admin, Staff, Sales)
 - Granular permissions per module (view/create/update/delete)
-- Activity audit log
+- Activity audit log (partial: repository CRUD, settings, users, roles)
 
 ### Dashboard
-- Revenue, customers, outstanding balances KPI cards
-- Monthly revenue line chart (Chart.js)
+- Revenue, customers, outstanding balances, stock and P&L KPI cards
+- Monthly revenue and cash-flow charts (Chart.js)
 - Lead pipeline doughnut chart
-- Top customers & recent activity feed
+- Top customers, low-stock products, recent activity
 
 ### CRM
 - **Customers** — company profiles, contacts, timeline, document uploads, quick actions
-- **Contacts** — multi-contact per customer (name, email, phone, position)
-- **Leads** — status pipeline (new/contacted/qualified/proposal/won/lost), expected amounts
+- **Contacts** — multi-contact per customer
+- **Leads** — status pipeline (new/contacted/qualified/proposal/won/lost)
 - **Follow-ups** — scheduled tasks with due dates and completion tracking
-- **Communications** — call/whatsapp/email/meeting logs with direction and contact
+- **Communications** — call/WhatsApp/email/meeting logs
 
-### Products
-- **Brands** — brand management
-- **Categories** — product categories
-- **Suppliers** — supplier profiles with payment terms
-- **Products** — SKU, buy/sell price, currency, tax, pack qty/type, dimensions, specs, certifications, images
+### Products & Pricing
+- **Brands**, **Categories**, **Suppliers**, **Products** — SKU, buy/sell price, currency, tax, pack qty, dimensions, specifications, certificates, images
+- **Supplier Prices** — supplier cost per packaging/incoterm with validity
+- **Selling Prices** — approved selling prices, customer-specific overrides, AI approval flag
+- **AI Pricing API** — read-only Sanctum endpoint returning only approved, valid selling prices (never costs or margins)
 
-### Quotations
-- Dynamic line items with product select and auto-calculation
-- Subtotal / tax / discount / grand total
-- Status tracking (draft/sent/accepted/rejected/expired)
-- Revision support
-- Convert to Proforma Invoice or Commercial Invoice
+### Sales
+- **Quotations** — line items, tax/discount, revisions, convert to proforma or commercial invoice
+- **Invoices** — commercial, proforma, credit note, packing list, delivery note; auto-numbering; PDF with logo, QR, payment details; payment tracking
+- **Orders** — sales orders with payment terms and status flow
+- **Payments** — customer and supplier payments, allocation to invoices/bills, outstanding balances
+- **Shipments** — container and logistics tracking with PDF
 
-### Invoices
-- Dynamic line items with product select and auto-calculation
-- Types: Commercial, Proforma, Credit Note, Packing List, Delivery Note
-- Auto-numbering (INV-00001, PI-00001, etc.)
-- Modern PDF with company logo, QR code, status badge, payment details
-- Payment tracking with balance calculation
+### Purchasing & Inventory
+- **Purchase Orders** — supplier POs with line items and PDF
+- **Supplier Bills** — bill entry and payment allocation
+- **Warehouses** — multiple locations
+- **Stock** — stock in/out/adjustment with negative-stock protection, valuation, low-stock alerts
 
-### Payments
-- Record customer or supplier payments
-- Allocate payments to specific invoices
-- Outstanding balances view
-- Payment methods: cash, bank, cheque, mobile, transfer
+### Finance
+- **Expenses** — categorized operating expenses
+- **Reports** — sales, financial P&L, customers, suppliers, inventory, employees; Excel/CSV/PDF export
+- **Multi-currency** — exchange rates and base-currency conversion
 
-### Documents
-- Versioned file uploads with categories
-- Polymorphic — attach to customers, invoices, payments
-- Global search across all documents
-- Embeddable upload partial on any entity show page
+### HR & Payroll
+- **Employees** — profiles, documents, contract data, IBAN
+- **Attendance** and **Leaves**
+- **Payroll** — attendance-based auto-fill, allowances, overtime, deductions, approval and mark-paid
+- **Payslips** — one-page A4 PDF, masked IBAN/Emirates ID, amount in words, WPS fields, email delivery
+- **My Payslips** — employees can download their own payslips
 
 ### Settings
-- **Company Profile** — logo, name, address, website, industry, tax ID (tabbed UI with live preview)
-- **SMTP / Email** — host, port, username, password, encryption, from address
-- **Branding** — logo on docs toggle, footer text, default notes & terms
-- **Taxes** — CRUD with rate, type (sales/purchase), active status
-- **Currency** — multi-currency support with exchange rates
-- **Audit Log** — all user actions tracked with spatie/activitylog
+- Company profile (logo, address, TRN), SMTP, branding, taxes, currencies, payment terms, units, audit log
 
 ---
 
@@ -84,15 +78,14 @@
 |-------|-----------|
 | Backend | Laravel 13.23, PHP 8.3 |
 | Database | MySQL 8.4 |
-| Frontend | AdminLTE 3.2, Bootstrap 4.6, jQuery 3.7 |
+| Frontend | AdminLTE 3.2, Bootstrap 4.6, jQuery 3.7 (CDN, no build step) |
 | Charts | Chart.js 3.9 |
 | Tables | Yajra DataTables 13.x (server-side) |
 | PDF | barryvdh/laravel-dompdf 3.x, simplesoftwareio/simple-qrcode |
 | Auth | Laravel Breeze (Blade), spatie/laravel-permission 8.x |
 | Audit | spatie/laravel-activitylog 4.x |
-| Excel | maatwebsite/excel 3.x (available, not yet wired) |
-| API | Laravel Sanctum (available, not yet wired) |
-| Assets | CDN (no npm/webpack required) |
+| Excel | maatwebsite/excel 3.x (report exports) |
+| API | Laravel Sanctum (AI pricing endpoint) |
 
 ---
 
@@ -114,8 +107,10 @@ php artisan key:generate
 # Edit .env with your DB credentials
 php artisan migrate --force
 
-# Seed roles, permissions, and demo data
-php artisan db:seed --class=RolesAndPermissionsSeeder
+# Seed roles, permissions, currencies, taxes, and the admin account
+php artisan db:seed --class=DatabaseSeeder
+
+# Optional: demo customers, products, invoices, etc.
 php artisan db:seed --class=DemoDataSeeder
 
 # Storage link (for uploaded logos/documents)
@@ -127,6 +122,14 @@ php artisan serve
 
 Visit: http://127.0.0.1:8000
 
+### Scheduled tasks
+
+Payroll due-date transitions and price expiry run from the scheduler. Add this cron entry on the server:
+
+```
+* * * * * cd /path/to/DJAGADAERP && php artisan schedule:run >> /dev/null 2>&1
+```
+
 ---
 
 ## Demo Credentials
@@ -134,7 +137,20 @@ Visit: http://127.0.0.1:8000
 | Role | Email | Password |
 |------|-------|----------|
 | Super Admin | admin@djagada.com | password |
-| Sales | alfa@djagada.com | secret123 |
+
+Change the password immediately after the first login. `DemoDataSeeder` is optional and creates sample business data only.
+
+---
+
+## Testing & Code Style
+
+```bash
+php artisan test          # Feature + unit tests (SQLite in-memory)
+./vendor/bin/pint --test  # Check formatting
+./vendor/bin/pint         # Apply formatting
+```
+
+The test suite covers auth, profile, invoice/payment flow, and payroll calculations. `pint.json` excludes release-package folders from formatting.
 
 ---
 
@@ -161,12 +177,14 @@ app/
 ├── Models/                              # Eloquent models
 ├── Repositories/                        # Repository pattern (with audit)
 ├── Services/                            # Business logic layer
+├── Support/                             # Currency, VAT QR, masking, money helpers
 config/
 ├── menu.php                             # Sidebar menu (RBAC-gated)
 ├── permissions.php                      # Permission definitions
 database/
 ├── modules/                             # Module schema manifests
 ├── seeders/                             # Demo + role seeders
+docs/                                    # User manual and screenshots
 resources/views/
 ├── layouts/                             # AdminLTE app + guest layouts
 ├── {module}/                            # Per-module views

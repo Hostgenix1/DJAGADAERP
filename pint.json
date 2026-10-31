@@ -1,0 +1,9 @@
+{
+    "preset": "laravel",
+    "exclude": [
+        "v2.4.0-update",
+        "v2.3.2-update",
+        "storage",
+        "bootstrap/cache"
+    ]
+}
