@@ -62,6 +62,10 @@ class UserController extends Controller
             'password' => Hash::make($data['password']),
         ]);
 
+        // Accounts are created by an administrator; there is no email
+        // verification flow, so mark them verified immediately.
+        $user->forceFill(['email_verified_at' => now()])->save();
+
         $user->syncRoles(Role::whereIn('id', $data['roles'] ?? [])->get());
 
         activity()->causedBy(auth()->user())->performedOn($user)->withProperties(['roles' => $data['roles'] ?? []])->event('created')->log('created');
@@ -118,6 +122,3 @@ class UserController extends Controller
         return redirect()->route('admin.users.index')->with('success', 'User deleted.');
     }
 }
-
-
-

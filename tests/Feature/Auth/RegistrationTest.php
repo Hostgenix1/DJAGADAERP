@@ -2,21 +2,20 @@
 
 namespace Tests\Feature\Auth;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class RegistrationTest extends TestCase
 {
-    use RefreshDatabase;
-
-    public function test_registration_screen_can_be_rendered(): void
+    /**
+     * Self-registration is intentionally disabled: only administrators can
+     * create accounts.
+     */
+    public function test_registration_screen_is_not_available(): void
     {
-        $response = $this->get('/register');
-
-        $response->assertStatus(200);
+        $this->get('/register')->assertNotFound();
     }
 
-    public function test_new_users_can_register(): void
+    public function test_new_users_cannot_self_register(): void
     {
         $response = $this->post('/register', [
             'name' => 'Test User',
@@ -25,7 +24,7 @@ class RegistrationTest extends TestCase
             'password_confirmation' => 'password',
         ]);
 
-        $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        $response->assertNotFound();
+        $this->assertGuest();
     }
 }

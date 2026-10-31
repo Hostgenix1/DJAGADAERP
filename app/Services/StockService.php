@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Product;
 use App\Models\StockMovement;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class StockService
@@ -68,25 +69,31 @@ class StockService
             $qty = abs($qty);
         } // adjustment keeps the sign as entered
 
-        $available = self::currentStock((int) $data['product_id'], (int) $data['warehouse_id']);
-        $after = round($available + $qty, 2);
+        return DB::transaction(function () use ($data, $type, $qty) {
+            // Lock the product row so two concurrent issues cannot both pass
+            // the availability check and drive stock below zero.
+            Product::whereKey($data['product_id'])->lockForUpdate()->firstOrFail();
 
-        if ($after < 0) {
-            throw ValidationException::withMessages([
-                'qty' => 'Not enough stock: available '.number_format($available, 2).', requested '.number_format(abs($qty), 2).'.',
+            $available = self::currentStock((int) $data['product_id'], (int) $data['warehouse_id']);
+            $after = round($available + $qty, 2);
+
+            if ($after < 0) {
+                throw ValidationException::withMessages([
+                    'qty' => 'Not enough stock: available '.number_format($available, 2).', requested '.number_format(abs($qty), 2).'.',
+                ]);
+            }
+
+            return StockMovement::create([
+                'product_id' => $data['product_id'],
+                'warehouse_id' => $data['warehouse_id'],
+                'qty' => $qty,
+                'type' => $type,
+                'unit_cost' => $data['unit_cost'] ?? null,
+                'reference' => $data['reference'] ?? null,
+                'movement_date' => $data['movement_date'],
+                'notes' => $data['notes'] ?? null,
+                'created_by' => auth()->id(),
             ]);
-        }
-
-        return StockMovement::create([
-            'product_id' => $data['product_id'],
-            'warehouse_id' => $data['warehouse_id'],
-            'qty' => $qty,
-            'type' => $type,
-            'unit_cost' => $data['unit_cost'] ?? null,
-            'reference' => $data['reference'] ?? null,
-            'movement_date' => $data['movement_date'],
-            'notes' => $data['notes'] ?? null,
-            'created_by' => auth()->id(),
-        ]);
+        });
     }
 }

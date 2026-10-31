@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Console\Commands\MakeModule;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -22,9 +23,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Money filter: @money($amount) renders 5,366.66
-        \Illuminate\Support\Facades\Blade::directive('money', function ($expression) {
-            return "<?php echo number_format((float) ($expression), 2); ?>";
+        // Money filter: @money($amount) honours the configured number format.
+        Blade::directive('money', function ($expression) {
+            return "<?php echo e(\\App\\Support\\SettingsHelper::formatMoney({$expression})); ?>";
         });
     }
 }

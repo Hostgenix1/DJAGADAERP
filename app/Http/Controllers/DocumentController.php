@@ -10,9 +10,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DocumentController extends Controller
 {
-    public function __construct(protected DocumentService $service)
-    {
-    }
+    public function __construct(protected DocumentService $service) {}
 
     public function index(Request $request)
     {
@@ -76,8 +74,9 @@ class DocumentController extends Controller
             'App\\Models\\Supplier',
             'App\\Models\\PurchaseOrder',
             'App\\Models\\SupplierBill',
+            'App\\Models\\Employee',
         ];
-        if (!in_array($type, $allowedTypes)) {
+        if (! in_array($type, $allowedTypes)) {
             return back()->withErrors(['documentable_type' => 'Invalid type.']);
         }
 
