@@ -93,6 +93,32 @@
         </ul>
     </div>
 
+    <div class="card-body border-bottom py-2">
+        <div class="form-row align-items-end">
+            <div class="col-md-4 mb-1 mb-md-0">
+                <label class="mb-0 small text-muted">Customer</label>
+                <select id="filter-customer" class="form-control form-control-sm">
+                    <option value="">All customers</option>
+                    @foreach($customers as $id => $name)
+                        <option value="{{ $id }}">{{ $name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-3 mb-1 mb-md-0">
+                <label class="mb-0 small text-muted">ETD From</label>
+                <input type="date" id="filter-from" class="form-control form-control-sm">
+            </div>
+            <div class="col-md-3 mb-1 mb-md-0">
+                <label class="mb-0 small text-muted">ETD To</label>
+                <input type="date" id="filter-to" class="form-control form-control-sm">
+            </div>
+            <div class="col-md-2 mb-1 mb-md-0">
+                <button type="button" id="filter-apply" class="btn btn-sm btn-primary"><i class="fas fa-filter mr-1"></i> Apply</button>
+                <button type="button" id="filter-reset" class="btn btn-sm btn-default">Reset</button>
+            </div>
+        </div>
+    </div>
+
     <div class="card-body p-0">
         <div class="table-responsive">
             <table id="dt-shipments" class="table table-bordered table-hover" style="width:100%">
@@ -126,6 +152,7 @@
 <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap4.min.js"></script>
 <script>
 $(function () {
+    var activeFilter = '';
     var table = $('#dt-shipments').DataTable({
         processing: true,
         serverSide: true,
@@ -133,6 +160,9 @@ $(function () {
             url: '{{ route("shipments.datatable") }}',
             data: function (d) {
                 d.status = activeFilter;
+                d.customer_id = $('#filter-customer').val();
+                d.from = $('#filter-from').val();
+                d.to = $('#filter-to').val();
             }
         },
         columns: [
@@ -156,12 +186,24 @@ $(function () {
         }
     });
 
-    var activeFilter = '';
     $('.filter-tab').on('click', function (e) {
         e.preventDefault();
         $('.filter-tab').removeClass('active');
         $(this).addClass('active');
         activeFilter = $(this).data('status') === 'all' ? '' : $(this).data('status');
+        table.ajax.reload();
+    });
+
+    $('#filter-customer, #filter-from, #filter-to').on('change', function () {
+        table.ajax.reload();
+    });
+
+    $('#filter-apply').on('click', function () {
+        table.ajax.reload();
+    });
+
+    $('#filter-reset').on('click', function () {
+        $('#filter-customer, #filter-from, #filter-to').val('');
         table.ajax.reload();
     });
 });

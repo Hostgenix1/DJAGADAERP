@@ -2,16 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Currency;
+use App\Models\Customer;
 use App\Models\Order;
+use App\Models\Product;
 use App\Services\OrderService;
+use App\Support\PaymentTerms;
+use App\Support\Units;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 
 class OrderController extends Controller
 {
-    public function __construct(protected OrderService $service)
-    {
-    }
+    public function __construct(protected OrderService $service) {}
 
     public function index()
     {
@@ -24,7 +27,7 @@ class OrderController extends Controller
         $loading = Order::where('status', 'loading')->count();
         $completed = Order::where('status', 'completed')->count();
         $totalAmount = (float) Order::where('status', '!=', 'cancelled')->sum('total');
-        $defaultCurrency = \App\Models\Currency::where('is_default', true)->first();
+        $defaultCurrency = Currency::where('is_default', true)->first();
 
         $orderByCurrency = Order::where('status', '!=', 'cancelled')
             ->leftJoin('currencies', 'orders.currency_id', '=', 'currencies.id')
@@ -33,20 +36,38 @@ class OrderController extends Controller
             ->get()
             ->toArray();
 
-        return view('orders.index', compact('totalOrders', 'draft', 'confirmed', 'processing', 'loading', 'completed', 'totalAmount', 'defaultCurrency', 'orderByCurrency'));
+        $customers = Customer::orderBy('company_name')->pluck('company_name', 'id');
+
+        return view('orders.index', compact('totalOrders', 'draft', 'confirmed', 'processing', 'loading', 'completed', 'totalAmount', 'defaultCurrency', 'orderByCurrency', 'customers'));
     }
 
     public function datatable(Request $request)
     {
         $this->authorize('view-orders');
 
+        $filters = $request->validate([
+            'status' => 'nullable|in:draft,confirmed,processing,loading,completed,cancelled',
+            'customer_id' => 'nullable|integer',
+            'from' => 'nullable|date',
+            'to' => 'nullable|date',
+        ]);
+
         $query = $this->service->query();
 
-        if ($request->filled('status')) {
-            $allowedStatuses = ['draft', 'confirmed', 'processing', 'loading', 'completed', 'cancelled'];
-            if (in_array($request->status, $allowedStatuses)) {
-                $query->where('status', $request->status);
-            }
+        if (! empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        if (! empty($filters['customer_id'])) {
+            $query->where('customer_id', $filters['customer_id']);
+        }
+
+        if (! empty($filters['from'])) {
+            $query->whereDate('order_date', '>=', $filters['from']);
+        }
+
+        if (! empty($filters['to'])) {
+            $query->whereDate('order_date', '<=', $filters['to']);
         }
 
         return DataTables::eloquent($query)
@@ -66,12 +87,12 @@ class OrderController extends Controller
     {
         $this->authorize('create-orders');
 
-        $customers = \App\Models\Customer::pluck('company_name', 'id');
-        $currencies = \App\Models\Currency::pluck('code', 'id');
-        $products = \App\Models\Product::with('tax:id,rate')->where('is_active', true)->get(['id', 'name', 'sell_price', 'unit', 'tax_id']);
-        $rates = \App\Models\Currency::where('is_active', true)->pluck('rate', 'id');
-        $units = \App\Support\Units::all();
-        $paymentTerms = \App\Support\PaymentTerms::all();
+        $customers = Customer::pluck('company_name', 'id');
+        $currencies = Currency::pluck('code', 'id');
+        $products = Product::with('tax:id,rate')->where('is_active', true)->get(['id', 'name', 'sell_price', 'unit', 'tax_id']);
+        $rates = Currency::where('is_active', true)->pluck('rate', 'id');
+        $units = Units::all();
+        $paymentTerms = PaymentTerms::all();
 
         return view('orders.create', compact('customers', 'currencies', 'products', 'rates', 'units', 'paymentTerms'));
     }
@@ -120,12 +141,12 @@ class OrderController extends Controller
     {
         $this->authorize('update-orders');
         $order->load('items');
-        $customers = \App\Models\Customer::pluck('company_name', 'id');
-        $currencies = \App\Models\Currency::pluck('code', 'id');
-        $products = \App\Models\Product::with('tax:id,rate')->where('is_active', true)->get(['id', 'name', 'sell_price', 'unit', 'tax_id']);
-        $rates = \App\Models\Currency::where('is_active', true)->pluck('rate', 'id');
-        $units = \App\Support\Units::all();
-        $paymentTerms = \App\Support\PaymentTerms::all();
+        $customers = Customer::pluck('company_name', 'id');
+        $currencies = Currency::pluck('code', 'id');
+        $products = Product::with('tax:id,rate')->where('is_active', true)->get(['id', 'name', 'sell_price', 'unit', 'tax_id']);
+        $rates = Currency::where('is_active', true)->pluck('rate', 'id');
+        $units = Units::all();
+        $paymentTerms = PaymentTerms::all();
 
         return view('orders.edit', compact('order', 'customers', 'currencies', 'products', 'rates', 'units', 'paymentTerms'));
     }
@@ -171,15 +192,15 @@ class OrderController extends Controller
         ]);
 
         $allowed = [
-            'draft'      => ['confirmed', 'cancelled'],
-            'confirmed'  => ['processing', 'cancelled'],
+            'draft' => ['confirmed', 'cancelled'],
+            'confirmed' => ['processing', 'cancelled'],
             'processing' => ['loading', 'cancelled'],
-            'loading'    => ['completed', 'cancelled'],
-            'completed'  => [],
-            'cancelled'  => ['draft'],
+            'loading' => ['completed', 'cancelled'],
+            'completed' => [],
+            'cancelled' => ['draft'],
         ];
 
-        if (!in_array($data['status'], $allowed[$order->status] ?? [])) {
+        if (! in_array($data['status'], $allowed[$order->status] ?? [])) {
             return back()->with('error', 'Cannot change status from "'.$order->status.'" to "'.$data['status'].'".');
         }
 

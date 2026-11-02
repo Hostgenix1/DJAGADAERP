@@ -42,20 +42,38 @@ class QuoteController extends Controller
             ->get()
             ->toArray();
 
-        return view('quotes.index', compact('totalQuotes', 'totalAmount', 'accepted', 'pending', 'defaultCurrency', 'quoteByCurrency'));
+        $customers = Customer::orderBy('company_name')->pluck('company_name', 'id');
+
+        return view('quotes.index', compact('totalQuotes', 'totalAmount', 'accepted', 'pending', 'defaultCurrency', 'quoteByCurrency', 'customers'));
     }
 
     public function datatable(Request $request)
     {
         $this->authorize('view-quotes');
 
+        $filters = $request->validate([
+            'status' => 'nullable|in:draft,sent,accepted,rejected,expired,converted,cancelled',
+            'customer_id' => 'nullable|integer',
+            'from' => 'nullable|date',
+            'to' => 'nullable|date',
+        ]);
+
         $query = $this->service->query();
 
-        if ($request->filled('status')) {
-            $allowedStatuses = ['draft', 'sent', 'accepted', 'rejected', 'expired', 'converted', 'cancelled'];
-            if (in_array($request->status, $allowedStatuses)) {
-                $query->where('status', $request->status);
-            }
+        if (! empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        if (! empty($filters['customer_id'])) {
+            $query->where('customer_id', $filters['customer_id']);
+        }
+
+        if (! empty($filters['from'])) {
+            $query->whereDate('date', '>=', $filters['from']);
+        }
+
+        if (! empty($filters['to'])) {
+            $query->whereDate('date', '<=', $filters['to']);
         }
 
         return DataTables::eloquent($query)

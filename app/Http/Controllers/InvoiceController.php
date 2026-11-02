@@ -2,19 +2,27 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CompanyBankAccount;
+use App\Models\Currency;
+use App\Models\Customer;
 use App\Models\Invoice;
+use App\Models\Product;
+use App\Models\Tax;
 use App\Services\InvoiceService;
+use App\Services\SettingsService;
+use App\Support\Incoterms;
+use App\Support\PaymentTerms;
+use App\Support\QrPng;
+use App\Support\UaeVatQr;
+use App\Support\Units;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Yajra\DataTables\Facades\DataTables;
 
 class InvoiceController extends Controller
 {
-    public function __construct(protected InvoiceService $service)
-    {
-    }
+    public function __construct(protected InvoiceService $service) {}
 
     public function index()
     {
@@ -24,7 +32,7 @@ class InvoiceController extends Controller
         $totalAmount = (float) Invoice::where('status', '!=', 'cancelled')->sum('total');
         $totalPaid = (float) Invoice::where('status', '!=', 'cancelled')->sum('paid_amount');
         $totalOutstanding = $totalAmount - $totalPaid;
-        $defaultCurrency = \App\Models\Currency::where('is_default', true)->first();
+        $defaultCurrency = Currency::where('is_default', true)->first();
 
         $invoiceByCurrency = Invoice::where('status', '!=', 'cancelled')
             ->leftJoin('currencies', 'invoices.currency_id', '=', 'currencies.id')
@@ -33,24 +41,43 @@ class InvoiceController extends Controller
             ->get()
             ->toArray();
 
-        return view('invoices.index', compact('totalInvoices', 'totalAmount', 'totalPaid', 'totalOutstanding', 'defaultCurrency', 'invoiceByCurrency'));
+        $customers = Customer::orderBy('company_name')->pluck('company_name', 'id');
+
+        return view('invoices.index', compact('totalInvoices', 'totalAmount', 'totalPaid', 'totalOutstanding', 'defaultCurrency', 'invoiceByCurrency', 'customers'));
     }
 
     public function datatable(Request $request)
     {
         $this->authorize('view-invoices');
 
+        $filters = $request->validate([
+            'type' => 'nullable|in:commercial,proforma,credit_note,packing_list,delivery_note',
+            'status' => 'nullable|in:draft,sent,paid,partial,overdue,cancelled',
+            'customer_id' => 'nullable|integer',
+            'from' => 'nullable|date',
+            'to' => 'nullable|date',
+        ]);
+
         $query = $this->service->query();
 
-        if ($request->filled('type')) {
-            $query->where('type', $request->type);
+        if (! empty($filters['type'])) {
+            $query->where('type', $filters['type']);
         }
 
-        if ($request->filled('status')) {
-            $allowedStatuses = ['draft', 'sent', 'paid', 'partial', 'overdue', 'cancelled'];
-            if (in_array($request->status, $allowedStatuses)) {
-                $query->where('status', $request->status);
-            }
+        if (! empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        if (! empty($filters['customer_id'])) {
+            $query->where('customer_id', $filters['customer_id']);
+        }
+
+        if (! empty($filters['from'])) {
+            $query->whereDate('invoice_date', '>=', $filters['from']);
+        }
+
+        if (! empty($filters['to'])) {
+            $query->whereDate('invoice_date', '<=', $filters['to']);
         }
 
         return DataTables::eloquent($query)
@@ -71,18 +98,18 @@ class InvoiceController extends Controller
     public function create()
     {
         $this->authorize('create-invoices');
-        $customers = \App\Models\Customer::pluck('company_name', 'id');
-        $currencies = \App\Models\Currency::pluck('code', 'id');
-        $products = \App\Models\Product::with('tax:id,rate')->where('is_active', true)->get(['id', 'name', 'sell_price', 'unit', 'tax_id']);
+        $customers = Customer::pluck('company_name', 'id');
+        $currencies = Currency::pluck('code', 'id');
+        $products = Product::with('tax:id,rate')->where('is_active', true)->get(['id', 'name', 'sell_price', 'unit', 'tax_id']);
         $types = ['commercial', 'proforma', 'credit_note', 'packing_list', 'delivery_note'];
-        $bankAccounts = \App\Models\CompanyBankAccount::where('is_active', true)->with('currency')->get();
-        $taxes = \App\Models\Tax::sales()->where('is_active', true)->get();
-        $units = \App\Support\Units::all();
-        $paymentTerms = \App\Support\PaymentTerms::all();
-        $incoterms = \App\Support\Incoterms::all();
-        $defaultTax = \App\Models\Tax::sales()->where('is_default', true)->first();
-        $rates = \App\Models\Currency::where('is_active', true)->pluck('rate', 'id');
-        $defaultTermsByType = \App\Support\PaymentTerms::defaultsByType();
+        $bankAccounts = CompanyBankAccount::where('is_active', true)->with('currency')->get();
+        $taxes = Tax::sales()->where('is_active', true)->get();
+        $units = Units::all();
+        $paymentTerms = PaymentTerms::all();
+        $incoterms = Incoterms::all();
+        $defaultTax = Tax::sales()->where('is_default', true)->first();
+        $rates = Currency::where('is_active', true)->pluck('rate', 'id');
+        $defaultTermsByType = PaymentTerms::defaultsByType();
 
         return view('invoices.create', compact('customers', 'currencies', 'products', 'types', 'bankAccounts', 'taxes', 'units', 'paymentTerms', 'incoterms', 'defaultTax', 'rates', 'defaultTermsByType'));
     }
@@ -142,18 +169,18 @@ class InvoiceController extends Controller
     {
         $this->authorize('update-invoices');
         $invoice->load('items');
-        $customers = \App\Models\Customer::pluck('company_name', 'id');
-        $currencies = \App\Models\Currency::pluck('code', 'id');
-        $products = \App\Models\Product::with('tax:id,rate')->where('is_active', true)->get(['id', 'name', 'sell_price', 'unit', 'tax_id']);
+        $customers = Customer::pluck('company_name', 'id');
+        $currencies = Currency::pluck('code', 'id');
+        $products = Product::with('tax:id,rate')->where('is_active', true)->get(['id', 'name', 'sell_price', 'unit', 'tax_id']);
         $types = ['commercial', 'proforma', 'credit_note', 'packing_list', 'delivery_note'];
-        $bankAccounts = \App\Models\CompanyBankAccount::where('is_active', true)->with('currency')->get();
-        $taxes = \App\Models\Tax::sales()->where('is_active', true)->get();
-        $units = \App\Support\Units::all();
-        $paymentTerms = \App\Support\PaymentTerms::all();
-        $incoterms = \App\Support\Incoterms::all();
-        $defaultTax = \App\Models\Tax::sales()->where('is_default', true)->first();
-        $rates = \App\Models\Currency::where('is_active', true)->pluck('rate', 'id');
-        $defaultTermsByType = \App\Support\PaymentTerms::defaultsByType();
+        $bankAccounts = CompanyBankAccount::where('is_active', true)->with('currency')->get();
+        $taxes = Tax::sales()->where('is_active', true)->get();
+        $units = Units::all();
+        $paymentTerms = PaymentTerms::all();
+        $incoterms = Incoterms::all();
+        $defaultTax = Tax::sales()->where('is_default', true)->first();
+        $rates = Currency::where('is_active', true)->pluck('rate', 'id');
+        $defaultTermsByType = PaymentTerms::defaultsByType();
 
         return view('invoices.edit', compact('invoice', 'customers', 'currencies', 'products', 'types', 'bankAccounts', 'taxes', 'units', 'paymentTerms', 'incoterms', 'defaultTax', 'rates', 'defaultTermsByType'));
     }
@@ -162,7 +189,7 @@ class InvoiceController extends Controller
     {
         $this->authorize('update-invoices');
 
-        if (!in_array($invoice->status, ['draft'])) {
+        if (! in_array($invoice->status, ['draft'])) {
             return back()->with('error', 'Only draft invoices can be edited.');
         }
 
@@ -209,13 +236,13 @@ class InvoiceController extends Controller
         $this->authorize('view-invoices');
         $invoice->load(['customer', 'currency', 'items.product', 'bankAccount']);
 
-        $svc = app(\App\Services\SettingsService::class);
+        $svc = app(SettingsService::class);
         $logoPath = $svc->get('company_logo');
         $logoBase64 = null;
-        if ($logoPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($logoPath)) {
-            $fullPath = \Illuminate\Support\Facades\Storage::disk('public')->path($logoPath);
+        if ($logoPath && Storage::disk('public')->exists($logoPath)) {
+            $fullPath = Storage::disk('public')->path($logoPath);
             $ext = strtolower(pathinfo($logoPath, PATHINFO_EXTENSION));
-            $mime = match($ext) {
+            $mime = match ($ext) {
                 'jpg', 'jpeg' => 'image/jpeg',
                 'png' => 'image/png',
                 'gif' => 'image/gif',
@@ -227,10 +254,10 @@ class InvoiceController extends Controller
 
         $sigPath = $svc->get('company_signature');
         $sigBase64 = null;
-        if ($sigPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($sigPath)) {
-            $fullPath = \Illuminate\Support\Facades\Storage::disk('public')->path($sigPath);
+        if ($sigPath && Storage::disk('public')->exists($sigPath)) {
+            $fullPath = Storage::disk('public')->path($sigPath);
             $ext = strtolower(pathinfo($sigPath, PATHINFO_EXTENSION));
-            $mime = match($ext) {
+            $mime = match ($ext) {
                 'jpg', 'jpeg' => 'image/jpeg',
                 'png' => 'image/png',
                 'gif' => 'image/gif',
@@ -241,38 +268,38 @@ class InvoiceController extends Controller
         }
 
         $company = [
-            'name'      => $svc->get('company_name'),
-            'address'   => $svc->get('company_address'),
-            'city'      => $svc->get('company_city'),
-            'country'   => $svc->get('company_country'),
-            'email'     => $svc->get('company_email'),
-            'phone'     => $svc->get('company_phone'),
-            'tax_id'    => $svc->get('company_tax_id'),
+            'name' => $svc->get('company_name'),
+            'address' => $svc->get('company_address'),
+            'city' => $svc->get('company_city'),
+            'country' => $svc->get('company_country'),
+            'email' => $svc->get('company_email'),
+            'phone' => $svc->get('company_phone'),
+            'tax_id' => $svc->get('company_tax_id'),
             'registration' => $svc->get('company_registration'),
-            'footer'    => $svc->get('company_footer_text'),
+            'footer' => $svc->get('company_footer_text'),
             'show_logo' => $svc->get('show_logo_on_docs'),
-            'logo_url'  => $logoBase64,
+            'logo_url' => $logoBase64,
             'signature_url' => $sigBase64,
 
             'trade_license' => $svc->get('company_trade_license'),
-            'trn'           => $svc->get('company_trn'),
-            'free_zone'     => $svc->get('company_free_zone'),
-            'entity_type'   => $svc->get('company_entity_type'),
+            'trn' => $svc->get('company_trn'),
+            'free_zone' => $svc->get('company_free_zone'),
+            'entity_type' => $svc->get('company_entity_type'),
         ];
 
         if ($invoice->bankAccount) {
-            $company['bank_name']    = $invoice->bankAccount->bank_name;
+            $company['bank_name'] = $invoice->bankAccount->bank_name;
             $company['bank_account'] = $invoice->bankAccount->account_name;
-            $company['bank_number']  = $invoice->bankAccount->account_number;
-            $company['bank_iban']    = $invoice->bankAccount->iban;
-            $company['bank_swift']   = $invoice->bankAccount->swift_code;
+            $company['bank_number'] = $invoice->bankAccount->account_number;
+            $company['bank_iban'] = $invoice->bankAccount->iban;
+            $company['bank_swift'] = $invoice->bankAccount->swift_code;
             $company['bank_address'] = $invoice->bankAccount->bank_address;
         } else {
-            $company['bank_name']    = $svc->get('company_bank_name');
+            $company['bank_name'] = $svc->get('company_bank_name');
             $company['bank_account'] = $svc->get('company_bank_account');
-            $company['bank_number']  = '';
-            $company['bank_iban']    = $svc->get('company_bank_iban');
-            $company['bank_swift']   = $svc->get('company_bank_swift');
+            $company['bank_number'] = '';
+            $company['bank_iban'] = $svc->get('company_bank_iban');
+            $company['bank_swift'] = $svc->get('company_bank_swift');
             $company['bank_address'] = $svc->get('company_bank_address');
         }
 
@@ -280,7 +307,7 @@ class InvoiceController extends Controller
         // tax app scans); plain invoice number for other document types.
         $qrData = $invoice->number;
         if ($invoice->type === 'commercial' && ! empty($company['trn'])) {
-            $qrData = \App\Support\UaeVatQr::payload(
+            $qrData = UaeVatQr::payload(
                 (string) ($company['name'] ?? ''),
                 (string) $company['trn'],
                 ($invoice->invoice_date ?? now())->format('Y-m-d\TH:i:s\Z'),
@@ -288,7 +315,7 @@ class InvoiceController extends Controller
                 number_format((float) $invoice->tax_amount, 2, '.', ''),
             );
         }
-        $qrPng = \App\Support\QrPng::dataUri($qrData);
+        $qrPng = QrPng::dataUri($qrData);
 
         $html = view('invoices.pdf', compact('invoice', 'qrPng', 'company'))->render();
 
@@ -304,12 +331,13 @@ class InvoiceController extends Controller
     {
         $this->authorize('delete-invoices');
 
-        if (!in_array($invoice->status, ['draft', 'cancelled'])) {
+        if (! in_array($invoice->status, ['draft', 'cancelled'])) {
             return back()->with('error', 'Only draft or cancelled invoices can be deleted.');
         }
 
         $invoice->items()->delete();
         $invoice->delete();
+
         return redirect()->route('invoices.index')->with('success', 'Invoice deleted.');
     }
 

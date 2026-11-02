@@ -26,21 +26,38 @@ class ShipmentController extends Controller
         $inTransit = Shipment::where('status', 'in_transit')->count();
         $customs = Shipment::where('status', 'customs')->count();
         $delivered = Shipment::where('status', 'delivered')->count();
+        $customers = Customer::orderBy('company_name')->pluck('company_name', 'id');
 
-        return view('shipments.index', compact('total', 'preparing', 'inTransit', 'customs', 'delivered'));
+        return view('shipments.index', compact('total', 'preparing', 'inTransit', 'customs', 'delivered', 'customers'));
     }
 
     public function datatable(Request $request)
     {
         $this->authorize('view-shipments');
 
+        $filters = $request->validate([
+            'status' => 'nullable|in:preparing,in_transit,customs,delivered,cancelled',
+            'customer_id' => 'nullable|integer',
+            'from' => 'nullable|date',
+            'to' => 'nullable|date',
+        ]);
+
         $query = $this->service->query();
 
-        if ($request->filled('status')) {
-            $allowedStatuses = ['preparing', 'in_transit', 'customs', 'delivered', 'cancelled'];
-            if (in_array($request->status, $allowedStatuses)) {
-                $query->where('status', $request->status);
-            }
+        if (! empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        if (! empty($filters['customer_id'])) {
+            $query->where('customer_id', $filters['customer_id']);
+        }
+
+        if (! empty($filters['from'])) {
+            $query->whereDate('shipped_at', '>=', $filters['from']);
+        }
+
+        if (! empty($filters['to'])) {
+            $query->whereDate('shipped_at', '<=', $filters['to']);
         }
 
         return DataTables::eloquent($query)
