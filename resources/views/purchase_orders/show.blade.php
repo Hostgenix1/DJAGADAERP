@@ -21,20 +21,36 @@
                             </form>
                         @endcan
                     @endif
-                    @if(in_array($purchaseOrder->status, ['confirmed', 'received']))
-                        @can('update-purchase-orders')
+                    @can('update-purchase-orders')
+                        @if($purchaseOrder->status === 'confirmed')
                             <form method="POST" action="{{ route('purchase_orders.status', $purchaseOrder) }}" class="d-inline">
                                 @csrf
                                 <input type="hidden" name="status" value="received">
                                 <button class="btn btn-sm btn-primary"><i class="fas fa-box-open mr-1"></i> Mark Received</button>
                             </form>
-                        @endcan
-                    @endif
+                        @endif
+                    @endcan
                     @can('create-supplier-bills')
-                        @if($purchaseOrder->status !== 'billed' && $purchaseOrder->status !== 'cancelled')
+                        @if(in_array($purchaseOrder->status, ['confirmed', 'received']))
                             <form method="POST" action="{{ route('supplier_bills.convert', $purchaseOrder) }}" class="d-inline" onsubmit="return confirm('Create Supplier Bill from this PO? Items, prices and currency will be copied.');">
                                 @csrf
                                 <button class="btn btn-sm btn-success"><i class="fas fa-file-invoice-dollar mr-1"></i> Create Supplier Bill</button>
+                            </form>
+                        @endif
+                    @endcan
+                    @can('update-purchase-orders')
+                        @if(in_array($purchaseOrder->status, ['draft', 'confirmed', 'received']))
+                            <form method="POST" action="{{ route('purchase_orders.status', $purchaseOrder) }}" class="d-inline" onsubmit="return confirm('Cancel this purchase order? Marked-received goods will be reversed from stock.');">
+                                @csrf
+                                <input type="hidden" name="status" value="cancelled">
+                                <button class="btn btn-sm btn-danger"><i class="fas fa-ban mr-1"></i> Cancel</button>
+                            </form>
+                        @endif
+                        @if($purchaseOrder->status === 'cancelled')
+                            <form method="POST" action="{{ route('purchase_orders.status', $purchaseOrder) }}" class="d-inline">
+                                @csrf
+                                <input type="hidden" name="status" value="draft">
+                                <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-undo mr-1"></i> Reopen as Draft</button>
                             </form>
                         @endif
                     @endcan

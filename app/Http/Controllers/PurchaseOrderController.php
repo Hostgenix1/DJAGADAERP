@@ -4,17 +4,29 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePurchaseOrderRequest;
 use App\Http\Requests\UpdatePurchaseOrderRequest;
+use App\Models\CompanyBankAccount;
+use App\Models\Currency;
+use App\Models\Product;
 use App\Models\PurchaseOrder;
+use App\Models\Supplier;
+use App\Models\Tax;
 use App\Services\PurchaseOrderService;
+use App\Services\SettingsService;
+use App\Services\StockService;
+use App\Support\Incoterms;
+use App\Support\PaymentTerms;
+use App\Support\Units;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Yajra\DataTables\Facades\DataTables;
 
 class PurchaseOrderController extends Controller
 {
-    public function __construct(protected PurchaseOrderService $service)
-    {
-    }
+    public function __construct(protected PurchaseOrderService $service) {}
 
     public function index()
     {
@@ -24,7 +36,7 @@ class PurchaseOrderController extends Controller
         $totalAmount = (float) PurchaseOrder::where('status', '!=', 'cancelled')->sum('total');
         $pending = (float) PurchaseOrder::whereIn('status', ['draft', 'confirmed'])->sum('total');
         $received = (float) PurchaseOrder::where('status', 'received')->sum('total');
-        $defaultCurrency = \App\Models\Currency::where('is_default', true)->first();
+        $defaultCurrency = Currency::where('is_default', true)->first();
 
         $poByCurrency = PurchaseOrder::where('status', '!=', 'cancelled')
             ->leftJoin('currencies', 'purchase_orders.currency_id', '=', 'currencies.id')
@@ -66,16 +78,16 @@ class PurchaseOrderController extends Controller
     {
         $this->authorize('create-purchase-orders');
 
-        $suppliers = \App\Models\Supplier::where('is_active', true)->get(['id', 'company_name', 'currency_id', 'default_payment_term']);
-        $currencies = \App\Models\Currency::pluck('code', 'id');
-        $products = \App\Models\Product::with('tax:id,rate')->where('is_active', true)->get(['id', 'name', 'buy_price', 'unit', 'tax_id']);
-        $taxes = \App\Models\Tax::where('is_active', true)->get();
-        $units = \App\Support\Units::all();
-$paymentTerms = \App\Support\PaymentTerms::all();
-        $incoterms = \App\Support\Incoterms::all();
-        $defaultTax = \App\Models\Tax::purchases()->where('is_default', true)->first();
-        $rates = \App\Models\Currency::where('is_active', true)->pluck('rate', 'id');
-        $defaultTerm = \App\Support\PaymentTerms::defaultFor('purchase_order');
+        $suppliers = Supplier::where('is_active', true)->get(['id', 'company_name', 'currency_id', 'default_payment_term']);
+        $currencies = Currency::pluck('code', 'id');
+        $products = Product::with('tax:id,rate')->where('is_active', true)->get(['id', 'name', 'buy_price', 'unit', 'tax_id']);
+        $taxes = Tax::where('is_active', true)->get();
+        $units = Units::all();
+        $paymentTerms = PaymentTerms::all();
+        $incoterms = Incoterms::all();
+        $defaultTax = Tax::purchases()->where('is_default', true)->first();
+        $rates = Currency::where('is_active', true)->pluck('rate', 'id');
+        $defaultTerm = PaymentTerms::defaultFor('purchase_order');
 
         return view('purchase_orders.create', compact('suppliers', 'currencies', 'products', 'taxes', 'units', 'paymentTerms', 'incoterms', 'defaultTax', 'rates', 'defaultTerm'));
     }
@@ -114,20 +126,20 @@ $paymentTerms = \App\Support\PaymentTerms::all();
         $this->authorize('update-purchase-orders');
         $purchaseOrder->load('items');
 
-        if (!in_array($purchaseOrder->status, ['draft'])) {
+        if (! in_array($purchaseOrder->status, ['draft'])) {
             return back()->with('error', 'Only draft purchase orders can be edited.');
         }
 
-        $suppliers = \App\Models\Supplier::where('is_active', true)->get(['id', 'company_name', 'currency_id', 'default_payment_term']);
-        $currencies = \App\Models\Currency::pluck('code', 'id');
-        $products = \App\Models\Product::with('tax:id,rate')->where('is_active', true)->get(['id', 'name', 'buy_price', 'unit', 'tax_id']);
-        $taxes = \App\Models\Tax::where('is_active', true)->get();
-        $units = \App\Support\Units::all();
-        $paymentTerms = \App\Support\PaymentTerms::all();
-        $incoterms = \App\Support\Incoterms::all();
-        $defaultTax = \App\Models\Tax::purchases()->where('is_default', true)->first();
-        $rates = \App\Models\Currency::where('is_active', true)->pluck('rate', 'id');
-        $defaultTerm = \App\Support\PaymentTerms::defaultFor('purchase_order');
+        $suppliers = Supplier::where('is_active', true)->get(['id', 'company_name', 'currency_id', 'default_payment_term']);
+        $currencies = Currency::pluck('code', 'id');
+        $products = Product::with('tax:id,rate')->where('is_active', true)->get(['id', 'name', 'buy_price', 'unit', 'tax_id']);
+        $taxes = Tax::where('is_active', true)->get();
+        $units = Units::all();
+        $paymentTerms = PaymentTerms::all();
+        $incoterms = Incoterms::all();
+        $defaultTax = Tax::purchases()->where('is_default', true)->first();
+        $rates = Currency::where('is_active', true)->pluck('rate', 'id');
+        $defaultTerm = PaymentTerms::defaultFor('purchase_order');
 
         return view('purchase_orders.edit', compact('purchaseOrder', 'suppliers', 'currencies', 'products', 'taxes', 'units', 'paymentTerms', 'incoterms', 'defaultTax', 'rates', 'defaultTerm'));
     }
@@ -136,7 +148,7 @@ $paymentTerms = \App\Support\PaymentTerms::all();
     {
         $this->authorize('update-purchase-orders');
 
-        if (!in_array($purchaseOrder->status, ['draft'])) {
+        if (! in_array($purchaseOrder->status, ['draft'])) {
             return back()->with('error', 'Only draft purchase orders can be edited.');
         }
 
@@ -172,11 +184,30 @@ $paymentTerms = \App\Support\PaymentTerms::all();
             'cancelled' => ['draft'],
         ];
 
-        if (!in_array($request->status, $allowed[$purchaseOrder->status] ?? [])) {
+        if (! in_array($request->status, $allowed[$purchaseOrder->status] ?? [])) {
             return back()->with('error', 'Cannot change status from "'.$purchaseOrder->status.'" to "'.$request->status.'". Billed state is set automatically when converting to a supplier bill.');
         }
 
-        $purchaseOrder->update(['status' => $request->status]);
+        try {
+            DB::transaction(function () use ($purchaseOrder, $request) {
+                // Marking received puts the goods into stock (one 'in' movement
+                // per product line, tagged with the PO number for traceability).
+                if ($request->status === 'received') {
+                    StockService::receiveFromPurchaseOrder($purchaseOrder);
+                }
+
+                // Cancelling a received order reverses its latest goods receipt.
+                if ($purchaseOrder->status === 'received' && $request->status === 'cancelled') {
+                    StockService::reverseLatestPurchaseOrderReceipt($purchaseOrder);
+                }
+
+                $purchaseOrder->update(['status' => $request->status]);
+            });
+        } catch (ValidationException $e) {
+            return back()->with('error', Arr::first(Arr::flatten($e->errors())) ?? $e->getMessage());
+        } catch (\InvalidArgumentException $e) {
+            return back()->with('error', $e->getMessage());
+        }
 
         return back()->with('success', 'Status updated to '.ucfirst($request->status).'.');
     }
@@ -186,13 +217,13 @@ $paymentTerms = \App\Support\PaymentTerms::all();
         $this->authorize('view-purchase-orders');
         $purchaseOrder->load(['supplier', 'currency', 'items.product']);
 
-        $svc = app(\App\Services\SettingsService::class);
+        $svc = app(SettingsService::class);
         $logoPath = $svc->get('company_logo');
         $logoBase64 = null;
-        if ($logoPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($logoPath)) {
-            $fullPath = \Illuminate\Support\Facades\Storage::disk('public')->path($logoPath);
+        if ($logoPath && Storage::disk('public')->exists($logoPath)) {
+            $fullPath = Storage::disk('public')->path($logoPath);
             $ext = strtolower(pathinfo($logoPath, PATHINFO_EXTENSION));
-            $mime = match($ext) {
+            $mime = match ($ext) {
                 'jpg', 'jpeg' => 'image/jpeg',
                 'png' => 'image/png',
                 'gif' => 'image/gif',
@@ -204,10 +235,10 @@ $paymentTerms = \App\Support\PaymentTerms::all();
 
         $sigPath = $svc->get('company_signature');
         $sigBase64 = null;
-        if ($sigPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($sigPath)) {
-            $fullPath = \Illuminate\Support\Facades\Storage::disk('public')->path($sigPath);
+        if ($sigPath && Storage::disk('public')->exists($sigPath)) {
+            $fullPath = Storage::disk('public')->path($sigPath);
             $ext = strtolower(pathinfo($sigPath, PATHINFO_EXTENSION));
-            $mime = match($ext) {
+            $mime = match ($ext) {
                 'jpg', 'jpeg' => 'image/jpeg',
                 'png' => 'image/png',
                 'gif' => 'image/gif',
@@ -218,29 +249,44 @@ $paymentTerms = \App\Support\PaymentTerms::all();
         }
 
         $company = [
-            'name'      => $svc->get('company_name'),
-            'address'   => $svc->get('company_address'),
-            'city'      => $svc->get('company_city'),
-            'country'   => $svc->get('company_country'),
-            'email'     => $svc->get('company_email'),
-            'phone'     => $svc->get('company_phone'),
-            'tax_id'    => $svc->get('company_tax_id'),
+            'name' => $svc->get('company_name'),
+            'address' => $svc->get('company_address'),
+            'city' => $svc->get('company_city'),
+            'country' => $svc->get('company_country'),
+            'email' => $svc->get('company_email'),
+            'phone' => $svc->get('company_phone'),
+            'tax_id' => $svc->get('company_tax_id'),
             'registration' => $svc->get('company_registration'),
-            'footer'    => $svc->get('company_footer_text'),
+            'footer' => $svc->get('company_footer_text'),
             'show_logo' => $svc->get('show_logo_on_docs'),
-            'logo_url'  => $logoBase64,
+            'logo_url' => $logoBase64,
             'signature_url' => $sigBase64,
             'trade_license' => $svc->get('company_trade_license'),
-            'trn'           => $svc->get('company_trn'),
-            'free_zone'     => $svc->get('company_free_zone'),
-            'entity_type'   => $svc->get('company_entity_type'),
-            'bank_name'    => $svc->get('company_bank_name'),
+            'trn' => $svc->get('company_trn'),
+            'free_zone' => $svc->get('company_free_zone'),
+            'entity_type' => $svc->get('company_entity_type'),
+            'bank_name' => $svc->get('company_bank_name'),
             'bank_account' => $svc->get('company_bank_account'),
-            'bank_number'  => '',
-            'bank_iban'    => $svc->get('company_bank_iban'),
-            'bank_swift'   => $svc->get('company_bank_swift'),
+            'bank_number' => '',
+            'bank_iban' => $svc->get('company_bank_iban'),
+            'bank_swift' => $svc->get('company_bank_swift'),
             'bank_address' => $svc->get('company_bank_address'),
         ];
+
+        // Prefer the company's default bank account record, settings as fallback.
+        $defaultBank = CompanyBankAccount::where('is_active', true)
+            ->where('is_default', true)
+            ->first()
+            ?: CompanyBankAccount::where('is_active', true)->first();
+
+        if ($defaultBank) {
+            $company['bank_name'] = $defaultBank->bank_name;
+            $company['bank_account'] = $defaultBank->account_name;
+            $company['bank_number'] = $defaultBank->account_number;
+            $company['bank_iban'] = $defaultBank->iban;
+            $company['bank_swift'] = $defaultBank->swift_code;
+            $company['bank_address'] = $defaultBank->bank_address;
+        }
 
         $html = view('purchase_orders.pdf', ['po' => $purchaseOrder, 'company' => $company])->render();
 
@@ -256,7 +302,7 @@ $paymentTerms = \App\Support\PaymentTerms::all();
     {
         $this->authorize('delete-purchase-orders');
 
-        if (!in_array($purchaseOrder->status, ['draft', 'cancelled'])) {
+        if (! in_array($purchaseOrder->status, ['draft', 'cancelled'])) {
             return back()->with('error', 'Only draft or cancelled purchase orders can be deleted.');
         }
 

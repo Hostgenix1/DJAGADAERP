@@ -18,6 +18,7 @@ class SupplierBillService
             $bill = SupplierBill::create($data);
             $this->syncItems($bill, $items);
             $bill->recalculate();
+
             return $bill;
         });
     }
@@ -29,6 +30,7 @@ class SupplierBillService
             $bill->items()->delete();
             $this->syncItems($bill, $items);
             $bill->recalculate();
+
             return $bill;
         });
     }
@@ -37,6 +39,9 @@ class SupplierBillService
     {
         return DB::transaction(function () use ($po) {
             $po->refresh();
+            if (in_array($po->status, ['draft', 'cancelled'], true)) {
+                throw new \Exception('Only confirmed or received purchase orders can be billed.');
+            }
             if ($po->status === 'billed') {
                 throw new \Exception('This purchase order has already been billed.');
             }
@@ -88,7 +93,7 @@ class SupplierBillService
     {
         foreach ($items as $item) {
             $item['sub_description'] = $item['sub_description'] ?? null;
-            if (!isset($item['tax_rate']) || $item['tax_rate'] === '') {
+            if (! isset($item['tax_rate']) || $item['tax_rate'] === '') {
                 $item['tax_rate'] = null;
             }
             $bill->items()->create($item);

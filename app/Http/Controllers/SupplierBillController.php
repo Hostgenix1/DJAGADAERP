@@ -4,24 +4,31 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreSupplierBillRequest;
 use App\Http\Requests\UpdateSupplierBillRequest;
+use App\Models\CompanyBankAccount;
+use App\Models\Currency;
+use App\Models\Product;
 use App\Models\PurchaseOrder;
+use App\Models\Supplier;
 use App\Models\SupplierBill;
+use App\Models\Tax;
+use App\Services\SettingsService;
 use App\Services\SupplierBillService;
+use App\Support\PaymentTerms;
+use App\Support\Units;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\Facades\DataTables;
 
 class SupplierBillController extends Controller
 {
-    public function __construct(protected SupplierBillService $service)
-    {
-    }
+    public function __construct(protected SupplierBillService $service) {}
 
     public function index(Request $request)
     {
         $this->authorize('view-supplier-bills');
 
-        $supplier = $request->filled('supplier_id') ? \App\Models\Supplier::find($request->supplier_id) : null;
+        $supplier = $request->filled('supplier_id') ? Supplier::find($request->supplier_id) : null;
 
         $billQuery = SupplierBill::query();
         if ($supplier) {
@@ -32,7 +39,7 @@ class SupplierBillController extends Controller
         $totalAmount = (float) (clone $billQuery)->where('status', '!=', 'cancelled')->sum('total');
         $totalPaid = (float) (clone $billQuery)->where('status', '!=', 'cancelled')->sum('paid_amount');
         $totalOutstanding = $totalAmount - $totalPaid;
-        $defaultCurrency = \App\Models\Currency::where('is_default', true)->first();
+        $defaultCurrency = Currency::where('is_default', true)->first();
 
         $billByCurrency = (clone $billQuery)
             ->where('status', '!=', 'cancelled')
@@ -80,15 +87,15 @@ class SupplierBillController extends Controller
     {
         $this->authorize('create-supplier-bills');
 
-        $suppliers = \App\Models\Supplier::where('is_active', true)->get(['id', 'company_name', 'currency_id', 'default_payment_term']);
-        $currencies = \App\Models\Currency::pluck('code', 'id');
-        $products = \App\Models\Product::with('tax:id,rate')->where('is_active', true)->get(['id', 'name', 'buy_price', 'unit', 'tax_id']);
-        $taxes = \App\Models\Tax::where('is_active', true)->get();
-        $units = \App\Support\Units::all();
-        $paymentTerms = \App\Support\PaymentTerms::all();
-        $defaultTax = \App\Models\Tax::sales()->where('is_default', true)->first();
-        $rates = \App\Models\Currency::where('is_active', true)->pluck('rate', 'id');
-        $defaultTerm = \App\Support\PaymentTerms::defaultFor('supplier_bill');
+        $suppliers = Supplier::where('is_active', true)->get(['id', 'company_name', 'currency_id', 'default_payment_term']);
+        $currencies = Currency::pluck('code', 'id');
+        $products = Product::with('tax:id,rate')->where('is_active', true)->get(['id', 'name', 'buy_price', 'unit', 'tax_id']);
+        $taxes = Tax::where('is_active', true)->get();
+        $units = Units::all();
+        $paymentTerms = PaymentTerms::all();
+        $defaultTax = Tax::sales()->where('is_default', true)->first();
+        $rates = Currency::where('is_active', true)->pluck('rate', 'id');
+        $defaultTerm = PaymentTerms::defaultFor('supplier_bill');
 
         return view('supplier_bills.create', compact('suppliers', 'currencies', 'products', 'taxes', 'units', 'paymentTerms', 'defaultTax', 'rates', 'defaultTerm'));
     }
@@ -124,19 +131,19 @@ class SupplierBillController extends Controller
         $this->authorize('update-supplier-bills');
         $supplierBill->load('items');
 
-        if (!in_array($supplierBill->status, ['draft'])) {
+        if (! in_array($supplierBill->status, ['draft'])) {
             return back()->with('error', 'Only draft supplier bills can be edited.');
         }
 
-        $suppliers = \App\Models\Supplier::where('is_active', true)->get(['id', 'company_name', 'currency_id', 'default_payment_term']);
-        $currencies = \App\Models\Currency::pluck('code', 'id');
-        $products = \App\Models\Product::with('tax:id,rate')->where('is_active', true)->get(['id', 'name', 'buy_price', 'unit', 'tax_id']);
-        $taxes = \App\Models\Tax::where('is_active', true)->get();
-        $units = \App\Support\Units::all();
-        $paymentTerms = \App\Support\PaymentTerms::all();
-        $defaultTax = \App\Models\Tax::sales()->where('is_default', true)->first();
-        $rates = \App\Models\Currency::where('is_active', true)->pluck('rate', 'id');
-        $defaultTerm = \App\Support\PaymentTerms::defaultFor('supplier_bill');
+        $suppliers = Supplier::where('is_active', true)->get(['id', 'company_name', 'currency_id', 'default_payment_term']);
+        $currencies = Currency::pluck('code', 'id');
+        $products = Product::with('tax:id,rate')->where('is_active', true)->get(['id', 'name', 'buy_price', 'unit', 'tax_id']);
+        $taxes = Tax::where('is_active', true)->get();
+        $units = Units::all();
+        $paymentTerms = PaymentTerms::all();
+        $defaultTax = Tax::sales()->where('is_default', true)->first();
+        $rates = Currency::where('is_active', true)->pluck('rate', 'id');
+        $defaultTerm = PaymentTerms::defaultFor('supplier_bill');
 
         return view('supplier_bills.edit', compact('supplierBill', 'suppliers', 'currencies', 'products', 'taxes', 'units', 'paymentTerms', 'defaultTax', 'rates', 'defaultTerm'));
     }
@@ -145,7 +152,7 @@ class SupplierBillController extends Controller
     {
         $this->authorize('update-supplier-bills');
 
-        if (!in_array($supplierBill->status, ['draft'])) {
+        if (! in_array($supplierBill->status, ['draft'])) {
             return back()->with('error', 'Only draft supplier bills can be edited.');
         }
 
@@ -178,7 +185,7 @@ class SupplierBillController extends Controller
             'cancelled' => ['draft'],
         ];
 
-        if (!in_array($request->status, $allowed[$supplierBill->status] ?? [])) {
+        if (! in_array($request->status, $allowed[$supplierBill->status] ?? [])) {
             return back()->with('error', 'Cannot change status from "'.$supplierBill->status.'" to "'.$request->status.'". Paid/partial states are set automatically by payments.');
         }
 
@@ -193,6 +200,7 @@ class SupplierBillController extends Controller
 
         try {
             $bill = $this->service->convertFromPo($purchaseOrder);
+
             return redirect()->route('supplier_bills.show', $bill)
                 ->with('success', 'Supplier bill created from purchase order.');
         } catch (\Exception $e) {
@@ -205,13 +213,13 @@ class SupplierBillController extends Controller
         $this->authorize('view-supplier-bills');
         $supplierBill->load(['supplier', 'currency', 'items.product', 'purchaseOrder']);
 
-        $svc = app(\App\Services\SettingsService::class);
+        $svc = app(SettingsService::class);
         $logoPath = $svc->get('company_logo');
         $logoBase64 = null;
-        if ($logoPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($logoPath)) {
-            $fullPath = \Illuminate\Support\Facades\Storage::disk('public')->path($logoPath);
+        if ($logoPath && Storage::disk('public')->exists($logoPath)) {
+            $fullPath = Storage::disk('public')->path($logoPath);
             $ext = strtolower(pathinfo($logoPath, PATHINFO_EXTENSION));
-            $mime = match($ext) {
+            $mime = match ($ext) {
                 'jpg', 'jpeg' => 'image/jpeg',
                 'png' => 'image/png',
                 'gif' => 'image/gif',
@@ -223,10 +231,10 @@ class SupplierBillController extends Controller
 
         $sigPath = $svc->get('company_signature');
         $sigBase64 = null;
-        if ($sigPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($sigPath)) {
-            $fullPath = \Illuminate\Support\Facades\Storage::disk('public')->path($sigPath);
+        if ($sigPath && Storage::disk('public')->exists($sigPath)) {
+            $fullPath = Storage::disk('public')->path($sigPath);
             $ext = strtolower(pathinfo($sigPath, PATHINFO_EXTENSION));
-            $mime = match($ext) {
+            $mime = match ($ext) {
                 'jpg', 'jpeg' => 'image/jpeg',
                 'png' => 'image/png',
                 'gif' => 'image/gif',
@@ -237,29 +245,44 @@ class SupplierBillController extends Controller
         }
 
         $company = [
-            'name'      => $svc->get('company_name'),
-            'address'   => $svc->get('company_address'),
-            'city'      => $svc->get('company_city'),
-            'country'   => $svc->get('company_country'),
-            'email'     => $svc->get('company_email'),
-            'phone'     => $svc->get('company_phone'),
-            'tax_id'    => $svc->get('company_tax_id'),
+            'name' => $svc->get('company_name'),
+            'address' => $svc->get('company_address'),
+            'city' => $svc->get('company_city'),
+            'country' => $svc->get('company_country'),
+            'email' => $svc->get('company_email'),
+            'phone' => $svc->get('company_phone'),
+            'tax_id' => $svc->get('company_tax_id'),
             'registration' => $svc->get('company_registration'),
-            'footer'    => $svc->get('company_footer_text'),
+            'footer' => $svc->get('company_footer_text'),
             'show_logo' => $svc->get('show_logo_on_docs'),
-            'logo_url'  => $logoBase64,
+            'logo_url' => $logoBase64,
             'signature_url' => $sigBase64,
             'trade_license' => $svc->get('company_trade_license'),
-            'trn'           => $svc->get('company_trn'),
-            'free_zone'     => $svc->get('company_free_zone'),
-            'entity_type'   => $svc->get('company_entity_type'),
-            'bank_name'    => $svc->get('company_bank_name'),
+            'trn' => $svc->get('company_trn'),
+            'free_zone' => $svc->get('company_free_zone'),
+            'entity_type' => $svc->get('company_entity_type'),
+            'bank_name' => $svc->get('company_bank_name'),
             'bank_account' => $svc->get('company_bank_account'),
-            'bank_number'  => '',
-            'bank_iban'    => $svc->get('company_bank_iban'),
-            'bank_swift'   => $svc->get('company_bank_swift'),
+            'bank_number' => '',
+            'bank_iban' => $svc->get('company_bank_iban'),
+            'bank_swift' => $svc->get('company_bank_swift'),
             'bank_address' => $svc->get('company_bank_address'),
         ];
+
+        // Prefer the company's default bank account record, settings as fallback.
+        $defaultBank = CompanyBankAccount::where('is_active', true)
+            ->where('is_default', true)
+            ->first()
+            ?: CompanyBankAccount::where('is_active', true)->first();
+
+        if ($defaultBank) {
+            $company['bank_name'] = $defaultBank->bank_name;
+            $company['bank_account'] = $defaultBank->account_name;
+            $company['bank_number'] = $defaultBank->account_number;
+            $company['bank_iban'] = $defaultBank->iban;
+            $company['bank_swift'] = $defaultBank->swift_code;
+            $company['bank_address'] = $defaultBank->bank_address;
+        }
 
         $html = view('supplier_bills.pdf', ['bill' => $supplierBill, 'company' => $company])->render();
 
@@ -275,7 +298,7 @@ class SupplierBillController extends Controller
     {
         $this->authorize('delete-supplier-bills');
 
-        if (!in_array($supplierBill->status, ['draft', 'cancelled'])) {
+        if (! in_array($supplierBill->status, ['draft', 'cancelled'])) {
             return back()->with('error', 'Only draft or cancelled bills can be deleted.');
         }
 

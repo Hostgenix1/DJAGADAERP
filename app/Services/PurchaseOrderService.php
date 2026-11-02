@@ -15,6 +15,7 @@ class PurchaseOrderService
             $po = PurchaseOrder::create($data);
             $this->syncItems($po, $items);
             $po->recalculate();
+
             return $po;
         });
     }
@@ -24,8 +25,10 @@ class PurchaseOrderService
         return DB::transaction(function () use ($po, $data, $items) {
             $po->update($data);
             $po->items()->delete();
+            $po->unsetRelation('items');
             $this->syncItems($po, $items);
             $po->recalculate();
+
             return $po;
         });
     }
@@ -34,7 +37,7 @@ class PurchaseOrderService
     {
         foreach ($items as $item) {
             $item['sub_description'] = $item['sub_description'] ?? null;
-            if (!isset($item['tax_rate']) || $item['tax_rate'] === '') {
+            if (! isset($item['tax_rate']) || $item['tax_rate'] === '') {
                 $item['tax_rate'] = null;
             }
             $po->items()->create($item);
