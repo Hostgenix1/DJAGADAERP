@@ -1,5 +1,17 @@
 # Changelog
 
+## v2.5.8 — 2026-11-02
+
+### Added
+- **List filters for sales documents** (all server-side, instant apply/reset):
+  - **Invoices**: customer, status and invoice-date range — the existing type tabs (commercial/proforma/etc.) keep working together with the new filters.
+  - **Orders**: customer and order-date range — status pills still work.
+  - **Shipments**: customer and ETD (shipped-at) date range.
+  - **Quotations**: customer and quote-date range — status pills still work.
+
+### Tests
+- 87 automated tests / 293 assertions (new: invoice customer/type/status/date, order customer/status/date, shipment customer/status/ETD, quotation customer/status/date filters).
+
 ## v2.5.7 — 2026-11-02
 
 ### Added
