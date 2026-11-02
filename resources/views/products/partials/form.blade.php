@@ -175,12 +175,6 @@
                 <span class="text-danger small">{{ $message }}</span>
             @enderror
         </div>
-<div class="form-group col-md-6">
-            <div class="form-check"><input type="hidden" name="is_active" value="0"><input type="checkbox" name="is_active" id="is_active" value="1" class="form-check-input @error('is_active') is-invalid @enderror" {{ old('is_active', $form->is_active ?? false) ? 'checked' : '' }}><label class="form-check-label" for="is_active">Active</label><div class="invalid-feedback">@error('is_active') {{ $message }} @enderror</div></div>
-            @error('is_active')
-                <span class="text-danger small">{{ $message }}</span>
-            @enderror
-        </div>
 </div>
 
 @push('scripts')

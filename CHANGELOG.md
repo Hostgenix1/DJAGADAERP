@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.5.5 — 2026-11-02
+
+### Changed
+- Product create/edit form no longer shows the **Active** checkbox — new products start active automatically. Activation is now managed from the product list: every row's Actions column has an Enable/Disable toggle button (green/switch icon) that flips the status instantly without opening the form.
+
+### Tests
+- 66 automated tests / 214 assertions (new: form-created product defaults to active; list toggle flips enable ⇄ disable).
+
 ## v2.5.4 — 2026-11-02
 
 ### Added

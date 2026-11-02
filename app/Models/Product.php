@@ -27,6 +27,13 @@ class Product extends Model
         'is_active' => 'boolean',
     ];
 
+    /**
+     * Mirror the database column default: a new product is active unless set.
+     */
+    protected $attributes = [
+        'is_active' => true,
+    ];
+
     public function brand()
     {
         return $this->belongsTo(Brand::class, 'brand_id', 'id');

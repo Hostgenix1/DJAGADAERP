@@ -154,6 +154,17 @@ class ProductController extends Controller
         return redirect()->route('products.index')->with('success', 'Updated successfully.');
     }
 
+    public function toggleActive(Product $product)
+    {
+        $this->authorize('update-products');
+
+        $product->update(['is_active' => ! $product->is_active]);
+
+        $state = $product->is_active ? 'Enabled' : 'Disabled';
+
+        return back()->with('success', "Product {$state}.");
+    }
+
     public function destroy(Product $product)
     {
         $this->authorize('delete-products');
