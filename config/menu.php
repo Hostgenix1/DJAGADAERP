@@ -138,6 +138,7 @@ return [
             ['label' => 'Taxes', 'route' => 'admin.settings.taxes', 'icon' => 'fa-percent', 'permission' => 'view-settings'],
             ['label' => 'Payment Terms', 'route' => 'admin.settings.payment_terms', 'icon' => 'fa-calendar-alt', 'permission' => 'view-settings'],
             ['label' => 'Units', 'route' => 'admin.settings.units', 'icon' => 'fa-ruler-combined', 'permission' => 'view-settings'],
+            ['label' => 'Pack Types', 'route' => 'admin.settings.pack_types', 'icon' => 'fa-cubes', 'permission' => 'view-settings'],
             ['label' => 'Audit Log', 'route' => 'admin.settings.audit', 'icon' => 'fa-history', 'permission' => 'view-settings'],
         ],
     ],

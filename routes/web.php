@@ -10,6 +10,7 @@ Route::get('/', function () {
     if (auth()->check()) {
         return redirect()->route('dashboard');
     }
+
     return redirect()->route('login');
 });
 
@@ -46,6 +47,11 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::post('/settings/units', [SettingsController::class, 'unitStore'])->name('settings.units.store');
     Route::put('/settings/units/{unit}', [SettingsController::class, 'unitUpdate'])->name('settings.units.update');
     Route::delete('/settings/units/{unit}', [SettingsController::class, 'unitDestroy'])->name('settings.units.destroy');
+    Route::get('/settings/pack-types', [SettingsController::class, 'packTypes'])->name('settings.pack_types');
+    Route::get('/settings/pack-types/data', [SettingsController::class, 'packTypesDatatable'])->name('settings.pack_types.data');
+    Route::post('/settings/pack-types', [SettingsController::class, 'packTypeStore'])->name('settings.pack_types.store');
+    Route::put('/settings/pack-types/{packType}', [SettingsController::class, 'packTypeUpdate'])->name('settings.pack_types.update');
+    Route::delete('/settings/pack-types/{packType}', [SettingsController::class, 'packTypeDestroy'])->name('settings.pack_types.destroy');
     Route::get('/settings/audit', [SettingsController::class, 'audit'])->name('settings.audit');
     Route::get('/settings/audit/data', [SettingsController::class, 'auditDatatable'])->name('settings.audit.data');
 });

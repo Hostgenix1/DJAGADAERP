@@ -13,6 +13,7 @@ use App\Models\Supplier;
 use App\Models\Tax;
 use App\Services\ProductService;
 use App\Support\CurrencyHelper;
+use App\Support\PackTypes;
 use App\Support\Units;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -116,6 +117,7 @@ class ProductController extends Controller
         $relations['currency_id'] = Currency::pluck('code', 'id');
         $relations['tax_id'] = Tax::pluck('name', 'id');
         $relations['units'] = Units::all();
+        $relations['pack_types'] = PackTypes::all();
 
         return view('products.create', ['relations' => $relations]);
     }
@@ -138,6 +140,7 @@ class ProductController extends Controller
         $relations['currency_id'] = Currency::pluck('code', 'id');
         $relations['tax_id'] = Tax::pluck('name', 'id');
         $relations['units'] = Units::all();
+        $relations['pack_types'] = PackTypes::all();
 
         return view('products.edit', ['product' => $product, 'relations' => $relations]);
     }

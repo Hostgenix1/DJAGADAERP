@@ -30,13 +30,22 @@ class ProductService
                 $product->save();
             }
 
+            $this->syncDimensions($product);
+
             return $product;
         });
     }
 
     public function update(int $id, array $attributes): Product
     {
-        return $this->repository->update($id, $attributes);
+        $product = $this->repository->update($id, $attributes);
+
+        if (array_intersect_key(array_flip(['length_cm', 'width_cm', 'height_cm']), $attributes)) {
+            $product->refresh();
+            $this->syncDimensions($product);
+        }
+
+        return $product;
     }
 
     public function delete(int $id): bool
@@ -58,5 +67,36 @@ class ProductService
         }
 
         return $candidate;
+    }
+
+    /**
+     * Fill the printable `dimensions` summary from the structured
+     * length / width / height values, e.g. "30 x 40 x 50 cm".
+     * When none of the parts is set, the free-text value is left untouched.
+     */
+    protected function syncDimensions(Product $product): void
+    {
+        $parts = [];
+
+        foreach (['length_cm', 'width_cm', 'height_cm'] as $field) {
+            if ($product->$field !== null) {
+                $parts[] = self::trimNumber((float) $product->$field);
+            }
+        }
+
+        if ($parts === []) {
+            return;
+        }
+
+        $product->dimensions = implode(' x ', $parts).' cm';
+        $product->save();
+    }
+
+    /**
+     * Format 30.00 as "30" and 30.50 as "30.5".
+     */
+    protected static function trimNumber(float $value): string
+    {
+        return rtrim(rtrim(number_format($value, 2, '.', ''), '0'), '.');
     }
 }

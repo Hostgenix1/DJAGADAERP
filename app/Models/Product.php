@@ -4,11 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\Brand;
-use App\Models\ProductCategory;
-use App\Models\Supplier;
-use App\Models\Currency;
-use App\Models\Tax;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
@@ -18,7 +13,7 @@ class Product extends Model
     protected $table = 'products';
 
     protected $fillable = [
-        'sku', 'name', 'description', 'brand_id', 'category_id', 'supplier_id', 'buy_price', 'sell_price', 'reorder_level', 'currency_id', 'tax_id', 'unit', 'pack_qty', 'pack_type', 'weight_kg', 'dimensions', 'hs_code', 'country_of_origin', 'specifications', 'certificates', 'is_active'
+        'sku', 'name', 'description', 'brand_id', 'category_id', 'supplier_id', 'buy_price', 'sell_price', 'reorder_level', 'currency_id', 'tax_id', 'unit', 'pack_qty', 'pack_type', 'weight_kg', 'dimensions', 'length_cm', 'width_cm', 'height_cm', 'hs_code', 'country_of_origin', 'specifications', 'certificates', 'is_active',
     ];
 
     protected $casts = [
@@ -26,6 +21,9 @@ class Product extends Model
         'sell_price' => 'decimal:2',
         'reorder_level' => 'decimal:2',
         'weight_kg' => 'decimal:3',
+        'length_cm' => 'decimal:2',
+        'width_cm' => 'decimal:2',
+        'height_cm' => 'decimal:2',
         'is_active' => 'boolean',
     ];
 
@@ -66,11 +64,11 @@ class Product extends Model
 
     public function documents()
     {
-        return $this->morphMany(\App\Models\Document::class, 'documentable');
+        return $this->morphMany(Document::class, 'documentable');
     }
 
     public function stockMovements(): HasMany
     {
-        return $this->hasMany(\App\Models\StockMovement::class);
+        return $this->hasMany(StockMovement::class);
     }
 }

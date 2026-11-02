@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Currency;
+use App\Models\PackType;
 use App\Models\PaymentTerm;
 use App\Models\Tax;
 use App\Models\Unit;
@@ -406,6 +407,79 @@ class SettingsController extends Controller
         activity()->causedBy(auth()->user())->event('deleted')->log('deleted unit');
 
         return back()->with('success', 'Unit deleted.');
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* pack types */
+    /* ------------------------------------------------------------------ */
+
+    public function packTypes()
+    {
+        $this->authorize('view-settings');
+
+        return view('admin.settings.pack-types');
+    }
+
+    public function packTypesDatatable()
+    {
+        $this->authorize('view-settings');
+
+        return DataTables::eloquent(PackType::query())
+            ->addIndexColumn()
+            ->addColumn('is_active', fn (PackType $t) => $t->is_active ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-secondary">Inactive</span>')
+            ->addColumn('actions', fn (PackType $t) => view('admin.settings.partials.pack-type-actions', ['row' => $t])->render())
+            ->rawColumns(['is_active', 'actions'])
+            ->editColumn('created_at', fn ($m) => $m->created_at?->format('d M Y H:i'))
+            ->editColumn('updated_at', fn ($m) => $m->updated_at?->format('d M Y H:i'))
+            ->make(true);
+    }
+
+    public function packTypeStore(Request $request)
+    {
+        $this->authorize('update-settings');
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:50', 'unique:pack_types,name'],
+            'sort_order' => ['nullable', 'integer', 'min:0'],
+        ]);
+
+        $packType = PackType::create([
+            'name' => $data['name'],
+            'sort_order' => $data['sort_order'] ?? 0,
+            'is_active' => true,
+        ]);
+
+        activity()->causedBy(auth()->user())->performedOn($packType)->event('created')->log('created');
+
+        return back()->with('success', 'Pack type added.');
+    }
+
+    public function packTypeUpdate(Request $request, PackType $packType)
+    {
+        $this->authorize('update-settings');
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:50', 'unique:pack_types,name,'.$packType->id],
+            'sort_order' => ['nullable', 'integer', 'min:0'],
+            'is_active' => ['boolean'],
+        ]);
+
+        $packType->update($data);
+
+        activity()->causedBy(auth()->user())->performedOn($packType)->event('updated')->log('updated');
+
+        return back()->with('success', 'Pack type updated.');
+    }
+
+    public function packTypeDestroy(PackType $packType)
+    {
+        $this->authorize('update-settings');
+
+        $packType->delete();
+
+        activity()->causedBy(auth()->user())->event('deleted')->log('deleted pack type');
+
+        return back()->with('success', 'Pack type deleted.');
     }
 
     /* ------------------------------------------------------------------ */

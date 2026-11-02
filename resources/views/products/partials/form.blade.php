@@ -121,7 +121,12 @@
         </div>
 <div class="form-group col-md-6">
             <label for="pack_type" class="form-label">Pack Type</label>
-            <select name="pack_type" id="pack_type" class="form-control @error('pack_type') is-invalid @enderror"><option value="">-- Select --</option><option value="carton" {{ old('pack_type', $form->pack_type ?? '') == 'carton' ? 'selected' : '' }}>carton</option><option value="box" {{ old('pack_type', $form->pack_type ?? '') == 'box' ? 'selected' : '' }}>box</option><option value="unit" {{ old('pack_type', $form->pack_type ?? '') == 'unit' ? 'selected' : '' }}>unit</option><option value="pallet" {{ old('pack_type', $form->pack_type ?? '') == 'pallet' ? 'selected' : '' }}>pallet</option></select>
+            <select name="pack_type" id="pack_type" class="form-control @error('pack_type') is-invalid @enderror">
+                <option value="">-- Select --</option>
+                @foreach(($relations['pack_types'] ?? []) as $pt)
+                    <option value="{{ $pt }}" {{ old('pack_type', $form->pack_type ?? '') == $pt ? 'selected' : '' }}>{{ $pt }}</option>
+                @endforeach
+            </select>
             @error('pack_type')
                 <span class="text-danger small">{{ $message }}</span>
             @enderror
@@ -134,11 +139,27 @@
             @enderror
         </div>
 <div class="form-group col-md-6">
-            <label for="dimensions" class="form-label">Dimensions</label>
-            <input type="text" name="dimensions" id="dimensions" class="form-control" value="{{ old('dimensions', $form->dimensions ?? '') }}">
-            @error('dimensions')
-                <span class="text-danger small">{{ $message }}</span>
-            @enderror
+            <label class="form-label">Dimensions (L &times; W &times; H, cm)</label>
+            <div class="row">
+                <div class="col-4">
+                    <input type="number" step="0.01" name="length_cm" id="length_cm" class="form-control" placeholder="Length" value="{{ old('length_cm', $form->length_cm ?? '') }}">
+                    @error('length_cm')
+                        <span class="text-danger small">{{ $message }}</span>
+                    @enderror
+                </div>
+                <div class="col-4">
+                    <input type="number" step="0.01" name="width_cm" id="width_cm" class="form-control" placeholder="Width" value="{{ old('width_cm', $form->width_cm ?? '') }}">
+                    @error('width_cm')
+                        <span class="text-danger small">{{ $message }}</span>
+                    @enderror
+                </div>
+                <div class="col-4">
+                    <input type="number" step="0.01" name="height_cm" id="height_cm" class="form-control" placeholder="Height" value="{{ old('height_cm', $form->height_cm ?? '') }}">
+                    @error('height_cm')
+                        <span class="text-danger small">{{ $message }}</span>
+                    @enderror
+                </div>
+            </div>
         </div>
 <div class="form-group col-md-6">
             <label for="specifications" class="form-label">Specifications</label>

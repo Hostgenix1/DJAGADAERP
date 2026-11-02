@@ -1,5 +1,24 @@
 # Changelog
 
+## v2.5.4 — 2026-11-02
+
+### Added
+- **Pack Types managed from Settings**: new Settings → Pack Types page (like Units) to add/edit/deactivate pack types — Carton, Box, Unit and Pallet come seeded. The Product form's Pack Type dropdown now reads this list, and custom values (e.g. Drum, Bundle) save without errors because `products.pack_type` was relaxed from a fixed enum to a string.
+- **Dimensions as form parts**: the product form now has separate Length / Width / Height (cm) inputs instead of one free-text box; the printable Dimensions summary is generated automatically, e.g. `30 x 40 x 50 cm` (partial values supported: `120.5 cm`). Existing free-text dimension values are preserved.
+- **SKU auto-generate + manual edit**: leave SKU blank and a sequential SKU (`SKU-00001`) is generated automatically on save. A "Generate" button next to the field suggests the next SKU and the field stays fully editable on both create and edit forms.
+- New `GET products/sku/next` endpoint to fetch the next SKU suggestion.
+
+### Fixed
+- Creating a product without a Brand or Category no longer fails with a server error — `brand_id` and `category_id` are now optional in the database, matching the product form (SKU column was also relaxed to support auto-generation).
+- The SKU input box now matches the height/size of the other fields (Name, Brand, Category…) while keeping the Generate button inside the box.
+- Lead "Source" shows human-readable labels (Website, Referral, Cold Call, Marketing, Trade Show, Social Media, Other) in the form dropdown and in the leads list instead of raw values like `trade_show`.
+
+### Changed
+- Product form fields are back to the two-column grid (`col-md-6`) while the card still spans the full content width.
+
+### Tests
+- 64 automated tests / 207 assertions (new: SKU auto-generate/manual/duplicate/edit/suggestion, pack types settings + defaults + custom pack type on product, dimension summary generation, partial summary, update recompute, legacy dimensions untouched).
+
 ## v2.5.3 — 2026-11-02
 
 ### Added
