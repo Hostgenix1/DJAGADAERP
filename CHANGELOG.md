@@ -1,5 +1,21 @@
 # Changelog
 
+## v2.5.2 — 2026-11-02
+
+### Added
+- **Purchase-order goods receipt**: marking a PO "Received" now puts the goods into stock automatically (one `in` movement per product line in the first active warehouse), and cancelling a received PO reverses its latest receipt. Every receipt cycle is traceable in the stock ledger (`PO:<number>:R<n>` / `C<n>` references).
+- Cancel and "Reopen as Draft" buttons on the purchase-order page for the allowed status transitions.
+
+### Fixed
+- Purchase Order and Supplier Bill PDFs now use the company's default bank account (Bank Account module) with settings as fallback — bank details were empty unless the old hidden settings existed.
+- "Create Supplier Bill" was possible for draft/cancelled purchase orders; now only confirmed or received POs can be billed.
+- Order create/update is transactional and safely recalculates totals.
+- "Mark Received" button no longer shows on an already-received purchase order.
+- Purchase-order update recalculates from fresh items (stale eager-loaded items guard).
+
+### Tests
+- 52 automated tests / 180 assertions, incl. PO receive → stock-in → cancel reversal → re-receive cycle and bill-creation gates.
+
 ## v2.5.1 — 2026-11-02
 
 ### Changed
