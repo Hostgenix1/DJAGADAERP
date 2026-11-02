@@ -14,7 +14,7 @@ class StoreProductRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'sku' => 'required|max:50|unique:products,sku',
+            'sku' => 'nullable|max:50|unique:products,sku',
             'name' => 'required|max:255',
             'brand_id' => 'nullable',
             'category_id' => 'nullable',

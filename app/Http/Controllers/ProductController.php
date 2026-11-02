@@ -92,6 +92,21 @@ class ProductController extends Controller
         return view('products.show', compact('product'));
     }
 
+    public function nextSku()
+    {
+        $this->authorize('create-products');
+
+        $seed = (int) (Product::query()->max('id') ?? 0) + 1;
+
+        do {
+            $candidate = 'SKU-'.str_pad((string) $seed, 5, '0', STR_PAD_LEFT);
+            $exists = Product::query()->where('sku', $candidate)->exists();
+            $seed++;
+        } while ($exists);
+
+        return response()->json(['sku' => $candidate]);
+    }
+
     public function create()
     {
         $this->authorize('create-products');
