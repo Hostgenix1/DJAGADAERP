@@ -1,5 +1,14 @@
 # Changelog
 
+## v2.5.3 — 2026-11-02
+
+### Added
+- Database indexes for CRM and documents (products: supplier/category/tax/part/brand, customers, contacts, leads, communications, follow-ups) — faster list screens and searches on the CRM and product catalogue.
+
+### Changed
+- Product create/edit forms are now truly full-width: fields are stacked top-to-bottom in standard `form-group` style and the card spans the entire content area (no leftover grid gutter on the right).
+- Shipment screens and PDF use the label "ETD" for the `shipped_at` field (Estimated Time of Departure), aligned with shipping terminology.
+
 ## v2.5.2 — 2026-11-02
 
 ### Added

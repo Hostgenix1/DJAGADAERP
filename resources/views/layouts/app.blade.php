@@ -63,7 +63,7 @@
     </div>
 
     <footer class="main-footer">
-        <div class="float-right d-none d-sm-inline">{{ config('app.version', 'v2.5.2') }}</div>
+        <div class="float-right d-none d-sm-inline">{{ config('app.version', 'v2.5.3') }}</div>
         <strong>Copyright &copy; {{ date('Y') }} {{ config('app.name') }}.</strong> All rights reserved.
     </footer>
 </div>
