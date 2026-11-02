@@ -44,6 +44,40 @@
                     @endcan
                 </div>
             </div>
+            <div class="card-body border-bottom py-2">
+                <div class="form-row align-items-end">
+                    <div class="col-md-3 mb-1 mb-md-0">
+                        <label class="mb-0 small text-muted">Employee</label>
+                        <select id="filter-employee" class="form-control form-control-sm">
+                            <option value="">All employees</option>
+                            @foreach($employees as $id => $name)
+                                <option value="{{ $id }}">{{ $name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-2 mb-1 mb-md-0">
+                        <label class="mb-0 small text-muted">Status</label>
+                        <select id="filter-status" class="form-control form-control-sm">
+                            <option value="">All statuses</option>
+                            @foreach(['present' => 'Present', 'absent' => 'Absent', 'leave' => 'Leave', 'half_day' => 'Half day'] as $value => $label)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-2 mb-1 mb-md-0">
+                        <label class="mb-0 small text-muted">From</label>
+                        <input type="date" id="filter-from" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-md-2 mb-1 mb-md-0">
+                        <label class="mb-0 small text-muted">To</label>
+                        <input type="date" id="filter-to" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-md-3 mb-1 mb-md-0">
+                        <button type="button" id="filter-apply" class="btn btn-sm btn-primary"><i class="fas fa-filter mr-1"></i> Apply</button>
+                        <button type="button" id="filter-reset" class="btn btn-sm btn-default">Reset</button>
+                    </div>
+                </div>
+            </div>
             <div class="card-body p-0">
                 <table id="dt-attendance" class="table table-bordered table-hover">
                     <thead>
@@ -75,10 +109,18 @@
 <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap4.min.js"></script>
 <script>
 $(function () {
-    $('#dt-attendance').DataTable({
+    var table = $('#dt-attendance').DataTable({
         processing: true,
         serverSide: true,
-        ajax: '{{ route("attendance.datatable") }}',
+        ajax: {
+            url: '{{ route("attendance.datatable") }}',
+            data: function (d) {
+                d.employee_id = $('#filter-employee').val();
+                d.status = $('#filter-status').val();
+                d.from = $('#filter-from').val();
+                d.to = $('#filter-to').val();
+            }
+        },
         columns: [
             { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
             { data: 'employee_id', name: 'employee_id' },
@@ -90,6 +132,17 @@ $(function () {
             { data: 'actions', name: 'actions', orderable: false, searchable: false }
         ],
         order: [[2, 'desc']]
+    });
+
+    function reloadTable() {
+        table.ajax.reload();
+    }
+
+    $('#filter-employee, #filter-status, #filter-from, #filter-to').on('change', reloadTable);
+    $('#filter-apply').on('click', reloadTable);
+    $('#filter-reset').on('click', function () {
+        $('#filter-employee, #filter-status, #filter-from, #filter-to').val('');
+        reloadTable();
     });
 });
 </script>

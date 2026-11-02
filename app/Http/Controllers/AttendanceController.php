@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Attendance;
+use App\Models\Employee;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -15,19 +16,45 @@ class AttendanceController extends Controller
         $today = Attendance::whereDate('date', now()->toDateString())->count();
         $present = Attendance::whereDate('date', now()->toDateString())->where('status', 'present')->count();
         $leave = Attendance::whereDate('date', now()->toDateString())->where('status', 'leave')->count();
+        $employees = Employee::where('is_active', true)->orderBy('name')->pluck('name', 'id');
 
-        return view('attendance.index', compact('today', 'present', 'leave'));
+        return view('attendance.index', compact('today', 'present', 'leave', 'employees'));
     }
 
     public function datatable(Request $request)
     {
         $this->authorize('view-attendance');
 
-        return DataTables::eloquent(Attendance::query()->with('employee'))
+        $filters = $request->validate([
+            'employee_id' => 'nullable|integer',
+            'status' => 'nullable|in:present,absent,leave,half_day',
+            'from' => 'nullable|date',
+            'to' => 'nullable|date',
+        ]);
+
+        $query = Attendance::query()->with('employee');
+
+        if (! empty($filters['employee_id'])) {
+            $query->where('employee_id', $filters['employee_id']);
+        }
+
+        if (! empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        if (! empty($filters['from'])) {
+            $query->whereDate('date', '>=', $filters['from']);
+        }
+
+        if (! empty($filters['to'])) {
+            $query->whereDate('date', '<=', $filters['to']);
+        }
+
+        return DataTables::eloquent($query)
             ->addIndexColumn()
             ->editColumn('employee_id', fn (Attendance $a) => $a->employee?->name ?? '-')
             ->editColumn('date', fn (Attendance $a) => $a->date?->format('d M Y'))
-            ->editColumn('status', fn (Attendance $a) => '<span class="badge '.match($a->status) {
+            ->editColumn('status', fn (Attendance $a) => '<span class="badge '.match ($a->status) {
                 'present' => 'badge-success',
                 'absent' => 'badge-danger',
                 'leave' => 'badge-warning',
@@ -45,7 +72,7 @@ class AttendanceController extends Controller
     {
         $this->authorize('create-attendance');
 
-        $employees = \App\Models\Employee::where('is_active', true)->orderBy('name')->pluck('name', 'id');
+        $employees = Employee::where('is_active', true)->orderBy('name')->pluck('name', 'id');
 
         return view('attendance.create', compact('employees'));
     }
@@ -75,7 +102,7 @@ class AttendanceController extends Controller
     {
         $this->authorize('update-attendance');
 
-        $employees = \App\Models\Employee::where('is_active', true)->orderBy('name')->pluck('name', 'id');
+        $employees = Employee::where('is_active', true)->orderBy('name')->pluck('name', 'id');
 
         return view('attendance.edit', compact('attendance', 'employees'));
     }
