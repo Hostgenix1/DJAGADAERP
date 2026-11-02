@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.5.1 — 2026-11-02
+
+### Changed
+- Sidebar menu reordered to follow the business workflow: CRM → Products → Pricing → Quotations → Orders → Purchasing → Inventory → Shipments → Invoicing → Payments → Expenses → Documents/Reports → HR → Settings/Users.
+- Sidebar icons are now colour-coded per module; submenu items show their own icons instead of identical circles, with a white hover/active state.
+
 ## v2.5.0 — 2026-11-02
 
 ### Added
