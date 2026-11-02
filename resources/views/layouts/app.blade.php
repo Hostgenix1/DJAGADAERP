@@ -15,6 +15,17 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/css/adminlte.min.css">
+    <style>
+        /* Coloured sidebar icons: keep the area colour, turn white on hover/active. */
+        .sidebar .nav-sidebar .nav-icon {
+            transition: color .15s ease, transform .15s ease;
+        }
+        .sidebar .nav-sidebar .nav-link:hover .nav-icon,
+        .sidebar .nav-sidebar .nav-link.active .nav-icon {
+            color: #ffffff !important;
+            transform: scale(1.08);
+        }
+    </style>
     @stack('styles')
 </head>
 <body class="hold-transition sidebar-mini">
@@ -52,7 +63,7 @@
     </div>
 
     <footer class="main-footer">
-        <div class="float-right d-none d-sm-inline">{{ config('app.version', 'v2.5.0') }}</div>
+        <div class="float-right d-none d-sm-inline">{{ config('app.version', 'v2.5.1') }}</div>
         <strong>Copyright &copy; {{ date('Y') }} {{ config('app.name') }}.</strong> All rights reserved.
     </footer>
 </div>

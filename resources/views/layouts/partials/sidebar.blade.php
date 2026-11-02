@@ -23,7 +23,7 @@
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                 <li class="nav-item">
                     <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                        <i class="nav-icon fas fa-tachometer-alt"></i><p>Dashboard</p>
+                        <i class="nav-icon fas fa-tachometer-alt" style="color: #22d3ee;"></i><p>Dashboard</p>
                     </a>
                 </li>
                 @include('layouts.partials.sidebar-nav')
