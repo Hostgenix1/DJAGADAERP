@@ -59,8 +59,19 @@
                             <input type="text" name="carrier" class="form-control" value="{{ $shipment->carrier }}">
                         </div>
                         <div class="form-group col-md-3">
-                            <label>Tracking / BL Number</label>
+                            <label>Tracking Number</label>
                             <input type="text" name="tracking_number" class="form-control" value="{{ $shipment->tracking_number }}">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label>Bill of Lading No.</label>
+                            <input type="text" name="bl_number" class="form-control" value="{{ $shipment->bl_number }}">
+                        </div>
+                        <div class="form-group col-md-8">
+                            <label>Container Numbers</label>
+                            <input type="text" name="container_numbers" class="form-control" value="{{ $shipment->container_numbers }}" placeholder="e.g. MSCU1234567, MSCU7654321">
                         </div>
                     </div>
 

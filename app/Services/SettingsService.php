@@ -6,16 +6,25 @@ use App\Models\Setting;
 
 class SettingsService
 {
+    /** @var array<string, string|null> */
+    private array $cache = [];
+
     public function get(string $key, $default = null)
     {
-        $setting = Setting::where('key', $key)->first();
+        if (array_key_exists($key, $this->cache)) {
+            return $this->cache[$key] ?? $default;
+        }
 
-        return $setting?->value ?? $default;
+        $value = Setting::where('key', $key)->value('value');
+        $this->cache[$key] = $value;
+
+        return $value ?? $default;
     }
 
     public function set(string $key, $value): void
     {
         Setting::updateOrCreate(['key' => $key], ['value' => $value]);
+        $this->cache[$key] = $value;
     }
 
     public function bulkSet(array $values): void

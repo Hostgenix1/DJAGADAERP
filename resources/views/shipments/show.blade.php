@@ -136,8 +136,16 @@
                             <td>{{ $shipment->tracking_number ?? '-' }}</td>
                         </tr>
                         <tr>
+                            <td style="background:#f8fafc;"><strong>Bill of Lading No.</strong></td>
+                            <td>{{ $shipment->bl_number ?? '-' }}</td>
+                        </tr>
+                        <tr>
                             <td style="background:#f8fafc;"><strong>Containers</strong></td>
                             <td>{{ $shipment->container_count ? $shipment->container_count.' container'.($shipment->container_count > 1 ? 's' : '') : '-' }}{{ $shipment->container_size ? ' ('.strtoupper($shipment->container_size).')' : '' }}</td>
+                        </tr>
+                        <tr>
+                            <td style="background:#f8fafc;"><strong>Container Numbers</strong></td>
+                            <td>{{ $shipment->container_numbers ?? '-' }}</td>
                         </tr>
                         <tr>
                             <td style="background:#f8fafc;"><strong>Shipping Method</strong></td>
@@ -185,6 +193,13 @@
     </div>
 
     <div class="col-lg-4">
+        @include('documents.partials._upload', [
+            'morphType' => 'shipment',
+            'morphClass' => 'App\\Models\\Shipment',
+            'entity' => $shipment,
+            'documents' => $shipment->documents,
+        ])
+
         <div class="card card-outline card-light shadow-sm">
             <div class="card-header">
                 <h5 class="card-title mb-0"><i class="fas fa-link mr-2"></i>Related</h5>

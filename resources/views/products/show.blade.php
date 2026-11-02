@@ -45,6 +45,58 @@
                 </div>
             </div>
         </div>
+
+        <div class="card card-primary card-outline">
+            <div class="card-header"><h3 class="card-title"><i class="fas fa-images mr-1"></i> Images</h3></div>
+            <div class="card-body">
+                @if($product->images->isEmpty())
+                    <p class="text-muted mb-3">No images uploaded yet.</p>
+                @else
+                    <div class="row">
+                        @foreach($product->images->sortByDesc('is_primary') as $image)
+                            <div class="col-md-3 col-6 mb-3">
+                                <div class="card h-100 mb-0">
+                                    <img src="{{ $image->url }}" alt="{{ $image->alt ?: $product->name }}"
+                                         class="card-img-top" style="height:140px; object-fit:cover;">
+                                    <div class="card-body p-2">
+                                        @if($image->is_primary)
+                                            <span class="badge badge-success">Primary</span>
+                                        @endif
+                                        @can('update-products')
+                                            <div class="d-flex mt-2">
+                                                @unless($image->is_primary)
+                                                    <form method="POST" action="{{ route('products.images.primary', [$product, $image]) }}" class="mr-1">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-sm btn-outline-info" title="Set as primary"><i class="fas fa-star"></i></button>
+                                                    </form>
+                                                @endunless
+                                                <form method="POST" action="{{ route('products.images.destroy', [$product, $image]) }}">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete image" onclick="return confirm('Delete this image?');"><i class="fas fa-trash"></i></button>
+                                                </form>
+                                            </div>
+                                        @endcan
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+
+                @can('update-products')
+                    <form method="POST" action="{{ route('products.images.store', $product) }}" enctype="multipart/form-data" class="mt-2">
+                        @csrf
+                        <div class="form-group mb-2">
+                            <label for="product-images">Upload images</label>
+                            <input type="file" name="images[]" id="product-images" class="form-control-file" accept="image/*" multiple required>
+                            <small class="text-muted">JPEG, PNG or WebP, max 4MB each.</small>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-upload mr-1"></i> Upload</button>
+                    </form>
+                @endcan
+            </div>
+        </div>
     </div>
     <div class="col-lg-4">
         <div class="card card-primary card-outline">

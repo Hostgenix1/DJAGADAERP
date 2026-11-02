@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Currency;
 use App\Services\DashboardService;
+use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
-    public function __construct(protected DashboardService $service)
-    {
-    }
+    public function __construct(protected DashboardService $service) {}
 
     public function index()
     {
@@ -30,12 +30,27 @@ class DashboardController extends Controller
         $payablesSummary = $this->service->getPayablesSummary();
         $payablesByCurrency = $this->service->getPayablesByCurrency();
         $recentBills = $this->service->getRecentBills();
-        $defaultCurrency = \App\Models\Currency::where('is_default', true)->first();
+        $defaultCurrency = Currency::where('is_default', true)->first();
 
         return view('dashboard', compact(
             'stats', 'pnl', 'shipmentStats', 'period', 'revenue', 'cashFlow', 'pipeline', 'activities',
             'topCustomers', 'topProducts', 'revenueByCurrency', 'outstandingByCurrency',
             'payablesSummary', 'payablesByCurrency', 'recentBills', 'defaultCurrency'
         ));
+    }
+
+    public function calendar(Request $request)
+    {
+        $this->authorize('view-dashboard');
+
+        $start = $request->date('start') ?? now()->startOfMonth();
+        $end = $request->date('end') ?? now()->endOfMonth();
+
+        return response()->json(
+            $this->service->getCalendarEvents(
+                $start->startOfDay()->toDateString(),
+                $end->endOfDay()->toDateString(),
+            )
+        );
     }
 }

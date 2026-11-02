@@ -3,9 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Currency;
 use App\Models\PaymentTerm;
 use App\Models\Tax;
+use App\Models\Unit;
 use App\Services\SettingsService;
+use App\Support\CurrencyHelper;
+use App\Support\PaymentTerms;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Activitylog\Models\Activity;
@@ -13,12 +17,10 @@ use Yajra\DataTables\Facades\DataTables;
 
 class SettingsController extends Controller
 {
-    public function __construct(protected SettingsService $settings)
-    {
-    }
+    public function __construct(protected SettingsService $settings) {}
 
     /* ------------------------------------------------------------------ */
-    /* company information                                                 */
+    /* company information */
     /* ------------------------------------------------------------------ */
 
     public function company()
@@ -73,13 +75,18 @@ class SettingsController extends Controller
             'company_name', 'company_email', 'company_phone',
             'company_address', 'company_city', 'company_state', 'company_postal', 'company_country',
             'company_website', 'company_industry',
-            'company_smtp_host', 'company_smtp_port', 'company_smtp_username', 'company_smtp_password',
+            'company_smtp_host', 'company_smtp_port', 'company_smtp_username',
             'company_smtp_from_name', 'company_smtp_from_email',
 
             'company_trade_license', 'company_trn', 'company_free_zone', 'company_entity_type',
             'company_establishment_id', 'company_routing_code', 'company_wps_sif_reference',
             'default_currency_id',
         ]);
+
+        // Leave the stored password untouched when the field is submitted blank.
+        if ($request->filled('company_smtp_password')) {
+            $data['company_smtp_password'] = $request->input('company_smtp_password');
+        }
 
         $data['company_smtp_encryption'] = $request->boolean('company_smtp_encryption') ? 'tls' : 'none';
         $data['show_logo_on_docs'] = $request->boolean('show_logo_on_docs') ? 1 : 0;
@@ -128,9 +135,9 @@ class SettingsController extends Controller
         $this->settings->bulkSet($data);
 
         if ($request->filled('default_currency_id')) {
-            $newBase = \App\Models\Currency::find($request->input('default_currency_id'));
+            $newBase = Currency::find($request->input('default_currency_id'));
             if ($newBase) {
-                \App\Support\CurrencyHelper::setDefault($newBase);
+                CurrencyHelper::setDefault($newBase);
             }
         }
 
@@ -140,7 +147,7 @@ class SettingsController extends Controller
     }
 
     /* ------------------------------------------------------------------ */
-    /* taxes                                                               */
+    /* taxes */
     /* ------------------------------------------------------------------ */
 
     public function taxes()
@@ -212,7 +219,7 @@ class SettingsController extends Controller
     }
 
     /* ------------------------------------------------------------------ */
-    /* payment terms                                                       */
+    /* payment terms */
     /* ------------------------------------------------------------------ */
 
     public function paymentTerms()
@@ -229,9 +236,9 @@ class SettingsController extends Controller
 
         $defaults = [];
         foreach ($docTypes as $key => $label) {
-            $defaults[$key] = \App\Support\PaymentTerms::defaultFor($key);
+            $defaults[$key] = PaymentTerms::defaultFor($key);
         }
-        $defaults['incoterms_list'] = app(\App\Services\SettingsService::class)->get('incoterms_list', '');
+        $defaults['incoterms_list'] = app(SettingsService::class)->get('incoterms_list', '');
 
         return view('admin.settings.payment-terms', compact('docTypes', 'defaults'));
     }
@@ -284,7 +291,7 @@ class SettingsController extends Controller
 
         $paymentTerm->update($data);
 
-        if (!empty($data['is_default'])) {
+        if (! empty($data['is_default'])) {
             PaymentTerm::where('id', '!=', $paymentTerm->id)->update(['is_default' => false]);
         }
 
@@ -329,7 +336,7 @@ class SettingsController extends Controller
     }
 
     /* ------------------------------------------------------------------ */
-    /* units                                                               */
+    /* units */
     /* ------------------------------------------------------------------ */
 
     public function units()
@@ -343,10 +350,10 @@ class SettingsController extends Controller
     {
         $this->authorize('view-settings');
 
-        return DataTables::eloquent(\App\Models\Unit::query())
+        return DataTables::eloquent(Unit::query())
             ->addIndexColumn()
-            ->addColumn('is_active', fn (\App\Models\Unit $u) => $u->is_active ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-secondary">Inactive</span>')
-            ->addColumn('actions', fn (\App\Models\Unit $u) => view('admin.settings.partials.unit-actions', ['row' => $u])->render())
+            ->addColumn('is_active', fn (Unit $u) => $u->is_active ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-secondary">Inactive</span>')
+            ->addColumn('actions', fn (Unit $u) => view('admin.settings.partials.unit-actions', ['row' => $u])->render())
             ->rawColumns(['is_active', 'actions'])
             ->editColumn('created_at', fn ($m) => $m->created_at?->format('d M Y H:i'))
             ->editColumn('updated_at', fn ($m) => $m->updated_at?->format('d M Y H:i'))
@@ -362,7 +369,7 @@ class SettingsController extends Controller
             'sort_order' => ['nullable', 'integer', 'min:0'],
         ]);
 
-        $unit = \App\Models\Unit::create([
+        $unit = Unit::create([
             'name' => $data['name'],
             'sort_order' => $data['sort_order'] ?? 0,
             'is_active' => true,
@@ -373,7 +380,7 @@ class SettingsController extends Controller
         return back()->with('success', 'Unit added.');
     }
 
-    public function unitUpdate(Request $request, \App\Models\Unit $unit)
+    public function unitUpdate(Request $request, Unit $unit)
     {
         $this->authorize('update-settings');
 
@@ -390,7 +397,7 @@ class SettingsController extends Controller
         return back()->with('success', 'Unit updated.');
     }
 
-    public function unitDestroy(\App\Models\Unit $unit)
+    public function unitDestroy(Unit $unit)
     {
         $this->authorize('update-settings');
 
@@ -402,7 +409,7 @@ class SettingsController extends Controller
     }
 
     /* ------------------------------------------------------------------ */
-    /* audit log                                                           */
+    /* audit log */
     /* ------------------------------------------------------------------ */
 
     public function audit()

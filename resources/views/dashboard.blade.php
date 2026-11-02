@@ -401,6 +401,20 @@
     </div>
 </div>
 
+{{-- Row 5c: Calendar --}}
+<div class="row">
+    <div class="col-12">
+        <div class="card card-outline card-primary">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-calendar-alt mr-1"></i> Calendar</h3>
+            </div>
+            <div class="card-body">
+                <div id="dashboard-calendar"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 {{-- Row 6: Revenue Chart + Cash Flow Chart --}}
 <div class="row">
     <div class="col-md-6">
@@ -582,6 +596,29 @@ new Chart(document.getElementById('pipelineChart'), {
         }]
     },
     options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+});
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const calendarEl = document.getElementById('dashboard-calendar');
+    if (!calendarEl || typeof FullCalendar === 'undefined') return;
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        height: 620,
+        headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,listMonth' },
+        events: '{{ route('dashboard.calendar') }}',
+        eventClick: function (info) {
+            if (info.event.url) {
+                info.jsEvent.preventDefault();
+                window.location.href = info.event.url;
+            }
+        }
+    });
+
+    calendar.render();
 });
 </script>
 @endpush

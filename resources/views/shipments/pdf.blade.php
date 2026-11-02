@@ -77,9 +77,11 @@
 <table class="det">
     <tr><th>Shipment Details</th><th></th></tr>
     <tr><td>Carrier</td><td>{{ $shipment->carrier ?? '-' }}</td></tr>
-    <tr><td>Tracking / BL Number</td><td>{{ $shipment->tracking_number ?? '-' }}</td></tr>
+    <tr><td>Tracking Number</td><td>{{ $shipment->tracking_number ?? '-' }}</td></tr>
+    <tr><td>Bill of Lading No.</td><td>{{ $shipment->bl_number ?? '-' }}</td></tr>
     <tr><td>Number of Containers</td><td>{{ $shipment->container_count ? $shipment->container_count.' container'.($shipment->container_count > 1 ? 's' : '') : '-' }}</td></tr>
     <tr><td>Container Type / Size</td><td>{{ $shipment->container_size ? strtoupper($shipment->container_size) : '-' }}</td></tr>
+    <tr><td>Container Numbers</td><td>{{ $shipment->container_numbers ?? '-' }}</td></tr>
     <tr><td>Origin</td><td>{{ $shipment->origin ?? '-' }}</td></tr>
     <tr><td>Destination</td><td>{{ $shipment->destination ?? '-' }}</td></tr>
     @if($shipment->order)<tr><td>Related Order</td><td>{{ $shipment->order->number }}</td></tr>@endif

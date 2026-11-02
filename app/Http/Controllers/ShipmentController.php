@@ -2,16 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Customer;
+use App\Models\Invoice;
+use App\Models\Order;
 use App\Models\Shipment;
+use App\Services\SettingsService;
 use App\Services\ShipmentService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\Facades\DataTables;
 
 class ShipmentController extends Controller
 {
-    public function __construct(protected ShipmentService $service)
-    {
-    }
+    public function __construct(protected ShipmentService $service) {}
 
     public function index()
     {
@@ -56,9 +60,9 @@ class ShipmentController extends Controller
     {
         $this->authorize('create-shipments');
 
-        $customers = \App\Models\Customer::pluck('company_name', 'id');
-        $orders = \App\Models\Order::pluck('number', 'id');
-        $invoices = \App\Models\Invoice::pluck('number', 'id');
+        $customers = Customer::pluck('company_name', 'id');
+        $orders = Order::pluck('number', 'id');
+        $invoices = Invoice::pluck('number', 'id');
         $preselectedOrderId = $request->integer('order_id') ?: null;
 
         return view('shipments.create', compact('customers', 'orders', 'invoices', 'preselectedOrderId'));
@@ -74,8 +78,10 @@ class ShipmentController extends Controller
             'invoice_id' => 'nullable|exists:invoices,id',
             'carrier' => 'nullable|string|max:255',
             'tracking_number' => 'nullable|string|max:255',
+            'bl_number' => 'nullable|string|max:100',
             'container_count' => 'nullable|integer|min:1',
             'container_size' => 'nullable|in:20ft,40ft',
+            'container_numbers' => 'nullable|string|max:1000',
             'shipping_method' => 'required|in:air,sea,land,courier',
             'origin' => 'nullable|string|max:255',
             'destination' => 'nullable|string|max:255',
@@ -95,7 +101,7 @@ class ShipmentController extends Controller
     public function show(Shipment $shipment)
     {
         $this->authorize('view-shipments');
-        $shipment->load(['customer', 'order', 'invoice']);
+        $shipment->load(['customer', 'order', 'invoice', 'documents' => fn ($q) => $q->where('is_latest', true)]);
 
         return view('shipments.show', compact('shipment'));
     }
@@ -105,9 +111,9 @@ class ShipmentController extends Controller
         $this->authorize('update-shipments');
         $shipment->load(['customer', 'order', 'invoice']);
 
-        $customers = \App\Models\Customer::pluck('company_name', 'id');
-        $orders = \App\Models\Order::pluck('number', 'id');
-        $invoices = \App\Models\Invoice::pluck('number', 'id');
+        $customers = Customer::pluck('company_name', 'id');
+        $orders = Order::pluck('number', 'id');
+        $invoices = Invoice::pluck('number', 'id');
 
         return view('shipments.edit', compact('shipment', 'customers', 'orders', 'invoices'));
     }
@@ -122,8 +128,10 @@ class ShipmentController extends Controller
             'invoice_id' => 'nullable|exists:invoices,id',
             'carrier' => 'nullable|string|max:255',
             'tracking_number' => 'nullable|string|max:255',
+            'bl_number' => 'nullable|string|max:100',
             'container_count' => 'nullable|integer|min:1',
             'container_size' => 'nullable|in:20ft,40ft',
+            'container_numbers' => 'nullable|string|max:1000',
             'shipping_method' => 'required|in:air,sea,land,courier',
             'origin' => 'nullable|string|max:255',
             'destination' => 'nullable|string|max:255',
@@ -142,12 +150,12 @@ class ShipmentController extends Controller
                 'cancelled' => [],
             ];
 
-            if (!in_array($data['status'], $allowed[$shipment->status] ?? [])) {
+            if (! in_array($data['status'], $allowed[$shipment->status] ?? [])) {
                 return back()->with('error', 'Cannot change status from "'.str_replace('_', ' ', $shipment->status).'" to "'.str_replace('_', ' ', $data['status']).'".');
             }
         }
 
-        if ($data['status'] === 'delivered' && !$shipment->delivered_at) {
+        if ($data['status'] === 'delivered' && ! $shipment->delivered_at) {
             $data['delivered_at'] = now();
         } elseif ($data['status'] !== 'delivered' && $shipment->delivered_at) {
             $data['delivered_at'] = null;
@@ -167,26 +175,26 @@ class ShipmentController extends Controller
         ]);
 
         $allowed = [
-            'preparing'  => ['in_transit', 'cancelled'],
+            'preparing' => ['in_transit', 'cancelled'],
             'in_transit' => ['customs', 'delivered', 'cancelled'],
-            'customs'    => ['in_transit', 'delivered', 'cancelled'],
-            'delivered'  => [],
-            'cancelled'  => [],
+            'customs' => ['in_transit', 'delivered', 'cancelled'],
+            'delivered' => [],
+            'cancelled' => [],
         ];
 
-        if (!in_array($data['status'], $allowed[$shipment->status] ?? [])) {
+        if (! in_array($data['status'], $allowed[$shipment->status] ?? [])) {
             return back()->with('error', 'Cannot change status from "'.str_replace('_', ' ', $shipment->status).'" to "'.str_replace('_', ' ', $data['status']).'".');
         }
 
         $updates = ['status' => $data['status']];
 
-        if ($data['status'] === 'delivered' && !$shipment->delivered_at) {
+        if ($data['status'] === 'delivered' && ! $shipment->delivered_at) {
             $updates['delivered_at'] = now();
         } elseif ($data['status'] !== 'delivered') {
             $updates['delivered_at'] = null;
         }
 
-        if ($data['status'] === 'in_transit' && !$shipment->shipped_at) {
+        if ($data['status'] === 'in_transit' && ! $shipment->shipped_at) {
             $updates['shipped_at'] = now();
         }
 
@@ -200,13 +208,13 @@ class ShipmentController extends Controller
         $this->authorize('view-shipments');
         $shipment->load(['customer', 'order', 'invoice']);
 
-        $svc = app(\App\Services\SettingsService::class);
+        $svc = app(SettingsService::class);
         $logoPath = $svc->get('company_logo');
         $logoBase64 = null;
-        if ($logoPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($logoPath)) {
-            $fullPath = \Illuminate\Support\Facades\Storage::disk('public')->path($logoPath);
+        if ($logoPath && Storage::disk('public')->exists($logoPath)) {
+            $fullPath = Storage::disk('public')->path($logoPath);
             $ext = strtolower(pathinfo($logoPath, PATHINFO_EXTENSION));
-            $mime = match($ext) {
+            $mime = match ($ext) {
                 'jpg', 'jpeg' => 'image/jpeg',
                 'png' => 'image/png',
                 'gif' => 'image/gif',
@@ -228,7 +236,7 @@ class ShipmentController extends Controller
             'logo_url' => $logoBase64,
         ];
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('shipments.pdf', compact('shipment', 'company'))
+        $pdf = Pdf::loadView('shipments.pdf', compact('shipment', 'company'))
             ->setPaper('a4');
 
         return $pdf->stream('shipment-'.$shipment->number.'.pdf');

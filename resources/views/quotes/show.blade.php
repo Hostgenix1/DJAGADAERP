@@ -106,9 +106,45 @@
                     </form>
                 @endif
                 <a href="{{ route('quotes.pdf', $quote) }}" class="btn btn-secondary btn-block"><i class="fas fa-file-pdf"></i> Download PDF</a>
+                @can('update-quotes')
+                    <button type="button" class="btn btn-primary btn-block" data-toggle="modal" data-target="#email-quote-modal"><i class="fas fa-envelope"></i> Email Quotation</button>
+                @endcan
                 <a href="{{ route('quotes.index') }}" class="btn btn-default btn-block"><i class="fas fa-arrow-left"></i> Back</a>
             </div>
         </div>
     </div>
 </div>
+
+@can('update-quotes')
+    <div class="modal fade" id="email-quote-modal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="POST" action="{{ route('quotes.email', $quote) }}">
+                    @csrf
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="fas fa-envelope mr-1"></i> Email Quotation {{ $quote->number }}</h5>
+                        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="quote-email">Recipient *</label>
+                            <input type="email" name="email" id="quote-email" class="form-control" required
+                                   value="{{ $quote->customer?->email }}">
+                        </div>
+                        <div class="form-group mb-0">
+                            <label for="quote-message">Message</label>
+                            <textarea name="message" id="quote-message" rows="3" class="form-control" maxlength="1000"
+                                      placeholder="Optional message to include in the email."></textarea>
+                        </div>
+                        <small class="text-muted">The quotation PDF is attached automatically.</small>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane mr-1"></i> Send Quotation</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+@endcan
 @endsection

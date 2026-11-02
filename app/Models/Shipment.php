@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -11,7 +12,8 @@ class Shipment extends Model
 
     protected $fillable = [
         'number', 'order_id', 'invoice_id', 'customer_id', 'carrier',
-        'tracking_number', 'container_count', 'container_size', 'shipping_method', 'origin', 'destination',
+        'tracking_number', 'bl_number', 'container_count', 'container_size', 'container_numbers',
+        'shipping_method', 'origin', 'destination',
         'status', 'shipped_at', 'estimated_arrival', 'delivered_at', 'notes',
     ];
 
@@ -22,9 +24,25 @@ class Shipment extends Model
         'container_count' => 'integer',
     ];
 
-    public function order(): BelongsTo { return $this->belongsTo(Order::class); }
-    public function invoice(): BelongsTo { return $this->belongsTo(Invoice::class); }
-    public function customer(): BelongsTo { return $this->belongsTo(Customer::class); }
+    public function order(): BelongsTo
+    {
+        return $this->belongsTo(Order::class);
+    }
+
+    public function invoice(): BelongsTo
+    {
+        return $this->belongsTo(Invoice::class);
+    }
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
+    public function documents()
+    {
+        return $this->morphMany(Document::class, 'documentable');
+    }
 
     public static function nextNumber(): string
     {
@@ -33,12 +51,13 @@ class Shipment extends Model
         if ($last && preg_match('/(\d+)$/', $last, $m)) {
             $next = (int) $m[1] + 1;
         }
-        return 'SHP-' . str_pad($next, 5, '0', STR_PAD_LEFT);
+
+        return 'SHP-'.str_pad($next, 5, '0', STR_PAD_LEFT);
     }
 
     public function getStatusBadgeAttribute(): string
     {
-        return match($this->status) {
+        return match ($this->status) {
             'preparing' => 'badge-secondary',
             'in_transit' => 'badge-info',
             'customs' => 'badge-warning',
@@ -50,7 +69,7 @@ class Shipment extends Model
 
     public function shippingSteps(): array
     {
-        $idx = match($this->status) {
+        $idx = match ($this->status) {
             'preparing' => 0,
             'in_transit', 'customs' => 1,
             'delivered' => 3,

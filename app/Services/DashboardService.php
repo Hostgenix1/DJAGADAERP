@@ -2,40 +2,115 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\DB;
 use App\Models\Customer;
+use App\Models\Expense;
+use App\Models\FollowUp;
 use App\Models\Invoice;
+use App\Models\InvoiceItem;
+use App\Models\Lead;
+use App\Models\Order;
 use App\Models\Payment;
+use App\Models\PayrollEntry;
 use App\Models\Product;
+use App\Models\PurchaseRequest;
 use App\Models\Quote;
+use App\Models\Shipment;
+use App\Models\Supplier;
+use App\Models\SupplierBill;
+use App\Support\CurrencyHelper;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Spatie\Activitylog\Models\Activity;
 
 class DashboardService
 {
+    /**
+     * Calendar events for the dashboard: follow-ups, invoice due dates,
+     * shipment ETAs and purchase requests that are needed within the range.
+     */
+    public function getCalendarEvents(string $start, string $end): array
+    {
+        $events = [];
+
+        FollowUp::whereBetween('due_date', [$start, $end])
+            ->orderBy('due_date')
+            ->get()
+            ->each(function (FollowUp $followUp) use (&$events) {
+                $events[] = [
+                    'title' => 'Follow-up: '.ucfirst($followUp->type),
+                    'start' => $followUp->due_date?->toDateString(),
+                    'url' => route('follow_ups.edit', $followUp),
+                    'color' => $followUp->completed_at ? '#28a745' : '#ffc107',
+                ];
+            });
+
+        Invoice::whereIn('status', ['draft', 'sent', 'partial', 'overdue'])
+            ->whereNotNull('due_date')
+            ->whereBetween('due_date', [$start, $end])
+            ->get()
+            ->each(function (Invoice $invoice) use (&$events) {
+                $events[] = [
+                    'title' => 'Invoice '.$invoice->number.' due',
+                    'start' => $invoice->due_date?->toDateString(),
+                    'url' => route('invoices.show', $invoice),
+                    'color' => '#dc3545',
+                ];
+            });
+
+        Shipment::whereNotIn('status', ['delivered', 'cancelled'])
+            ->whereNotNull('estimated_arrival')
+            ->whereBetween('estimated_arrival', [$start, $end])
+            ->get()
+            ->each(function (Shipment $shipment) use (&$events) {
+                $events[] = [
+                    'title' => 'ETA '.$shipment->number,
+                    'start' => $shipment->estimated_arrival?->toDateString(),
+                    'url' => route('shipments.show', $shipment),
+                    'color' => '#17a2b8',
+                ];
+            });
+
+        PurchaseRequest::whereNotIn('status', ['converted', 'rejected'])
+            ->whereNotNull('needed_by')
+            ->whereBetween('needed_by', [$start, $end])
+            ->get()
+            ->each(function (PurchaseRequest $purchaseRequest) use (&$events) {
+                $events[] = [
+                    'title' => 'PR '.$purchaseRequest->number.' needed',
+                    'start' => $purchaseRequest->needed_by?->toDateString(),
+                    'url' => route('purchase_requests.show', $purchaseRequest),
+                    'color' => '#6c757d',
+                ];
+            });
+
+        return $events;
+    }
+
     public function getStats(): array
     {
         return [
-            'customers'         => Customer::count(),
-            'suppliers'         => \App\Models\Supplier::count(),
-            'products'          => Product::count(),
-            'leads'             => \App\Models\Lead::count(),
-            'active_leads'      => \App\Models\Lead::whereNotIn('status', ['won', 'lost'])->count(),
-            'quotes'            => Quote::count(),
-            'pending_quotes'    => Quote::where('status', 'sent')->count(),
-            'invoices'          => Invoice::count(),
-            'unpaid_invoices'   => Invoice::where('status', '!=', 'cancelled')->whereRaw('total - paid_amount > 0')->count(),
-            'partially_paid'    => Invoice::where('status', 'partial')->count(),
-            'fully_paid'        => Invoice::where('status', 'paid')->count(),
-            'overdue'           => Invoice::where('status', '!=', 'cancelled')->where('due_date', '<', now())->whereRaw('total - paid_amount > 0')->count(),
-            'total_revenue'     => (float) Payment::where('type', 'customer')->sum('amount'),
-            'total_expenses'    => (float) Payment::where('type', 'supplier')->sum('amount'),
-            'outstanding'       => (float) Invoice::where('status', '!=', 'cancelled')->sum(DB::raw('total - paid_amount')),
-            'monthly_sales'     => (float) Invoice::where('status', '!=', 'cancelled')->whereMonth('invoice_date', now()->month)->whereYear('invoice_date', now()->year)->sum('total'),
-            'monthly_revenue'   => (float) Payment::where('type', 'customer')->whereMonth('paid_on', now()->month)->whereYear('paid_on', now()->year)->sum('amount'),
-            'monthly_expenses'  => (float) Payment::where('type', 'supplier')->whereMonth('paid_on', now()->month)->whereYear('paid_on', now()->year)->sum('amount'),
-            'active_orders'     => \App\Models\Order::whereNotIn('status', ['completed', 'cancelled'])->count(),
-            'shipments_in_transit' => \App\Models\Shipment::where('status', 'in_transit')->count(),
-            'low_stock'         => \App\Services\StockService::lowStockProducts()->count(),
-            'stock_value'       => \App\Services\StockService::stockValue(),
+            'customers' => Customer::count(),
+            'suppliers' => Supplier::count(),
+            'products' => Product::count(),
+            'leads' => Lead::count(),
+            'active_leads' => Lead::whereNotIn('status', ['won', 'lost'])->count(),
+            'quotes' => Quote::count(),
+            'pending_quotes' => Quote::where('status', 'sent')->count(),
+            'invoices' => Invoice::count(),
+            'unpaid_invoices' => Invoice::where('status', '!=', 'cancelled')->whereRaw('total - paid_amount > 0')->count(),
+            'partially_paid' => Invoice::where('status', 'partial')->count(),
+            'fully_paid' => Invoice::where('status', 'paid')->count(),
+            'overdue' => Invoice::where('status', '!=', 'cancelled')->where('due_date', '<', now())->whereRaw('total - paid_amount > 0')->count(),
+            'total_revenue' => (float) Payment::where('type', 'customer')->sum('amount'),
+            'total_expenses' => (float) Payment::where('type', 'supplier')->sum('amount'),
+            'outstanding' => (float) Invoice::where('status', '!=', 'cancelled')->sum(DB::raw('total - paid_amount')),
+            'monthly_sales' => (float) Invoice::where('status', '!=', 'cancelled')->whereMonth('invoice_date', now()->month)->whereYear('invoice_date', now()->year)->sum('total'),
+            'monthly_revenue' => (float) Payment::where('type', 'customer')->whereMonth('paid_on', now()->month)->whereYear('paid_on', now()->year)->sum('amount'),
+            'monthly_expenses' => (float) Payment::where('type', 'supplier')->whereMonth('paid_on', now()->month)->whereYear('paid_on', now()->year)->sum('amount'),
+            'active_orders' => Order::whereNotIn('status', ['completed', 'cancelled'])->count(),
+            'shipments_in_transit' => Shipment::where('status', 'in_transit')->count(),
+            'low_stock' => StockService::lowStockProducts()->count(),
+            'stock_value' => StockService::stockValue(),
         ];
     }
 
@@ -62,7 +137,7 @@ class DashboardService
 
     public function getPayablesSummary(): array
     {
-        return \App\Models\SupplierBill::where('status', '!=', 'cancelled')
+        return SupplierBill::where('status', '!=', 'cancelled')
             ->whereRaw('total - paid_amount > 0')
             ->selectRaw('COUNT(*) as count, SUM(total - paid_amount) as total')
             ->first()
@@ -71,7 +146,7 @@ class DashboardService
 
     public function getPayablesByCurrency(): array
     {
-        return \App\Models\SupplierBill::where('status', '!=', 'cancelled')
+        return SupplierBill::where('status', '!=', 'cancelled')
             ->whereRaw('total - paid_amount > 0')
             ->leftJoin('currencies', 'supplier_bills.currency_id', '=', 'currencies.id')
             ->selectRaw('COALESCE(currencies.code, "No currency") as code, COALESCE(currencies.symbol, "") as symbol, SUM(supplier_bills.total - supplier_bills.paid_amount) as total')
@@ -82,7 +157,7 @@ class DashboardService
 
     public function getRecentBills(): array
     {
-        return \App\Models\SupplierBill::with('supplier', 'currency')
+        return SupplierBill::with('supplier', 'currency')
             ->latest()
             ->limit(5)
             ->get()
@@ -92,17 +167,21 @@ class DashboardService
     public function getMonthlyRevenue(): array
     {
         $payments = Payment::where('type', 'customer')
-            ->where('paid_on', '>=', now()->subMonths(12)->startOfMonth())
-            ->selectRaw('MONTH(paid_on) as month, YEAR(paid_on) as year, SUM(amount) as total')
-            ->groupBy('year', 'month')
-            ->orderBy('year')
-            ->orderBy('month')
-            ->get();
+            ->where('paid_on', '>=', now()->subMonths(11)->startOfMonth())
+            ->get(['paid_on', 'amount']);
 
-        $labels = $payments->map(fn ($p) => date('M', mktime(0, 0, 0, $p->month, 1)).' '.$p->year);
-        $data = $payments->pluck('total');
+        $labels = [];
+        $data = [];
 
-        return ['labels' => $labels->toArray(), 'data' => $data->toArray()];
+        for ($i = 11; $i >= 0; $i--) {
+            $month = now()->subMonths($i);
+            $labels[] = $month->format('M Y');
+            $data[] = (float) $payments
+                ->filter(fn (Payment $payment) => $payment->paid_on?->format('Y-m') === $month->format('Y-m'))
+                ->sum('amount');
+        }
+
+        return ['labels' => $labels, 'data' => $data];
     }
 
     public function getCashFlow(): array
@@ -136,7 +215,7 @@ class DashboardService
 
     public function getPipelineByStage(): array
     {
-        $stages = \App\Models\Lead::selectRaw('status, count(*) as cnt')
+        $stages = Lead::selectRaw('status, count(*) as cnt')
             ->groupBy('status')
             ->pluck('cnt', 'status')
             ->toArray();
@@ -146,7 +225,7 @@ class DashboardService
 
     public function getTopSellingProducts(): array
     {
-        return \App\Models\InvoiceItem::select('product_id', DB::raw('SUM(qty) as total_qty'), DB::raw('SUM(line_total) as total_revenue'))
+        return InvoiceItem::select('product_id', DB::raw('SUM(qty) as total_qty'), DB::raw('SUM(line_total) as total_revenue'))
             ->whereNotNull('product_id')
             ->groupBy('product_id')
             ->orderByDesc('total_qty')
@@ -158,15 +237,16 @@ class DashboardService
 
     public function getRecentActivity(): array
     {
-        return \Spatie\Activitylog\Models\Activity::with('causer')
+        return Activity::with('causer')
             ->latest()
             ->limit(10)
             ->get()
             ->map(function ($a) {
                 $data = $a->toArray();
-                $data['created_at'] = \Carbon\Carbon::parse($a->created_at, 'UTC')
+                $data['created_at'] = Carbon::parse($a->created_at, 'UTC')
                     ->setTimezone('Asia/Dubai')
                     ->format('d M Y h:i A');
+
                 return $data;
             })
             ->toArray();
@@ -201,10 +281,10 @@ class DashboardService
     {
         [$start, $end] = $this->periodRange($period);
 
-        $baseId = \App\Support\CurrencyHelper::baseCurrencyId();
+        $baseId = CurrencyHelper::baseCurrencyId();
 
         $sumInBase = function ($amount, $currencyId) use ($baseId) {
-            return \App\Support\CurrencyHelper::convert($amount, $currencyId, $baseId);
+            return CurrencyHelper::convert($amount, $currencyId, $baseId);
         };
 
         $dateCol = fn ($col) => $start
@@ -215,11 +295,11 @@ class DashboardService
         $dateCol('invoice_date')($invoices);
         $revenue = $invoices->get(['total', 'currency_id'])->sum(fn ($i) => $sumInBase($i->total, $i->currency_id));
 
-        $bills = \App\Models\SupplierBill::where('status', '!=', 'cancelled');
+        $bills = SupplierBill::where('status', '!=', 'cancelled');
         $dateCol('bill_date')($bills);
         $supplierCost = $bills->get(['total', 'currency_id'])->sum(fn ($b) => $sumInBase($b->total, $b->currency_id));
 
-        $expenses = \App\Models\Expense::query();
+        $expenses = Expense::query();
         $dateCol('expense_date')($expenses);
         $expenses = $expenses->get(['amount', 'category', 'currency_id']);
         $operatingExpenses = $expenses->where('category', '!=', 'payroll')->sum(fn ($e) => $sumInBase($e->amount, $e->currency_id));
@@ -227,9 +307,9 @@ class DashboardService
 
         // Salaries = approved/due payroll (accrued, unpaid) + payroll-category expenses (paid out).
         // Paid entries are excluded here because mark-paid auto-posts them as expenses — no double count.
-        $payroll = \App\Models\PayrollEntry::whereIn('status', [
-            \App\Models\PayrollEntry::STATUS_APPROVED,
-            \App\Models\PayrollEntry::STATUS_DUE,
+        $payroll = PayrollEntry::whereIn('status', [
+            PayrollEntry::STATUS_APPROVED,
+            PayrollEntry::STATUS_DUE,
         ]);
         $dateCol('created_at')($payroll);
         $salaryCost = $payroll->get(['net_salary', 'currency_id'])->sum(fn ($p) => $sumInBase($p->net_salary, $p->currency_id));
@@ -247,16 +327,16 @@ class DashboardService
             'salaries' => round($salaries, 2),
             'gross_profit' => round($grossProfit, 2),
             'net_profit' => round($netProfit, 2),
-            'base_currency' => \App\Support\CurrencyHelper::baseCurrency(),
+            'base_currency' => CurrencyHelper::baseCurrency(),
         ];
     }
 
     public function getShipmentStats(): array
     {
         return [
-            'in_transit' => \App\Models\Shipment::where('status', 'in_transit')->count(),
-            'arrived' => \App\Models\Shipment::where('status', 'delivered')->count(),
-            'preparing' => \App\Models\Shipment::where('status', 'preparing')->count(),
+            'in_transit' => Shipment::where('status', 'in_transit')->count(),
+            'arrived' => Shipment::where('status', 'delivered')->count(),
+            'preparing' => Shipment::where('status', 'preparing')->count(),
         ];
     }
 }
