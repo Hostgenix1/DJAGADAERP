@@ -83,7 +83,7 @@
                     </div>
                     <div class="col-md-6 text-right">
                         <div class="mb-2">
-                            <small class="text-muted">SHIPPED AT</small><br>
+                            <small class="text-muted">ETD</small><br>
                             <strong>{{ $shipment->shipped_at?->format('d M Y H:i') ?? '-' }}</strong>
                         </div>
                         <div class="mb-2">
@@ -164,7 +164,7 @@
                             <td><span class="badge badge-{{ $statusClass }}">{{ strtoupper(str_replace('_', ' ', $shipment->status)) }}</span></td>
                         </tr>
                         <tr>
-                            <td style="background:#f8fafc;"><strong>Shipped At</strong></td>
+                            <td style="background:#f8fafc;"><strong>ETD</strong></td>
                             <td>{{ $shipment->shipped_at?->format('d M Y H:i') ?? '-' }}</td>
                         </tr>
                         <tr>

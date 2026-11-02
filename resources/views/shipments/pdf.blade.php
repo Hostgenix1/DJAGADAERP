@@ -67,7 +67,7 @@
             <div class="box-title">Shipment</div>
             <div>Status: <b>{{ strtoupper(str_replace('_', ' ', $shipment->status)) }}</b></div>
             <div>Method: <b>{{ ucfirst($shipment->shipping_method) }}</b></div>
-            @if($shipment->shipped_at)<div>Shipped: {{ $shipment->shipped_at->format('d M Y H:i') }}</div>@endif
+            @if($shipment->shipped_at)<div>ETD: {{ $shipment->shipped_at->format('d M Y H:i') }}</div>@endif
             @if($shipment->estimated_arrival)<div>Est. Arrival: {{ $shipment->estimated_arrival->format('d M Y') }}</div>@endif
             @if($shipment->delivered_at)<div>Delivered: {{ $shipment->delivered_at->format('d M Y H:i') }}</div>@endif
         </td>

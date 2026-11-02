@@ -104,7 +104,7 @@
                             </select>
                         </div>
                         <div class="form-group col-md-4">
-                            <label>Shipped At</label>
+                            <label>Shipped At / ETD</label>
                             <input type="datetime-local" name="shipped_at" class="form-control" value="{{ $shipment->shipped_at?->format('Y-m-d\TH:i') }}">
                         </div>
                         <div class="form-group col-md-4">

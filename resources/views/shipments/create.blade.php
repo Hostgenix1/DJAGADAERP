@@ -112,7 +112,7 @@
                             </select>
                         </div>
                         <div class="form-group col-md-4">
-                            <label>Shipped At</label>
+                            <label>Shipped At / ETD</label>
                             <input type="datetime-local" name="shipped_at" class="form-control">
                         </div>
                         <div class="form-group col-md-4">

@@ -10,9 +10,7 @@
 --}}
 
 @section('content')
-<div class="row">
-    <div class="col-lg-8">
-        <div class="card card-primary card-outline">
+<div class="card card-primary card-outline">
             <div class="card-header">
                 <h3 class="card-title"><i class="fas fa-boxes mr-1"></i> Edit Product</h3>
             </div>
@@ -28,6 +26,4 @@
                 </form>
             </div>
         </div>
-    </div>
-</div>
 @endsection
