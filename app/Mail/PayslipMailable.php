@@ -15,9 +15,7 @@ class PayslipMailable extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public function __construct(public PayrollEntry $payrollEntry)
-    {
-    }
+    public function __construct(public PayrollEntry $payrollEntry) {}
 
     public function envelope(): Envelope
     {
@@ -36,7 +34,7 @@ class PayslipMailable extends Mailable
 
     public function attachments(): array
     {
-        $pdf = PayrollService::renderPayslip($this->payrollEntry)->output();
+        $pdf = PayrollService::payslipPdf($this->payrollEntry);
         $name = 'payslip-'.$this->payrollEntry->period.'.pdf';
 
         return [Attachment::fromData(fn () => $pdf, $name)->withMime('application/pdf')];

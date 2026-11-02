@@ -61,7 +61,9 @@ class Masking
     }
 
     /**
-     * Amount in words for the payslip ("... dirhams only").
+     * Amount in words for the payslip, sentence case:
+     * "Eleven thousand eight hundred twenty-five dirhams only"
+     * With fils: "... dirhams and sixty-six fils".
      */
     public static function amountInWords(?float $amount, ?string $currencyCode): ?string
     {
@@ -70,7 +72,10 @@ class Masking
         }
 
         try {
-            $words = NumberToWords::toWords($amount, 'en');
+            $abs = abs($amount);
+            $whole = (int) floor($abs);
+            $fils = (int) round(($abs - $whole) * 100);
+
             $unit = match (strtoupper((string) $currencyCode)) {
                 'AED' => 'dirhams',
                 'USD' => 'dollars',
@@ -79,15 +84,25 @@ class Masking
                 'SAR' => 'riyals',
                 default => strtolower((string) $currencyCode),
             };
+            $fractionUnit = strtoupper((string) $currencyCode) === 'AED' ? 'fils' : 'cents';
 
-            // Whole amounts: "<Words> dirhams only". With fils: "<Words> and NN Cents dirhams"
-            if (fmod(abs($amount), 1.0) === 0.0) {
-                return trim($words) . ' ' . $unit . ' only';
+            $words = trim(self::sentenceCase(NumberToWords::toWords($whole, 'en')).' '.$unit);
+
+            if ($fils > 0) {
+                return trim($words.' and '.strtolower(NumberToWords::toWords($fils, 'en')).' '.$fractionUnit);
             }
 
-            return $words . ' ' . $unit;
+            return trim($words.' only');
         } catch (\Throwable $e) {
             return null; // optional field: leave empty when it cannot be generated
         }
+    }
+
+    /**
+     * Turn Title Case words into sentence case (keeping internal hyphens).
+     */
+    protected static function sentenceCase(string $words): string
+    {
+        return ucfirst(strtolower($words));
     }
 }

@@ -10,15 +10,25 @@
                 <h3 class="card-title"><i class="fas fa-file-pdf mr-1"></i> {{ ($isHrView ?? false) ? 'All Payslips (HR View)' : 'My Payslips' }}
                     @if($employee)<small class="text-muted">{{ $employee->name }}</small>@endif
                 </h3>
-                @if(($isHrView ?? false) && !empty($employees))
+                @if(((($isHrView ?? false) && !empty($employees))) || !empty($periods))
                     <div class="card-tools">
                         <form method="GET" action="{{ route('my-payslips.index') }}" class="form-inline">
-                            <select name="employee_id" class="form-control form-control-sm" onchange="this.form.submit()">
-                                <option value="">-- All Employees --</option>
-                                @foreach($employees as $id => $nm)
-                                    <option value="{{ $id }}" {{ request('employee_id') == $id ? 'selected' : '' }}>{{ $nm }}</option>
-                                @endforeach
-                            </select>
+                            @if(($isHrView ?? false) && !empty($employees))
+                                <select name="employee_id" class="form-control form-control-sm" onchange="this.form.submit()">
+                                    <option value="">-- All Employees --</option>
+                                    @foreach($employees as $id => $nm)
+                                        <option value="{{ $id }}" {{ request('employee_id') == $id ? 'selected' : '' }}>{{ $nm }}</option>
+                                    @endforeach
+                                </select>
+                            @endif
+                            @if(!empty($periods))
+                                <select name="period" class="form-control form-control-sm ml-1" onchange="this.form.submit()">
+                                    <option value="">-- All Months --</option>
+                                    @foreach($periods as $p)
+                                        <option value="{{ $p }}" {{ (request('period') ?? ($period ?? '')) == $p ? 'selected' : '' }}>{{ \Carbon\Carbon::createFromFormat('Y-m', $p)->format('M Y') }}</option>
+                                    @endforeach
+                                </select>
+                            @endif
                         </form>
                     </div>
                 @endif

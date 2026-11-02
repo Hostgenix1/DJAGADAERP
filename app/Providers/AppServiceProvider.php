@@ -43,5 +43,10 @@ class AppServiceProvider extends ServiceProvider
         Blade::directive('money', function ($expression) {
             return "<?php echo e(\\App\\Support\\SettingsHelper::formatMoney({$expression})); ?>";
         });
+
+        // Payslip money filter: always English format, e.g. 5,366.66.
+        Blade::directive('payslipMoney', function ($expression) {
+            return "<?php echo e(number_format((float) {$expression}, 2)); ?>";
+        });
     }
 }

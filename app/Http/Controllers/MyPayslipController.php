@@ -17,6 +17,9 @@ class MyPayslipController extends Controller
     {
         $this->authorize('view-own-payslips');
 
+        $periods = PayrollEntry::query()->select('period')->distinct()->orderByDesc('period')->pluck('period');
+        $period = request('period');
+
         // HR / Admin (full payroll access) sees EVERYONE's payslips.
         if (auth()->user()->can('view-payroll')) {
             $employees = Employee::orderBy('name')->pluck('name', 'id');
@@ -24,18 +27,33 @@ class MyPayslipController extends Controller
             if (request()->filled('employee_id')) {
                 $query->where('employee_id', request('employee_id'));
             }
+            if (filled($period)) {
+                $query->where('period', $period);
+            }
             $entries = $query->limit(200)->get();
 
-            return view('my_payslips.index', ['employee' => null, 'entries' => $entries, 'employees' => $employees, 'isHrView' => true]);
+            return view('my_payslips.index', [
+                'employee' => null, 'entries' => $entries, 'employees' => $employees, 'isHrView' => true,
+                'periods' => $periods, 'period' => $period,
+            ]);
         }
 
         $employee = $this->myEmployee();
 
-        $entries = $employee
-            ? PayrollEntry::with('currency')->where('employee_id', $employee->id)->orderByDesc('period')->get()
-            : collect();
+        $query = $employee
+            ? PayrollEntry::with('currency')->where('employee_id', $employee->id)
+            : null;
 
-        return view('my_payslips.index', ['employee' => $employee, 'entries' => $entries, 'employees' => [], 'isHrView' => false]);
+        if ($query && filled($period)) {
+            $query->where('period', $period);
+        }
+
+        $entries = $query ? $query->orderByDesc('period')->get() : collect();
+
+        return view('my_payslips.index', [
+            'employee' => $employee, 'entries' => $entries, 'employees' => [], 'isHrView' => false,
+            'periods' => $periods, 'period' => $period,
+        ]);
     }
 
     public function download(PayrollEntry $payrollEntry)
@@ -54,8 +72,9 @@ class MyPayslipController extends Controller
             abort(403, 'Payslip is available after HR finalises your salary.');
         }
 
-        $pdf = PayrollService::renderPayslip($payrollEntry);
-
-        return $pdf->download('payslip-'.$payrollEntry->period.'.pdf');
+        return response(PayrollService::payslipPdf($payrollEntry), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="payslip-'.$payrollEntry->period.'.pdf"',
+        ]);
     }
 }

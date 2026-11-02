@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Currency;
 use App\Models\Employee;
 use App\Models\PayrollEntry;
 use App\Services\PayrollService;
@@ -20,7 +21,7 @@ class PayrollController extends Controller
         $totalGross = (clone $entries)->sum('gross_salary');
         $totalNet = (clone $entries)->sum('net_salary');
         $dueCount = (clone $entries)->where('status', PayrollEntry::STATUS_DUE)->count();
-        $defaultCurrency = \App\Models\Currency::where('is_default', true)->first();
+        $defaultCurrency = Currency::where('is_default', true)->first();
 
         $periods = PayrollEntry::query()->select('period')->distinct()->orderByDesc('period')->pluck('period');
 
@@ -84,7 +85,7 @@ class PayrollController extends Controller
         $this->authorize('create-payroll');
 
         $employees = Employee::where('is_active', true)->orderBy('name')->get(['id', 'name', 'base_salary', 'transport_allowance', 'currency_id']);
-        $currencies = \App\Models\Currency::where('is_active', true)->pluck('code', 'id');
+        $currencies = Currency::where('is_active', true)->pluck('code', 'id');
 
         return view('payroll.create', compact('employees', 'currencies'));
     }
@@ -173,7 +174,7 @@ class PayrollController extends Controller
         }
 
         $employees = Employee::where('is_active', true)->orderBy('name')->get(['id', 'name', 'base_salary', 'transport_allowance', 'currency_id']);
-        $currencies = \App\Models\Currency::where('is_active', true)->pluck('code', 'id');
+        $currencies = Currency::where('is_active', true)->pluck('code', 'id');
 
         return view('payroll.edit', compact('payrollEntry', 'employees', 'currencies'));
     }
@@ -230,6 +231,9 @@ class PayrollController extends Controller
         // Sync with the rest of the system: cash outflow -> payroll expense (idempotent).
         $expense = PayrollService::postSalaryExpense($payrollEntry->fresh());
 
+        // Final payslip: generate + keep the PDF, then email it.
+        PayrollService::storePayslip($payrollEntry->fresh());
+
         $emailed = PayrollService::emailPayslip($payrollEntry->fresh());
 
         $msg = 'Marked as paid.';
@@ -280,8 +284,9 @@ class PayrollController extends Controller
     {
         $this->authorize('view-payroll');
 
-        $pdf = PayrollService::renderPayslip($payrollEntry);
-
-        return $pdf->stream('payslip-'.$payrollEntry->employee->name.'-'.$payrollEntry->period.'.pdf');
+        return response(PayrollService::payslipPdf($payrollEntry), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="payslip-'.$payrollEntry->period.'.pdf"',
+        ]);
     }
 }

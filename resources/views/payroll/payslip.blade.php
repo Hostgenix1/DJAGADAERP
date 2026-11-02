@@ -10,7 +10,7 @@
 
     .head { width: 100%; border-collapse: collapse; }
     .head td { vertical-align: top; }
-    .logo { max-height: 58px; max-width: 210px; }
+    .logo { max-height: 92px; max-width: 240px; }
     .co-name { font-size: 15pt; font-weight: bold; color: #111827; }
     .co-line { font-size: 8.4pt; color: #475569; line-height: 1.4; }
     .title-box { text-align: right; }
@@ -60,12 +60,12 @@
 <body>
 @php
     $employee = $payrollEntry->employee;
-    $currency = $payrollEntry->currency?->code ?? ($employee?->currency?->code ?? '');
+    $currency = $currencyCode ?? ($payrollEntry->currency?->code ?? ($employee?->currency?->code ?? ''));
     $periodStart = \Carbon\Carbon::createFromFormat('Y-m', $payrollEntry->period)->startOfMonth();
     $periodEnd = (clone $periodStart)->endOfMonth();
     $daysPaid = (float) $payrollEntry->present_days + (float) $payrollEntry->leave_days;
     $payDate = $payrollEntry->paid_on ?? $payrollEntry->pay_date;
-    $dash = 'â€”';
+    $dash = '—';
 @endphp
 
 {{-- â•â•â• HEADER â•â•â• --}}
@@ -91,7 +91,6 @@
             <div class="title-sub">{{ $periodStart->format('F Y') }}</div>
             <div class="title-line">{{ $periodStart->format('d M Y') }} &ndash; {{ $periodEnd->format('d M Y') }}</div>
             @if($payDate)<div class="title-line">Pay date: {{ $payDate->format('d M Y') }}</div>@endif
-            <div class="title-line">Status: <strong>{{ ucfirst($payrollEntry->status) }}</strong></div>
         </td>
     </tr>
 </table>
@@ -184,7 +183,7 @@
         </td>
         <td>
             <div class="lbl">Overtime (hours)</div>
-            <div class="val">{{ rtrim(rtrim(number_format((float) $payrollEntry->overtime_hours, 2), '0'), '.') ?: '0' }}</div>
+            <div class="val">{{ $overtimeHoursLabel ?? '0' }}</div>
         </td>
     </tr>
 </table>
@@ -196,28 +195,15 @@
             <div class="section-title">Earnings</div>
             <table class="items">
                 <tr><th>Description</th><th class="num">Amount ({{ $currency }})</th></tr>
-                <tr>
-                    <td>Basic salary</td>
-                    <td class="num">@money($payrollEntry->gross_salary)</td>
-                </tr>
-                @if((float) $payrollEntry->transport_allowance > 0)
-                    <tr><td>Transport allowance</td><td class="num">@money($payrollEntry->transport_allowance)</td></tr>
-                @endif
-                @if((float) $payrollEntry->bonus > 0)
-                    <tr><td>Bonus</td><td class="num">@money($payrollEntry->bonus)</td></tr>
-                @endif
-                @if((float) $payrollEntry->overtime_amount > 0)
+                @foreach($earnings as $line)
                     <tr>
-                        <td>Overtime<div class="sub">{{ rtrim(rtrim(number_format((float) $payrollEntry->overtime_hours, 2), '0'), '.') }} hrs</div></td>
-                        <td class="num">@money($payrollEntry->overtime_amount)</td>
+                        <td>{{ $line['label'] }}@if(!empty($line['note']))<div class="sub">{{ $line['note'] }}</div>@endif</td>
+                        <td class="num">@payslipMoney($line['amount'])</td>
                     </tr>
-                @endif
-                @if((float) $payrollEntry->other_allowances > 0)
-                    <tr><td>Other allowance</td><td class="num">@money($payrollEntry->other_allowances)</td></tr>
-                @endif
+                @endforeach
                 <tr class="total">
                     <td>Gross earnings</td>
-                    <td class="num">@money((float) $payrollEntry->gross_salary + (float) $payrollEntry->allowances)</td>
+                    <td class="num">@payslipMoney($totals['gross'])</td>
                 </tr>
             </table>
         </td>
@@ -225,21 +211,17 @@
             <div class="section-title">Deductions</div>
             <table class="items">
                 <tr><th>Description</th><th class="num">Amount ({{ $currency }})</th></tr>
-                @if((float) $payrollEntry->absence_deduction > 0)
+                @forelse($deductions as $line)
                     <tr>
-                        <td>Unpaid leave<div class="sub">{{ rtrim(rtrim(number_format((float) $payrollEntry->absent_days, 2), '0'), '.') }} day(s)</div></td>
-                        <td class="num">@money($payrollEntry->absence_deduction)</td>
+                        <td>{{ $line['label'] }}@if(!empty($line['note']))<div class="sub">{{ $line['note'] }}</div>@endif</td>
+                        <td class="num">@payslipMoney($line['amount'])</td>
                     </tr>
-                @endif
-                @if((float) $payrollEntry->other_deductions > 0)
-                    <tr><td>Other deductions</td><td class="num">@money($payrollEntry->other_deductions)</td></tr>
-                @endif
-                @if((float) $payrollEntry->absence_deduction <= 0 && (float) $payrollEntry->other_deductions <= 0)
+                @empty
                     <tr><td class="sub" colspan="2" style="color:#64748B;">No deductions this period.</td></tr>
-                @endif
+                @endforelse
                 <tr class="total">
                     <td>Total deductions</td>
-                    <td class="num">@money($payrollEntry->deductions)</td>
+                    <td class="num">@payslipMoney($totals['deductions'])</td>
                 </tr>
             </table>
         </td>
@@ -250,7 +232,7 @@
 <table class="netbar">
     <tr>
         <td class="net-lbl">NET PAY</td>
-        <td class="net-val"><span class="net-cur">{{ $currency }}</span> @money($payrollEntry->net_salary)</td>
+        <td class="net-val"><span class="net-cur">{{ $currency }}</span> @payslipMoney($totals['net'])</td>
     </tr>
 </table>
 

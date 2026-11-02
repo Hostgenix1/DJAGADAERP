@@ -4,9 +4,12 @@ namespace App\Services;
 
 use App\Mail\PayslipMailable;
 use App\Models\Attendance;
+use App\Models\CompanyBankAccount;
 use App\Models\Employee;
+use App\Models\Expense;
 use App\Models\Leave;
 use App\Models\PayrollEntry;
+use App\Support\Masking;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
@@ -130,11 +133,11 @@ class PayrollService
      * Post the paid salary as a payroll-category expense (cash outflow).
      * Idempotent: returns existing expense if already posted for this entry.
      */
-    public static function postSalaryExpense(PayrollEntry $payrollEntry): ?\App\Models\Expense
+    public static function postSalaryExpense(PayrollEntry $payrollEntry): ?Expense
     {
         $marker = 'PAYROLL:'.$payrollEntry->id;
 
-        $existing = \App\Models\Expense::where('category', 'payroll')
+        $existing = Expense::where('category', 'payroll')
             ->where('notes', 'like', '%'.$marker.'%')
             ->first();
         if ($existing) {
@@ -145,7 +148,7 @@ class PayrollService
             return null;
         }
 
-        return \App\Models\Expense::create([
+        return Expense::create([
             'expense_date' => $payrollEntry->paid_on?->toDateString() ?? today()->toDateString(),
             'amount' => $payrollEntry->net_salary,
             'currency_id' => $payrollEntry->currency_id,
@@ -157,8 +160,11 @@ class PayrollService
     }
 
     /**
+     * Build the data contract for the payslip view: earnings and deductions are
+     * separate lists (deduction amounts positive) and the totals come straight
+     * from the payroll entry — the template never recalculates them.
      */
-    public static function renderPayslip(PayrollEntry $payrollEntry)
+    public static function payslipViewData(PayrollEntry $payrollEntry): array
     {
         $payrollEntry->load(['employee', 'employee.currency', 'currency']);
 
@@ -175,7 +181,11 @@ class PayrollService
                 'svg' => 'image/svg+xml',
                 default => 'image/png',
             };
-            $logoBase64 = 'data:'.$mime.';base64,'.base64_encode(file_get_contents($fullPath));
+            $binary = file_get_contents($fullPath);
+            if (in_array($ext, ['png', 'gif', 'webp'], true)) {
+                $binary = self::cropLogoPadding($binary) ?? $binary;
+            }
+            $logoBase64 = 'data:'.$mime.';base64,'.base64_encode($binary);
         }
 
         $company = [
@@ -197,24 +207,195 @@ class PayrollService
         // Payment block: employee bank first, company default bank as fallback.
         // Everything masked; the whole block hides in the template when empty.
         $employee = $payrollEntry->employee;
-        $companyBank = \App\Models\CompanyBankAccount::where('is_default', true)->where('is_active', true)->first()
-            ?? \App\Models\CompanyBankAccount::where('is_active', true)->first();
+        $companyBank = CompanyBankAccount::where('is_default', true)->where('is_active', true)->first()
+            ?? CompanyBankAccount::where('is_active', true)->first();
 
         $payment = [
             'bank_name' => $employee?->bank_name ?: $companyBank?->bank_name,
-            'iban_masked' => \App\Support\Masking::iban($employee?->iban ?: $companyBank?->iban),
+            'iban_masked' => Masking::iban($employee?->iban ?: $companyBank?->iban),
             'routing_code' => $company['routing_code'],
             'wps_sif_reference' => $company['wps_sif_reference'],
             'establishment_id' => $company['establishment_id'],
         ];
 
-        $maskedEmiratesId = \App\Support\Masking::emiratesId($employee?->emirates_id);
-        $inWords = \App\Support\Masking::amountInWords(
-            (float) $payrollEntry->net_salary,
-            $payrollEntry->currency?->code ?? $employee?->currency?->code
-        );
+        $maskedEmiratesId = Masking::emiratesId($employee?->emirates_id);
 
-        return Pdf::loadView('payroll.payslip', compact('payrollEntry', 'company', 'payment', 'maskedEmiratesId', 'inWords'))->setPaper('a4');
+        $currencyCode = $payrollEntry->currency?->code ?? $employee?->currency?->code;
+
+        $overtimeHours = (float) $payrollEntry->overtime_hours;
+        $overtimeHoursLabel = $overtimeHours <= 0
+            ? '0'
+            : (fmod($overtimeHours, 1.0) === 0.0 ? number_format($overtimeHours, 1, '.', '') : self::trimNumber($overtimeHours));
+
+        $earnings = [
+            ['label' => 'Basic salary', 'amount' => (float) $payrollEntry->gross_salary, 'note' => null],
+        ];
+        if ((float) $payrollEntry->transport_allowance > 0) {
+            $earnings[] = ['label' => 'Transport allowance', 'amount' => (float) $payrollEntry->transport_allowance, 'note' => null];
+        }
+        if ((float) $payrollEntry->bonus > 0) {
+            $earnings[] = ['label' => 'Bonus', 'amount' => (float) $payrollEntry->bonus, 'note' => null];
+        }
+        if ($overtimeHours > 0 && (float) $payrollEntry->overtime_amount > 0) {
+            $rate = number_format((float) $payrollEntry->overtime_amount / $overtimeHours, 2);
+            $earnings[] = ['label' => 'Overtime', 'amount' => (float) $payrollEntry->overtime_amount, 'note' => $overtimeHoursLabel.' hrs — '.$rate];
+        }
+        if ((float) $payrollEntry->other_allowances > 0) {
+            $earnings[] = ['label' => 'Other allowance', 'amount' => (float) $payrollEntry->other_allowances, 'note' => null];
+        }
+
+        $deductions = [];
+        if ((float) $payrollEntry->absence_deduction > 0) {
+            $deductions[] = [
+                'label' => 'Unpaid leave',
+                'amount' => (float) $payrollEntry->absence_deduction,
+                'note' => self::trimNumber((float) $payrollEntry->absent_days).' '.((float) $payrollEntry->absent_days == 1.0 ? 'day' : 'days'),
+            ];
+        }
+        if ((float) $payrollEntry->other_deductions > 0) {
+            $deductions[] = ['label' => 'Other deductions', 'amount' => (float) $payrollEntry->other_deductions, 'note' => null];
+        }
+
+        $totals = [
+            'gross' => (float) $payrollEntry->gross_salary + (float) $payrollEntry->allowances,
+            'deductions' => (float) $payrollEntry->deductions,
+            'net' => (float) $payrollEntry->net_salary,
+        ];
+
+        $inWords = Masking::amountInWords((float) $payrollEntry->net_salary, $currencyCode);
+
+        return compact(
+            'payrollEntry', 'company', 'payment', 'maskedEmiratesId', 'inWords',
+            'earnings', 'deductions', 'totals', 'currencyCode', 'overtimeHoursLabel'
+        );
+    }
+
+    /**
+     * Render the payslip PDF exactly as designed (A4, one page).
+     */
+    public static function renderPayslip(PayrollEntry $payrollEntry)
+    {
+        return Pdf::loadView('payroll.payslip', self::payslipViewData($payrollEntry))->setPaper('a4');
+    }
+
+    /**
+     * Store the final payslip PDF once payroll is paid (private disk).
+     */
+    public static function storePayslip(PayrollEntry $payrollEntry): ?string
+    {
+        try {
+            $path = self::payslipStoragePath($payrollEntry);
+            Storage::disk('local')->put($path, self::renderPayslip($payrollEntry)->output());
+            $payrollEntry->forceFill(['payslip_path' => $path])->save();
+
+            return $path;
+        } catch (\Throwable $e) {
+            report($e);
+
+            return null;
+        }
+    }
+
+    /**
+     * Stored PDF when available, otherwise rendered on demand.
+     */
+    public static function payslipPdf(PayrollEntry $payrollEntry): string
+    {
+        if ($payrollEntry->payslip_path && Storage::disk('local')->exists($payrollEntry->payslip_path)) {
+            return Storage::disk('local')->get($payrollEntry->payslip_path);
+        }
+
+        return self::renderPayslip($payrollEntry)->output();
+    }
+
+    public static function payslipStoragePath(PayrollEntry $payrollEntry): string
+    {
+        return 'payslips/'.$payrollEntry->employee_id.'/payslip-'.$payrollEntry->period.'.pdf';
+    }
+
+    /**
+     * Format "5.00" as "5" and "5.50" as "5.5".
+     */
+    protected static function trimNumber(float $value, int $decimals = 2): string
+    {
+        return rtrim(rtrim(number_format($value, $decimals, '.', ''), '0'), '.');
+    }
+
+    /**
+     * Trim transparent padding around an uploaded logo so it prints at a
+     * sensible size in the payslip header (GD only, fails softly).
+     */
+    protected static function cropLogoPadding(string $binary): ?string
+    {
+        if (! function_exists('imagecreatefromstring')) {
+            return null;
+        }
+
+        $image = @imagecreatefromstring($binary);
+        if (! $image) {
+            return null;
+        }
+
+        if (! imageistruecolor($image)) {
+            imagepalettetotruecolor($image);
+        }
+
+        $width = imagesx($image);
+        $height = imagesy($image);
+        $minX = $width;
+        $minY = $height;
+        $maxX = -1;
+        $maxY = -1;
+
+        for ($y = 0; $y < $height; $y++) {
+            for ($x = 0; $x < $width; $x++) {
+                $rgba = imagecolorat($image, $x, $y);
+                $alpha = ($rgba >> 24) & 0x7F;
+
+                if ($alpha < 120) {
+                    $minX = min($minX, $x);
+                    $minY = min($minY, $y);
+                    $maxX = max($maxX, $x);
+                    $maxY = max($maxY, $y);
+                }
+            }
+        }
+
+        if ($maxX < 0) {
+            imagedestroy($image);
+
+            return null;
+        }
+
+        // No transparency to trim (e.g. flat JPEG-like image).
+        if ($minX === 0 && $minY === 0 && $maxX === $width - 1 && $maxY === $height - 1) {
+            imagedestroy($image);
+
+            return null;
+        }
+
+        $pad = 4;
+        $minX = max(0, $minX - $pad);
+        $minY = max(0, $minY - $pad);
+        $maxX = min($width - 1, $maxX + $pad);
+        $maxY = min($height - 1, $maxY + $pad);
+
+        $cropWidth = $maxX - $minX + 1;
+        $cropHeight = $maxY - $minY + 1;
+
+        $cropped = imagecreatetruecolor($cropWidth, $cropHeight);
+        imagealphablending($cropped, false);
+        imagesavealpha($cropped, true);
+        imagecopy($cropped, $image, 0, 0, $minX, $minY, $cropWidth, $cropHeight);
+
+        ob_start();
+        imagepng($cropped);
+        $output = ob_get_clean();
+
+        imagedestroy($image);
+        imagedestroy($cropped);
+
+        return $output ?: null;
     }
 
     /**

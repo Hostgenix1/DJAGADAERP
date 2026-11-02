@@ -11,8 +11,11 @@ class PayrollEntry extends Model
     use SoftDeletes;
 
     public const STATUS_DRAFT = 'draft';
+
     public const STATUS_APPROVED = 'approved';
+
     public const STATUS_DUE = 'due';
+
     public const STATUS_PAID = 'paid';
 
     protected $fillable = [
@@ -22,7 +25,7 @@ class PayrollEntry extends Model
         'absence_deduction', 'other_deductions',
         'gross_salary', 'allowances', 'deductions',
         'net_salary', 'currency_id', 'status', 'paid_on', 'pay_date',
-        'payslip_emailed_at', 'notes',
+        'payslip_emailed_at', 'payslip_path', 'notes',
     ];
 
     protected $casts = [

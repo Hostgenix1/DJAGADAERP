@@ -78,7 +78,7 @@ class NumberToWords
         if ($hundreds > 0) {
             $text .= self::ONES[$hundreds].' Hundred';
             if ($rest > 0) {
-                $text .= ' and ';
+                $text .= ' ';
             }
         }
 
