@@ -29,7 +29,12 @@
         </div>
 <div class="col-md-6 col-field">
             <label for="source" class="form-label">Source</label>
-            <select name="source" id="source" class="form-control @error('source') is-invalid @enderror"><option value="">-- Select --</option><option value="website" {{ old('source', $form->source ?? '') == 'website' ? 'selected' : '' }}>website</option><option value="referral" {{ old('source', $form->source ?? '') == 'referral' ? 'selected' : '' }}>referral</option><option value="cold_call" {{ old('source', $form->source ?? '') == 'cold_call' ? 'selected' : '' }}>cold_call</option><option value="marketing" {{ old('source', $form->source ?? '') == 'marketing' ? 'selected' : '' }}>marketing</option><option value="trade_show" {{ old('source', $form->source ?? '') == 'trade_show' ? 'selected' : '' }}>trade_show</option><option value="social_media" {{ old('source', $form->source ?? '') == 'social_media' ? 'selected' : '' }}>social_media</option><option value="other" {{ old('source', $form->source ?? '') == 'other' ? 'selected' : '' }}>other</option></select>
+            <select name="source" id="source" class="form-control @error('source') is-invalid @enderror">
+                <option value="">-- Select --</option>
+                @foreach(['website' => 'Website', 'referral' => 'Referral', 'cold_call' => 'Cold Call', 'marketing' => 'Marketing', 'trade_show' => 'Trade Show', 'social_media' => 'Social Media', 'other' => 'Other'] as $value => $label)
+                    <option value="{{ $value }}" {{ old('source', $form->source ?? '') == $value ? 'selected' : '' }}>{{ $label }}</option>
+                @endforeach
+            </select>
             @error('source')
                 <span class="text-danger small">{{ $message }}</span>
             @enderror

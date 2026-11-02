@@ -4,63 +4,56 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreLeadRequest;
 use App\Http\Requests\UpdateLeadRequest;
+use App\Models\Currency;
+use App\Models\Customer;
 use App\Models\Lead;
+use App\Models\User;
 use App\Services\LeadService;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 
 class LeadController extends Controller
 {
-    public function __construct(protected LeadService $service)
-    {
-    }
+    public function __construct(protected LeadService $service) {}
 
     public function index()
     {
         $this->authorize('view-leads');
 
-        return view('leads.index', ['columns' => array (
-  0 => 
-  array (
-    'label' => 'Company Name',
-    'data' => 'company_name',
-  ),
-  1 => 
-  array (
-    'label' => 'Contact Name',
-    'data' => 'contact_name',
-  ),
-  2 => 
-  array (
-    'label' => 'Email',
-    'data' => 'email',
-  ),
-  3 => 
-  array (
-    'label' => 'Phone',
-    'data' => 'phone',
-  ),
-  4 => 
-  array (
-    'label' => 'Source',
-    'data' => 'source',
-  ),
-  5 => 
-  array (
-    'label' => 'Status',
-    'data' => 'status',
-  ),
-  6 => 
-  array (
-    'label' => 'Expected Amount',
-    'data' => 'expected_amount',
-  ),
-  7 => 
-  array (
-    'label' => 'Expected Close Date',
-    'data' => 'expected_date',
-  ),
-)]);
+        return view('leads.index', ['columns' => [
+            0 => [
+                'label' => 'Company Name',
+                'data' => 'company_name',
+            ],
+            1 => [
+                'label' => 'Contact Name',
+                'data' => 'contact_name',
+            ],
+            2 => [
+                'label' => 'Email',
+                'data' => 'email',
+            ],
+            3 => [
+                'label' => 'Phone',
+                'data' => 'phone',
+            ],
+            4 => [
+                'label' => 'Source',
+                'data' => 'source',
+            ],
+            5 => [
+                'label' => 'Status',
+                'data' => 'status',
+            ],
+            6 => [
+                'label' => 'Expected Amount',
+                'data' => 'expected_amount',
+            ],
+            7 => [
+                'label' => 'Expected Close Date',
+                'data' => 'expected_date',
+            ],
+        ]]);
     }
 
     public function datatable(Request $request)
@@ -72,6 +65,7 @@ class LeadController extends Controller
             ->addColumn('actions', function (Lead $row) {
                 return view('leads.partials.actions', ['row' => $row])->render();
             })
+            ->editColumn('source', fn ($m) => $m->source ? ucfirst(str_replace('_', ' ', $m->source)) : '')
             ->editColumn('expected_date', fn ($m) => $m->expected_date?->format('d M Y'))
             ->editColumn('created_at', fn ($m) => $m->created_at?->format('d M Y H:i'))
             ->editColumn('updated_at', fn ($m) => $m->updated_at?->format('d M Y H:i'))
@@ -83,15 +77,17 @@ class LeadController extends Controller
     {
         $this->authorize('view-leads');
         $lead->load(['currency', 'owner', 'customer']);
+
         return view('leads.show', compact('lead'));
     }
 
     public function create()
     {
         $this->authorize('create-leads');
-    $relations['currency_id'] = \App\Models\Currency::pluck('code', 'id');
-    $relations['owner_id'] = \App\Models\User::pluck('name', 'id');
-    $relations['customer_id'] = \App\Models\Customer::pluck('company_name', 'id');
+        $relations['currency_id'] = Currency::pluck('code', 'id');
+        $relations['owner_id'] = User::pluck('name', 'id');
+        $relations['customer_id'] = Customer::pluck('company_name', 'id');
+
         return view('leads.create', ['relations' => $relations]);
     }
 
@@ -107,9 +103,10 @@ class LeadController extends Controller
     public function edit(Lead $lead)
     {
         $this->authorize('update-leads');
-    $relations['currency_id'] = \App\Models\Currency::pluck('code', 'id');
-    $relations['owner_id'] = \App\Models\User::pluck('name', 'id');
-    $relations['customer_id'] = \App\Models\Customer::pluck('company_name', 'id');
+        $relations['currency_id'] = Currency::pluck('code', 'id');
+        $relations['owner_id'] = User::pluck('name', 'id');
+        $relations['customer_id'] = Customer::pluck('company_name', 'id');
+
         return view('leads.edit', ['lead' => $lead, 'relations' => $relations]);
     }
 
