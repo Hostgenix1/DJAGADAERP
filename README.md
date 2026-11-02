@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Hostgenix1/DJAGADAERP/releases"><img src="https://img.shields.io/badge/version-v2.5.6-blue" alt="Version"></a>
+  <a href="https://github.com/Hostgenix1/DJAGADAERP/releases"><img src="https://img.shields.io/badge/version-v2.5.7-blue" alt="Version"></a>
   <a href="https://github.com/Hostgenix1/DJAGADAERP/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License"></a>
   <a href="https://github.com/Hostgenix1/DJAGADAERP"><img src="https://img.shields.io/badge/Laravel-13.x-red" alt="Laravel"></a>
   <a href="https://github.com/Hostgenix1/DJAGADAERP"><img src="https://img.shields.io/badge/PHP-8.3-purple" alt="PHP"></a>

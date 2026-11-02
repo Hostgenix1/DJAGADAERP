@@ -1,5 +1,14 @@
 # Changelog
 
+## v2.5.7 — 2026-11-02
+
+### Added
+- **Leaves filters**: the Leave Requests list can now be filtered by employee, type, status and a From/To date range (matches leaves overlapping the window), with instant apply/reset.
+- **Payroll filters**: employee and status filters alongside the existing period selector — the table reloads instantly, and switching the period still refreshes the summary cards and due count.
+
+### Tests
+- 82 automated tests / 269 assertions (new: leave employee/type/status/date-overlap filters; payroll employee/period/status filters).
+
 ## v2.5.6 — 2026-11-02
 
 ### Added
