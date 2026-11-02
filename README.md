@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Hostgenix1/DJAGADAERP/releases"><img src="https://img.shields.io/badge/version-v2.4.0-blue" alt="Version"></a>
+  <a href="https://github.com/Hostgenix1/DJAGADAERP/releases"><img src="https://img.shields.io/badge/version-v2.5.0-blue" alt="Version"></a>
   <a href="https://github.com/Hostgenix1/DJAGADAERP/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License"></a>
   <a href="https://github.com/Hostgenix1/DJAGADAERP"><img src="https://img.shields.io/badge/Laravel-13.x-red" alt="Laravel"></a>
   <a href="https://github.com/Hostgenix1/DJAGADAERP"><img src="https://img.shields.io/badge/PHP-8.3-purple" alt="PHP"></a>
@@ -19,14 +19,15 @@
 
 ### Auth & RBAC
 - Login (Laravel Breeze); self-registration is disabled — administrators create users
-- Role-based access control (Super Admin, Staff, Sales)
-- Granular permissions per module (view/create/update/delete)
-- Activity audit log (partial: repository CRUD, settings, users, roles)
+- Role presets: Super Admin, CEO, Sales, Finance, HR, Warehouse, Logistics, Viewer, Staff, Employee (Self-Service)
+- Granular permissions per module (view/create/update/delete/approve)
+- Activity audit log (partial: repository CRUD, settings, users, roles, key document actions)
 
 ### Dashboard
 - Revenue, customers, outstanding balances, stock and P&L KPI cards
 - Monthly revenue and cash-flow charts (Chart.js)
 - Lead pipeline doughnut chart
+- Calendar of follow-ups, invoice due dates, shipment ETAs and purchase-request need-by dates (FullCalendar)
 - Top customers, low-stock products, recent activity
 
 ### CRM
@@ -37,19 +38,21 @@
 - **Communications** — call/WhatsApp/email/meeting logs
 
 ### Products & Pricing
-- **Brands**, **Categories**, **Suppliers**, **Products** — SKU, buy/sell price, currency, tax, pack qty, dimensions, specifications, certificates, images
+- **Brands**, **Categories**, **Suppliers**, **Products** — SKU, buy/sell price, currency, tax, pack qty, dimensions, specifications, certificates
+- **Product images** — multi-upload, primary image selection, delete from the product page
 - **Supplier Prices** — supplier cost per packaging/incoterm with validity
 - **Selling Prices** — approved selling prices, customer-specific overrides, AI approval flag
 - **AI Pricing API** — read-only Sanctum endpoint returning only approved, valid selling prices (never costs or margins)
 
 ### Sales
-- **Quotations** — line items, tax/discount, revisions, convert to proforma or commercial invoice
+- **Quotations** — line items, tax/discount, revisions, PDF, email with PDF attachment, convert to proforma or commercial invoice
 - **Invoices** — commercial, proforma, credit note, packing list, delivery note; auto-numbering; PDF with logo, QR, payment details; payment tracking
 - **Orders** — sales orders with payment terms and status flow
 - **Payments** — customer and supplier payments, allocation to invoices/bills, outstanding balances
-- **Shipments** — container and logistics tracking with PDF
+- **Shipments** — ETD/ETA, carriers, container count/type/numbers, Bill of Lading number, document uploads and PDF
 
 ### Purchasing & Inventory
+- **Purchase Requests** — internal requests with items, submit/approve/reject workflow and conversion to a purchase order
 - **Purchase Orders** — supplier POs with line items and PDF
 - **Supplier Bills** — bill entry and payment allocation
 - **Warehouses** — multiple locations
@@ -68,7 +71,8 @@
 - **My Payslips** — employees can download their own payslips
 
 ### Settings
-- Company profile (logo, address, TRN), SMTP, branding, taxes, currencies, payment terms, units, audit log
+- Company profile (logo, signature, address, TRN), branding, taxes, currencies, payment terms, units, audit log
+- **SMTP settings are applied at runtime** — no `.env` edit needed once saved in the admin panel
 
 ---
 
@@ -150,7 +154,66 @@ php artisan test          # Feature + unit tests (SQLite in-memory)
 ./vendor/bin/pint         # Apply formatting
 ```
 
-The test suite covers auth, profile, invoice/payment flow, and payroll calculations. `pint.json` excludes release-package folders from formatting.
+The test suite covers auth, profile, invoice/payment flow, documents, payroll calculations, purchase-request approval/conversion, quotation email, product images, the dashboard calendar, role presets and SMTP configuration. `pint.json` excludes release-package folders from formatting.
+
+---
+
+## Roles
+
+| Role | Scope |
+|------|-------|
+| Super Admin | Full access, users, roles and settings |
+| CEO | Read-only across the business, including reports |
+| Sales | CRM, quotations, invoices, payments, documents |
+| Finance | Invoices, payments, expenses, supplier bills, currencies, reports |
+| HR | Employees, attendance, leaves, payroll and payslips |
+| Warehouse | Products, stock, warehouses, purchase requests and orders |
+| Logistics | Shipments, orders, customers, documents |
+| Viewer | Read-only business data without admin, payroll or settings |
+| Staff | Read-only access to all modules |
+| Employee (Self-Service) | Own payslips |
+
+Permissions are managed under **User Management → Roles** after seeding.
+
+---
+
+## Email / SMTP
+
+Configure the mail server under **Settings → Company → Email / SMTP**. Saved settings override `.env` at runtime, so no deployment change is needed after saving. The SMTP password is kept when the field is submitted blank.
+
+Verify delivery with:
+
+```bash
+php artisan mail:test you@example.com
+```
+
+If no SMTP host is saved, Laravel falls back to `MAIL_MAILER` in `.env`.
+
+---
+
+## Database snapshots
+
+Create a MySQL dump for delivery or backup:
+
+```bash
+php artisan db:snapshot
+php artisan db:snapshot --gzip --path=storage/app/backups
+```
+
+`mysqldump` must be available on the server, or point to it explicitly with `DB_DUMP_BINARY` in `.env` or `--binary=`.
+
+---
+
+## Production checklist
+
+- Set `APP_ENV=production` and `APP_DEBUG=false`
+- Run `php artisan migrate --force`
+- Seed once with `php artisan db:seed --class=DatabaseSeeder`
+- Run `php artisan storage:link` for logos, signatures and product images
+- Cache the framework: `php artisan config:cache && php artisan route:cache && php artisan view:cache`
+- Run the scheduler (`schedule:run`) and a queue worker (`queue:work`)
+- Serve over HTTPS and change the default admin password
+- Take a `db:snapshot` before upgrades
 
 ---
 
