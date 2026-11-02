@@ -58,6 +58,32 @@
                     <a href="{{ route('payroll.export', ['period' => $period]) }}" class="btn btn-success btn-sm" title="Bank salary-transfer file (CSV)"><i class="fas fa-file-csv"></i> Bank File</a>
                 </div>
             </div>
+            <div class="card-body border-bottom py-2">
+                <div class="form-row align-items-end">
+                    <div class="col-md-4 mb-1 mb-md-0">
+                        <label class="mb-0 small text-muted">Employee</label>
+                        <select id="filter-employee" class="form-control form-control-sm">
+                            <option value="">All employees</option>
+                            @foreach($employees as $id => $name)
+                                <option value="{{ $id }}">{{ $name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-1 mb-md-0">
+                        <label class="mb-0 small text-muted">Status</label>
+                        <select id="filter-status" class="form-control form-control-sm">
+                            <option value="">All statuses</option>
+                            @foreach(['draft' => 'Draft', 'approved' => 'Approved', 'due' => 'Due', 'paid' => 'Paid'] as $value => $label)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-1 mb-md-0">
+                        <button type="button" id="filter-apply" class="btn btn-sm btn-primary"><i class="fas fa-filter mr-1"></i> Apply</button>
+                        <button type="button" id="filter-reset" class="btn btn-sm btn-default">Reset</button>
+                    </div>
+                </div>
+            </div>
             <div class="card-body p-0">
                 <table id="dt-payroll" class="table table-bordered table-hover">
                     <thead>
@@ -98,7 +124,11 @@ $(function () {
         serverSide: true,
         ajax: {
             url: '{{ route("payroll.datatable") }}',
-            data: function (d) { d.period = $('#period-select').val(); }
+            data: function (d) {
+                d.period = $('#period-select').val();
+                d.employee_id = $('#filter-employee').val();
+                d.status = $('#filter-status').val();
+            }
         },
         columns: [
             { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
@@ -119,6 +149,19 @@ $(function () {
 
     $('#period-select').on('change', function () {
         window.location = '{{ route("payroll.index") }}?period=' + $(this).val();
+    });
+
+    $('#filter-employee, #filter-status').on('change', function () {
+        table.ajax.reload();
+    });
+
+    $('#filter-apply').on('click', function () {
+        table.ajax.reload();
+    });
+
+    $('#filter-reset').on('click', function () {
+        $('#filter-employee, #filter-status').val('');
+        table.ajax.reload();
     });
 });
 </script>

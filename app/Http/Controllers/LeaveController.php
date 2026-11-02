@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Employee;
 use App\Models\Leave;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
@@ -14,21 +15,53 @@ class LeaveController extends Controller
 
         $pending = Leave::where('status', 'pending')->count();
         $approved = Leave::where('status', 'approved')->count();
+        $employees = Employee::where('is_active', true)->orderBy('name')->pluck('name', 'id');
 
-        return view('leaves.index', compact('pending', 'approved'));
+        return view('leaves.index', compact('pending', 'approved', 'employees'));
     }
 
     public function datatable(Request $request)
     {
         $this->authorize('view-leaves');
 
-        return DataTables::eloquent(Leave::query()->with('employee'))
+        $filters = $request->validate([
+            'employee_id' => 'nullable|integer',
+            'type' => 'nullable|in:annual,sick,unpaid,other',
+            'status' => 'nullable|in:pending,approved,rejected',
+            'from' => 'nullable|date',
+            'to' => 'nullable|date',
+        ]);
+
+        $query = Leave::query()->with('employee');
+
+        if (! empty($filters['employee_id'])) {
+            $query->where('employee_id', $filters['employee_id']);
+        }
+
+        if (! empty($filters['type'])) {
+            $query->where('type', $filters['type']);
+        }
+
+        if (! empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        // Date range matches leaves overlapping the selected window.
+        if (! empty($filters['from'])) {
+            $query->whereDate('end_date', '>=', $filters['from']);
+        }
+
+        if (! empty($filters['to'])) {
+            $query->whereDate('start_date', '<=', $filters['to']);
+        }
+
+        return DataTables::eloquent($query)
             ->addIndexColumn()
             ->editColumn('employee_id', fn (Leave $l) => $l->employee?->name ?? '-')
             ->editColumn('start_date', fn (Leave $l) => $l->start_date?->format('d M Y'))
             ->editColumn('end_date', fn (Leave $l) => $l->end_date?->format('d M Y'))
             ->editColumn('type', fn (Leave $l) => ucfirst($l->type))
-            ->editColumn('status', fn (Leave $l) => '<span class="badge '.match($l->status) {
+            ->editColumn('status', fn (Leave $l) => '<span class="badge '.match ($l->status) {
                 'approved' => 'badge-success',
                 'rejected' => 'badge-danger',
                 default => 'badge-warning',
@@ -44,7 +77,7 @@ class LeaveController extends Controller
     {
         $this->authorize('create-leaves');
 
-        $employees = \App\Models\Employee::where('is_active', true)->orderBy('name')->pluck('name', 'id');
+        $employees = Employee::where('is_active', true)->orderBy('name')->pluck('name', 'id');
 
         return view('leaves.create', compact('employees'));
     }
@@ -72,7 +105,7 @@ class LeaveController extends Controller
     {
         $this->authorize('update-leaves');
 
-        $employees = \App\Models\Employee::where('is_active', true)->orderBy('name')->pluck('name', 'id');
+        $employees = Employee::where('is_active', true)->orderBy('name')->pluck('name', 'id');
 
         return view('leaves.edit', compact('leave', 'employees'));
     }

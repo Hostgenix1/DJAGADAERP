@@ -24,18 +24,33 @@ class PayrollController extends Controller
         $defaultCurrency = Currency::where('is_default', true)->first();
 
         $periods = PayrollEntry::query()->select('period')->distinct()->orderByDesc('period')->pluck('period');
+        $employees = Employee::where('is_active', true)->orderBy('name')->pluck('name', 'id');
 
-        return view('payroll.index', compact('period', 'totalGross', 'totalNet', 'dueCount', 'defaultCurrency', 'periods'));
+        return view('payroll.index', compact('period', 'totalGross', 'totalNet', 'dueCount', 'defaultCurrency', 'periods', 'employees'));
     }
 
     public function datatable(Request $request)
     {
         $this->authorize('view-payroll');
 
+        $filters = $request->validate([
+            'period' => 'nullable|regex:/^\d{4}-\d{2}$/',
+            'employee_id' => 'nullable|integer',
+            'status' => 'nullable|in:draft,approved,due,paid',
+        ]);
+
         $query = PayrollEntry::query()->with(['employee', 'currency']);
 
-        if ($request->filled('period')) {
-            $query->where('period', $request->period);
+        if (! empty($filters['period'])) {
+            $query->where('period', $filters['period']);
+        }
+
+        if (! empty($filters['employee_id'])) {
+            $query->where('employee_id', $filters['employee_id']);
+        }
+
+        if (! empty($filters['status'])) {
+            $query->where('status', $filters['status']);
         }
 
         $badges = [
