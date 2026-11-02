@@ -1,5 +1,18 @@
 # Changelog
 
+## v2.5.6 — 2026-11-02
+
+### Added
+- **Attendance filters**: the attendance list can now be filtered by employee, status and a From/To date range, with instant apply and reset — essential when there are many employees.
+- Payslip PDFs are now generated and **stored automatically** when payroll is marked Paid (private disk, `payslip_path` on payroll entries); My Payslips gets a month/year period filter, and HR reprints/downloads are served from the stored file (falls back to on-demand rendering).
+
+### Changed
+- Payslip layout aligned with the client preview: dedicated English money filter (`5,366.66`), earnings and deductions rendered from separate lists (deduction amounts positive), Gross/Deductions/Net taken directly from payroll calculations (no template recalculation), sentence-case amount in words, overtime rate line (`5.0 hrs — 50.00`), status line removed, and transparent logo padding cropped so the logo prints at the intended size.
+- Demo company country corrected to "United Arab Emirates" so the payslip is fully English (dynamic value still comes from Company Settings).
+
+### Tests
+- 75 automated tests / 250 assertions (payslip data contract + masking, payment-block hiding, mark-paid stores PDF + emails, employee payslip isolation, one-page A4, attendance employee/status/date filters).
+
 ## v2.5.5 — 2026-11-02
 
 ### Changed
